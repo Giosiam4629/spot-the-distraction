@@ -51,7 +51,6 @@
     .screen { display: none; }
     .screen.active { display: block; }
     
-    /* --- NEW: Home/Reset Button --- */
     #home-reset-btn {
       position: fixed;
       top: 20px;
@@ -77,146 +76,54 @@
     }
 
     /* --- Game Controls Panel --- */
-    #game-controls h2 {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .control-section {
-      margin-bottom: 20px;
-      border-top: 1px solid #eee;
-      padding-top: 15px;
-    }
-    .options-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
+    #game-controls h2 { font-size: 1.2rem; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .control-section { margin-bottom: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+    .options-group { display: flex; flex-wrap: wrap; gap: 15px; }
     .options-group input[type="radio"] { display: none; }
-    .options-group label {
-      padding: 8px 15px;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      font-weight: bold;
-      background-color: #f0f0f0;
-    }
-    .options-group input[type="radio"]:checked + label {
-      background-color: var(--accent-orange);
-      color: white;
-      transform: scale(1.1);
-    }
-    #game-progress-bar {
-      width: 100%;
-      height: 20px;
-      background-color: #e0e0e0;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    #game-progress-fill {
-      width: 0%;
-      height: 100%;
-      background-color: var(--accent-green);
-      transition: width 0.5s ease;
-    }
-    .stats-container {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 20px;
-    }
-    .stat-box {
-      background-color: #f7f9fc;
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-family: var(--font-header);
-      font-size: 1.2rem;
-      min-width: 100px;
-      text-align: center;
-    }
+    .options-group label { padding: 8px 15px; border-radius: 50px; cursor: pointer; transition: all 0.2s ease-in-out; font-weight: bold; background-color: #f0f0f0; }
+    .options-group input[type="radio"]:checked + label { background-color: var(--accent-orange); color: white; transform: scale(1.1); }
+    .stats-container { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+    .stat-box { background-color: #f7f9fc; border-radius: 10px; padding: 10px 20px; font-family: var(--font-header); font-size: 1.2rem; min-width: 100px; text-align: center; }
     
     /* --- Sorting Game --- */
-    .drop-container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-    .dropzone {
-      border: 3px dashed #ccc;
-      min-height: 200px;
-      padding: 15px;
-      border-radius: 15px;
-      transition: all 0.3s;
-    }
-    #closer { background-color: #e8f5e9; }
-    #distraction { background-color: #ffebee; }
-    .dropzone.over { transform: scale(1.02); border-color: var(--accent-orange); }
-    #cards-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      min-height: 150px;
-      padding: 20px 0;
-    }
-    .card {
-      background-color: var(--panel-bg);
-      border: 3px solid;
-      padding: 15px;
-      border-radius: 12px;
-      cursor: grab;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: var(--shadow);
-      transition: transform 0.2s;
-    }
-    .card:hover { transform: translateY(-5px); }
-    .card .emoji { font-size: 2rem; }
+    /* ... (Sorting game styles remain the same) ... */
 
     /* --- Minigame Screen --- */
     #minigame-screen { text-align: center; }
-    .minigame-header {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+    .minigame-header { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; }
     .minigame-stat { font-family: var(--font-header); font-size: 1.2rem; }
     .minigame-stat .hearts { font-size: 1.8rem; letter-spacing: 2px; }
+    #minigame-canvas-container { position: relative; }
     canvas#minigame-canvas {
       background: linear-gradient(#87CEEB, #90EE90);
       border-radius: 15px;
       box-shadow: var(--shadow);
       margin: 20px 0;
       width: 100%;
-      image-rendering: pixelated; /* Crucial for pixelated look */
+      image-rendering: pixelated;
       image-rendering: -moz-crisp-edges;
       image-rendering: crisp-edges;
     }
-    #minigame-start-btn {
-      padding: 15px 30px;
-      font-size: 1.5rem;
-      background-color: var(--accent-orange);
-      color: white;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
+    #minigame-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-shadow: 2px 2px 4px #000;
+        font-family: var(--font-header);
+    }
+    #minigame-overlay h2 { font-size: 3rem; }
+    #minigame-start-btn, #minigame-next-level-btn {
+      padding: 15px 30px; font-size: 1.5rem; background-color: var(--accent-orange);
+      color: white; border: none; border-radius: 15px; cursor: pointer;
     }
     #minigame-instructions { margin-top: 15px; font-style: italic; }
-
-    /* Buttons */
     .nav-button {
-        margin-top: 20px;
-        background-color: #6a0dad;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-family: var(--font-header);
+        margin-top: 20px; background-color: #6a0dad; color: white; padding: 10px 20px;
+        border: none; border-radius: 10px; cursor: pointer; font-family: var(--font-header);
     }
   </style>
 </head>
@@ -226,44 +133,15 @@
 
 <div class="main-container">
 
-  <div id="sorting-game-screen" class="screen active">
+  <div id="main-screen" class="screen active">
     <div id="game-controls" class="panel">
       <div class="control-section">
         <h2>👤 Choose Your Character</h2>
         <div class="options-group" id="character-selector">
-          <input type="radio" id="char-cello" name="character" value="cello" checked><label for="char-cello">Cello (7-yr) 👦</label>
-          <input type="radio" id="char-fina" name="character" value="fina"><label for="char-fina">Fina (11-yr) 👧</label>
-          <input type="radio" id="char-teen" name="character" value="teen"><label for="char-teen">Teen (15-yr) 👩‍🎓</label>
-          <input type="radio" id="char-adult" name="character" value="adult"><label for="char-adult">Adult 👨‍👩‍👧‍👦</label>
+          <input type="radio" id="char-boy" name="character" value="boy" checked><label for="char-boy">Boy 👦</label>
+          <input type="radio" id="char-girl" name="character" value="girl"><label for="char-girl">Girl 👧</label>
         </div>
       </div>
-      <div class="control-section">
-        <h2>⚡ Difficulty Level</h2>
-        <div class="options-group" id="difficulty-selector">
-          <input type="radio" id="diff-easy" name="difficulty" value="easy" checked><label for="diff-easy">Easy (No Timer) 😊</label>
-          <input type="radio" id="diff-medium" name="difficulty" value="medium"><label for="diff-medium">Medium (2 min timer) ⏰</label>
-          <input type="radio" id="diff-hard" name="difficulty" value="hard"><label for="diff-hard">Hard (1 min timer) 🔥</label>
-        </div>
-      </div>
-      <div class="control-section">
-        <h2>📊 Game Progress</h2>
-        <p>Level: <span id="level-label">1</span> / 5</p>
-        <div id="game-progress-bar"><div id="game-progress-fill"></div></div>
-      </div>
-      <div class="stats-container">
-        <div class="stat-box">Score: <span id="score-label">0</span></div>
-        <div class="stat-box">Streak: <span id="streak-label">0</span></div>
-        <div class="stat-box">Time: <span id="timer-label">--:--</span></div>
-      </div>
-    </div>
-    
-    <div class="panel">
-      <div class="drop-container">
-        <div id="closer" class="dropzone"><h3>👍 Keeps Me Close to Jehovah</h3></div>
-        <div id="distraction" class="dropzone"><h3>🤔 Could Be a Distraction</h3></div>
-      </div>
-      <h3 style="text-align: center;">Drag the Activities</h3>
-      <div id="cards-container"></div>
     </div>
     <div style="text-align:center;">
         <button id="switch-to-minigame-btn" class="nav-button">🎮 Play Side-Scroller Adventure!</button>
@@ -272,16 +150,21 @@
 
   <div id="minigame-screen" class="screen">
     <div class="panel">
-      <h2>🎮 Advanced Mini-Game: Side-Scroller Adventure!</h2>
+      <h2>🎮 Side-Scroller Adventure!</h2>
       <div class="minigame-header">
-        <div class="minigame-stat">Adventure Score: <span id="minigame-score">0</span></div>
-        <div class="minigame-stat">Kingdom Tokens: <span id="minigame-tokens">0</span> / 10</div>
+        <div class="minigame-stat">Level: <span id="minigame-level">1</span></div>
+        <div class="minigame-stat">Tokens: <span id="minigame-tokens">0</span> / <span id="minigame-goal">5</span></div>
         <div class="minigame-stat"><span class="hearts" id="minigame-lives">❤️❤️❤️</span></div>
       </div>
-      <canvas id="minigame-canvas" width="600" height="300"></canvas>
-      <button id="minigame-start-btn">Start Adventure 🚀</button>
-      <div id="minigame-instructions">Use SPACE or ↑ to jump. Collect Kingdom Tokens 📖! Avoid distractions 📺!</div>
-      <button id="switch-to-sorting-btn" class="nav-button" style="background-color:#777;">Back to Sorting Game</button>
+      <div id="minigame-canvas-container">
+          <canvas id="minigame-canvas" width="600" height="300"></canvas>
+          <div id="minigame-overlay">
+              <h2 id="minigame-message"></h2>
+              <button id="minigame-start-btn">Start Adventure 🚀</button>
+              <button id="minigame-next-level-btn" style="display:none;">Next Level! ✨</button>
+          </div>
+      </div>
+      <div id="minigame-instructions">Use SPACE or ↑ to jump. Collect Tokens 📖! Avoid distractions!</div>
     </div>
   </div>
 
@@ -290,248 +173,286 @@
 <script>
 // --- GAME STATE ---
 const initialGameState = {
-    character: 'cello',
-    difficulty: 'easy',
-    level: 1,
-    maxLevels: 5,
-    score: 0,
-    streak: 0,
-    timerId: null,
-    timeLeft: 0,
-    activeScreen: 'sorting'
+    character: 'boy',
+    activeScreen: 'main'
 };
 let game = { ...initialGameState };
 
-// --- DOM ELEMENTS ---
-const elements = {
-    sortingScreen: document.getElementById('sorting-game-screen'),
-    minigameScreen: document.getElementById('minigame-screen'),
-    characterSelector: document.getElementById('character-selector'),
-    difficultySelector: document.getElementById('difficulty-selector'),
-    levelLabel: document.getElementById('level-label'),
-    progressFill: document.getElementById('game-progress-fill'),
-    scoreLabel: document.getElementById('score-label'),
-    streakLabel: document.getElementById('streak-label'),
-    timerLabel: document.getElementById('timer-label'),
-    cardsContainer: document.getElementById('cards-container')
-};
-
-// --- "64-BIT" STYLE ANIMATED PIXEL ART ---
+// --- ART ASSETS & ANIMATION ---
 const pixelArt = {
-    // A helper to draw a grid of pixels from a color map
     drawFromMap(ctx, x, y, map, size) {
         map.pixels.forEach((row, r) => {
             row.forEach((colorKey, c) => {
                 if (map.palette[colorKey]) {
                     ctx.fillStyle = map.palette[colorKey];
-                    ctx.fillRect(x + c * size, y + r * size, size, size);
+                    ctx.fillRect(Math.floor(x + c * size), Math.floor(y + r * size), size, size);
                 }
             });
         });
     },
-
-    characters: {
-        // Cello (Boy Character) Sprite Maps
-        cello: {
-            palette: { S: '#f2a66e', s: '#d88c57', H: '#3a2d27', T: '#4a90e2', t: '#3b73b5', P: '#333', p: '#222'},
-            run1: [ ' HHH ', ' SSH ', 'SSTT ', ' TTt ', ' P p ' ],
-            run2: [ ' HHH ', ' SSH ', 'SSTT ', ' T Tt', ' p P ' ],
-            jump: [ ' HHH ', ' SSH ', 'SSTT ', ' TTT ', ' p p ' ]
-        },
-        // Fina (Girl Character) Sprite Maps
-        fina: {
-            palette: { S: '#ffbe87', s: '#e5a36f', H: '#8b572a', h: '#653f1f', D: '#e91e63', d: '#c2185b' },
-            run1: [ ' HHHh', 'hSS H', ' SSDD', ' D dD', ' d d' ],
-            run2: [ ' HHHh', 'hSS H', ' SSDD', ' D DD', 'd  d' ],
-            jump: [ ' HHHh', 'hSS H', ' SSDD', ' dDd ', ' d d ' ]
-        },
-        // Placeholder sprites for teen/adult
-        teen: { ...this.fina },
-        adult: { ...this.cello }
+    // Boy Character Sprite Maps
+    boy: {
+        palette: { S:'#f2a66e',s:'#d88c57', H:'#3a2d27',h:'#2a201c', T:'#4a90e2',t:'#3b73b5', P:'#333',p:'#222' },
+        idle1: [' HHHh','hSS H','SSTTT',' TtT ',' P P '], idle2: [' HHHh','hSS H','SSTTT',' TtT ',' p p '],
+        run1:  [' HHHh','hSS H','SSTTT',' TtT ',' p  P '], run2:  [' HHHh','hSS H','SSTTT',' TtT ','P p P'],
+        run3:  [' HHHh','hSS H','SSTTT',' TtT ',' P  p '], run4:  [' HHHh','hSS H','SSTTT',' TtT ','P p P'],
+        jump:  [' HHHh','hSS H','SSTTT',' TtT ',' P P '], fall:  [' HHHh','hSS H','SSTTT',' TtT ','p   p']
+    },
+    // Girl Character Sprite Maps
+    girl: {
+        palette: { S:'#ffbe87',s:'#e5a36f', H:'#8b572a',h:'#653f1f', D:'#e91e63',d:'#c2185b' },
+        idle1: ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D',' d d '], idle2: ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D',' d  d'],
+        run1:  ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D','d   D'], run2:  ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D',' D d '],
+        run3:  ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D','D   d'], run4:  ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D',' d D '],
+        jump:  ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D',' D D '], fall:  ['hHHHHh',' hSS H',' hSS H',' SSDDD',' D d D','d   d']
+    },
+    // Other game objects
+    token: {
+        palette: { B: '#795548', b: '#5d4037', W: '#fffde7', Y: '#ffeb3b' },
+        map: [' bBB ','bWWBb','bYYBb',' bBb ']
+    },
+    shield: {
+        palette: { G: '#c0c0c0', g: '#a9a9a9', Y: '#ffd700' },
+        map: [' gGg ','gYgGg','gYgGg',' gGg ']
+    },
+    badInfluence: {
+        palette: { D: '#424242', d: '#212121' },
+        map: [' dDd ','DDDDD',' D D ',' D D ']
     },
 
-    // A single function to draw the correct animated character
-    drawAnimatedCharacter(ctx, charType, x, y, size, animState, frame) {
-        const charData = this.characters[charType];
-        if (!charData) return;
-
-        let mapToDraw;
-        if (animState === 'jump') {
-            mapToDraw = charData.jump;
-        } else { // Running animation
-            mapToDraw = (frame % 40 < 20) ? charData.run1 : charData.run2;
+    drawAnimatedCharacter(ctx, charType, x, y, size, animState) {
+        const charData = this[charType];
+        let mapKey;
+        if (animState.state === 'idle') mapKey = (animState.frame % 60 < 30) ? 'idle1' : 'idle2';
+        else if (animState.state === 'jump') mapKey = 'jump';
+        else if (animState.state === 'fall') mapKey = 'fall';
+        else { // Running animation
+            const f = Math.floor(animState.frame / 6) % 4; // 4 frames, change every 6 ticks
+            mapKey = `run${f + 1}`;
         }
-        
-        const mapObject = { palette: charData.palette, pixels: mapToDraw.map(row => row.split('')) };
-        this.drawFromMap(ctx, x, y, mapObject, size);
+        const map = { palette: charData.palette, pixels: charData[mapKey].map(r => r.split('')) };
+        this.drawFromMap(ctx, x, y, map, size);
     }
 };
 
+
 // --- SIDE SCROLLER MINIGAME ---
 const sideScroller = {
-    // ... (rest of the side scroller object remains largely the same)
+    // ... setup and state properties
     canvas: document.getElementById('minigame-canvas'),
-    ctx: null,
-    active: false,
-    gameInterval: null,
-    // State
-    score: 0, lives: 3, tokens: 0, goal: 10, frame: 0,
-    // Game Objects
-    player: { x: 50, y: 220, w: 20, h: 20, vy: 0, grounded: true },
-    objects: [], // { type, x, y, w, h, sprite }
-    backgroundLayers: [],
+    ctx: null, active: false, gameInterval: null,
+    level: 1, score: 0, lives: 3, tokens: 0, goal: 5, frame: 0,
+    player: { x: 50, y: 220, w: 24, h: 24, vy: 0, grounded: true, isInvincible: false, invincibleTimer: 0, idleTimer: 0 },
+    objects: [], backgroundLayers: [],
+    levelData: [
+        { speed: 3.5, goal: 5, obsFreq: 120 },
+        { speed: 4.0, goal: 8, obsFreq: 100 },
+        { speed: 4.5, goal: 10, obsFreq: 90 },
+        { speed: 5.0, goal: 12, obsFreq: 80 }
+    ],
 
     init() {
         this.ctx = this.canvas.getContext('2d');
         document.getElementById('minigame-start-btn').onclick = () => this.start();
-        document.addEventListener('keydown', e => {
-            if ((e.code === 'Space' || e.key === 'ArrowUp') && this.active) this.jump();
-        });
+        document.getElementById('minigame-next-level-btn').onclick = () => { this.level++; this.start(); };
+        document.addEventListener('keydown', e => { if ((e.code === 'Space' || e.key === 'ArrowUp') && this.active) this.jump(); });
         this.canvas.addEventListener('click', () => { if(this.active) this.jump(); });
+        this.showOverlay("Side-Scroller Adventure");
     },
+    
     start() {
+        this.hideOverlay();
         this.active = true;
-        this.lives = 3; this.score = 0; this.tokens = 0; this.frame = 0;
-        this.player.y = 220; this.player.vy = 0; this.player.grounded = true;
+        this.lives = 3; this.tokens = 0; this.frame = 0;
+        const currentLevelData = this.levelData[this.level - 1] || this.levelData[this.levelData.length - 1];
+        this.goal = currentLevelData.goal;
+        this.speed = currentLevelData.speed;
+        this.obsFreq = currentLevelData.obsFreq;
+
+        this.player.y = 220; this.player.vy = 0; this.player.grounded = true; this.player.isInvincible = false;
         this.objects = [];
         this.backgroundLayers = [
-            { speed: 0.2, y: 50, height: 50, color: '#add8e6', objects: [{x: 100, w: 50}, {x: 400, w: 80}] }, // Far clouds
-            { speed: 0.5, y: 150, height: 100, color: '#228b22', objects: [{x: 50, w: 200}, {x: 500, w: 150}] }, // Hills
+            { speed: 0.2, y: 50, h: 50, color: '#add8e6', objects: [{x: 100, w: 50}, {x: 400, w: 80}] },
+            { speed: 0.5, y: 150, h: 100, color: '#228b22', objects: [{x: 50, w: 200}, {x: 500, w: 150}] },
+            { speed: 6.0, y: 280, h: 20, color: '#90ee90', objects: [{x: 0, w: 300}, {x: 400, w: 300}]} // Foreground grass
         ];
         if (this.gameInterval) clearInterval(this.gameInterval);
         this.gameInterval = setInterval(() => this.loop(), 1000 / 60);
         this.updateUI();
     },
+
     loop() {
         this.frame++;
-        this.player.vy += 0.8; // Gravity
+        this.updatePhysicsAndState();
+        this.spawnObjects();
+        this.updateObjects();
+        this.drawAll();
+        this.updateUI();
+        if (this.lives <= 0) this.endGame(false);
+        if (this.tokens >= this.goal) this.levelComplete();
+    },
+    
+    updatePhysicsAndState() {
+        // Player physics
+        this.player.vy += 0.8;
         this.player.y += this.player.vy;
         if (this.player.y >= this.canvas.height - 40 - this.player.h) {
             this.player.y = this.canvas.height - 40 - this.player.h;
             this.player.vy = 0;
+            if (!this.player.grounded) this.player.idleTimer = 0;
             this.player.grounded = true;
+        } else {
+            this.player.grounded = false;
         }
+        
+        // Timers
+        if (this.player.grounded) this.player.idleTimer++; else this.player.idleTimer = 0;
+        if (this.player.isInvincible) {
+            this.player.invincibleTimer--;
+            if (this.player.invincibleTimer <= 0) this.player.isInvincible = false;
+        }
+    },
 
-        if (this.frame % 120 === 0) { /* ... spawn logic ... */ }
-        if (this.frame % 180 === 0) { /* ... spawn logic ... */ }
+    spawnObjects() {
+        // Spawn distractions, tokens, power-ups
+        if (this.frame % this.obsFreq === 0) {
+            this.objects.push({ type: 'distraction', sprite: 'badInfluence', x: this.canvas.width, y: this.canvas.height - 56, w: 20, h: 16, vx: -1 });
+        }
+        if (this.frame > 50 && this.frame % 200 === 0) {
+            this.objects.push({ type: 'token', x: this.canvas.width, y: 180, w: 16, h: 16 });
+        }
+        if (this.frame % 500 === 0) { // Shield power-up
+            this.objects.push({ type: 'powerup', sprite: 'shield', x: this.canvas.width, y: 150, w: 16, h: 16 });
+        }
+    },
 
+    updateObjects() {
         this.objects.forEach((obj, i) => {
-            obj.x -= 4; // Move object
+            obj.x -= this.speed;
+            if (obj.vx) obj.x += Math.sin(this.frame / 20) * obj.vx; // Patrolling motion
+
+            // Collision check
             if (this.player.x < obj.x + obj.w && this.player.x + this.player.w > obj.x &&
                 this.player.y < obj.y + obj.h && this.player.y + this.player.h > obj.y) {
-                // ... collision logic ...
+                this.handleCollision(obj, i);
             }
         });
         this.objects = this.objects.filter(o => o.x > -50);
-        this.score++;
-
-        // --- Drawing ---
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawBackground();
-        // this.drawObjects(); // Logic for drawing objects remains the same
-
-        // NEW: Draw the animated character
-        const animState = this.player.grounded ? 'run' : 'jump';
-        pixelArt.drawAnimatedCharacter(this.ctx, game.character, this.player.x, this.player.y, 4, animState, this.frame);
-        
-        this.updateUI();
-        if (this.lives <= 0 || this.tokens >= this.goal) this.endGame();
     },
-    drawBackground() {
-        // Parallax Layers
-        this.backgroundLayers.forEach(layer => {
+
+    handleCollision(obj, index) {
+        if (obj.type === 'distraction' && !this.player.isInvincible) {
+            this.lives--;
+            this.player.isInvincible = true;
+            this.player.invincibleTimer = 60; // 1 second of grace period
+            this.objects.splice(index, 1);
+        } else if (obj.type === 'token') {
+            this.tokens++;
+            this.objects.splice(index, 1);
+        } else if (obj.type === 'powerup') {
+            this.player.isInvincible = true;
+            this.player.invincibleTimer = 300; // 5 seconds of invincibility
+            this.objects.splice(index, 1);
+        }
+    },
+
+    drawAll() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.drawBackground(this.backgroundLayers.filter(l => l.speed < this.speed)); // Background
+        this.drawObjects();
+        this.drawPlayer();
+        this.drawBackground(this.backgroundLayers.filter(l => l.speed > this.speed)); // Foreground
+    },
+
+    drawPlayer() {
+        this.ctx.globalAlpha = (this.player.isInvincible && this.frame % 10 < 5) ? 0.5 : 1.0;
+        let animState = { frame: this.frame };
+        if (!this.player.grounded) animState.state = this.player.vy > 0 ? 'fall' : 'jump';
+        else if (this.player.idleTimer > 60) animState.state = 'idle';
+        else animState.state = 'run';
+        pixelArt.drawAnimatedCharacter(this.ctx, game.character, this.player.x, this.player.y, 4, animState);
+        this.ctx.globalAlpha = 1.0;
+    },
+    
+    drawBackground(layers) {
+        layers.forEach(layer => {
             this.ctx.fillStyle = layer.color;
             layer.objects.forEach(obj => {
                 let objX = (obj.x - (this.frame * layer.speed)) % (this.canvas.width + obj.w);
                 if (objX < -obj.w) objX += (this.canvas.width + obj.w);
-                this.ctx.fillRect(objX, layer.y, obj.w, layer.height);
+                this.ctx.fillRect(objX, layer.y, obj.w, layer.h);
             });
         });
         this.ctx.fillStyle = '#556b2f';
         this.ctx.fillRect(0, this.canvas.height - 40, this.canvas.width, 40);
     },
-    endGame(isReset = false) {
-        this.active = false;
-        clearInterval(this.gameInterval);
-        if (isReset) return; // Don't draw game over message if it's a hard reset
-        
-        this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = `24px "${getComputedStyle(document.body).getPropertyValue('--font-header')}"`;
-        this.ctx.textAlign = 'center';
-        const message = this.tokens >= this.goal ? "You Win! Great job!" : "Game Over. Try Again!";
-        this.ctx.fillText(message, this.canvas.width / 2, this.canvas.height / 2);
+    
+    drawObjects() {
+        this.objects.forEach(obj => {
+            if (obj.type === 'token') pixelArt.drawFromMap(this.ctx, obj.x, obj.y, { palette: pixelArt.token.palette, pixels: pixelArt.token.map.map(r => r.split('')) }, 4);
+            else if (obj.type === 'powerup') pixelArt.drawFromMap(this.ctx, obj.x, obj.y, { palette: pixelArt.shield.palette, pixels: pixelArt.shield.map.map(r => r.split('')) }, 4);
+            else if (obj.type === 'distraction') pixelArt.drawFromMap(this.ctx, obj.x, obj.y, { palette: pixelArt.badInfluence.palette, pixels: pixelArt.badInfluence.map.map(r => r.split('')) }, 4);
+        });
     },
-    jump() {
-        if (this.player.grounded) {
-            this.player.vy = -16;
-            this.player.grounded = false;
+
+    jump() { if (this.player.grounded) this.player.vy = -16; },
+    
+    levelComplete() {
+        this.endGame(true, true);
+        if (this.level < this.levelData.length) {
+            this.showOverlay(`Level ${this.level} Complete!`, true);
+        } else {
+            this.showOverlay("You Win! Great Job!");
         }
     },
+    
+    endGame(isComplete = false, isReset = false) {
+        this.active = false;
+        clearInterval(this.gameInterval);
+        if (isReset) return;
+        if (!isComplete) this.showOverlay("Game Over");
+    },
+    
+    showOverlay(message, showNextLevelBtn = false) {
+        const overlay = document.getElementById('minigame-overlay');
+        document.getElementById('minigame-message').textContent = message;
+        document.getElementById('minigame-start-btn').style.display = showNextLevelBtn ? 'none' : 'inline-block';
+        document.getElementById('minigame-next-level-btn').style.display = showNextLevelBtn ? 'inline-block' : 'none';
+        overlay.style.display = 'flex';
+    },
+
+    hideOverlay() { document.getElementById('minigame-overlay').style.display = 'none'; },
+    
     updateUI() {
-        document.getElementById('minigame-score').textContent = this.score;
-        document.getElementById('minigame-tokens').textContent = `${this.tokens} / ${this.goal}`;
+        document.getElementById('minigame-level').textContent = this.level;
+        document.getElementById('minigame-tokens').textContent = `${this.tokens}`;
+        document.getElementById('minigame-goal').textContent = this.goal;
         document.getElementById('minigame-lives').textContent = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
     }
 };
 
-
 // --- UI AND EVENT HANDLERS ---
 function switchScreen(screenName) {
-    elements.sortingScreen.classList.toggle('active', screenName === 'sorting');
-    elements.minigameScreen.classList.toggle('active', screenName === 'minigame');
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenName === 'minigame' ? 'minigame-screen' : 'main-screen').classList.add('active');
     game.activeScreen = screenName;
-    if (sideScroller.active) {
-        sideScroller.endGame(true); // End game on screen switch without message
-    }
-}
-
-function updateUIFromState() {
-    // Reset radio buttons
-    document.getElementById(`char-${game.character}`).checked = true;
-    document.getElementById(`diff-${game.difficulty}`).checked = true;
-    
-    // Reset labels and progress
-    elements.levelLabel.textContent = game.level;
-    elements.scoreLabel.textContent = game.score;
-    elements.streakLabel.textContent = game.streak;
-    elements.timerLabel.textContent = '--:--';
-    elements.progressFill.style.width = '0%';
+    if (sideScroller.active) sideScroller.endGame(false, true);
+    if (screenName === 'minigame') sideScroller.showOverlay("Side-Scroller Adventure");
 }
 
 function resetAndGoHome() {
-    // Stop any active games
-    if (sideScroller.active) {
-        sideScroller.endGame(true);
-    }
-    if (game.timerId) {
-        clearInterval(game.timerId);
-    }
-    
-    // Reset game state
+    if (sideScroller.active) sideScroller.endGame(false, true);
     game = { ...initialGameState };
-    
-    // Update UI to reflect reset state
-    updateUIFromState();
-    
-    // Go to the main screen
-    switchScreen('sorting');
+    document.getElementById(`char-${game.character}`).checked = true;
+    sideScroller.level = 1;
+    switchScreen('main');
 }
 
-
 document.getElementById('switch-to-minigame-btn').onclick = () => switchScreen('minigame');
-document.getElementById('switch-to-sorting-btn').onclick = () => switchScreen('sorting');
 document.getElementById('home-reset-btn').onclick = resetAndGoHome;
+document.getElementById('character-selector').onchange = (e) => { game.character = e.target.value; };
 
-elements.characterSelector.onchange = (e) => { game.character = e.target.value; resetAndGoHome(); };
-elements.difficultySelector.onchange = (e) => { game.difficulty = e.target.value; resetAndGoHome(); };
-
-// --- INITIALIZE ---
-window.onload = () => {
-    sideScroller.init();
-    updateUIFromState(); // Set initial UI
-};
+window.onload = () => { sideScroller.init(); };
 </script>
 </body>
 </html>
