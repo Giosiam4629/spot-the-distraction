@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spot the Distraction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    #modeSelect {
+      margin-bottom: 20px;
+    }
+    .card {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 12px;
+      margin: 10px;
+      width: 250px;
+      cursor: move;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: transform 0.3s, opacity 0.5s;
+    }
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .dropzone {
+      border: 2px dashed #999;
+      min-height: 150px;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    .dropzone.over {
+      background-color: #e0f7fa;
+    }
+    .container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+    .feedback {
+      margin-top: 15px;
+      font-weight: bold;
+      height: 2em;
+    }
+    #scoreBoard {
+      margin: 10px;
+      font-size: 1.2em;
+      color: #444;
+    }
+    #scripturePopup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border: 2px solid #666;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: none;
+      max-width: 80%;
+    }
+    #scripturePopup button {
+      margin-top: 10px;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Spot the Distraction</h1>
+
+  <div id="modeSelect">
+    <label><input type="radio" name="mode" value="cello" checked> Cello (7‑year‑old) </label>
+    <label><input type="radio" name="mode" value="fina"> Fina (11‑year‑old) </label>
+  </div>
+
+  <div id="scoreBoard">Score: 0</div>
+
+  <div class="container">
+    <div>
+      <h2>Keeps Me Close to Jehovah</h2>
+      <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+    </div>
+    <div>
+      <h2>Could Be a Distraction</h2>
+      <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+    </div>
+  </div>
+
+  <h3>Activities</h3>
+  <div id="cards" class="container"></div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div id="scripturePopup">
+    <div id="scriptureText"></div>
+    <button onclick="closeScripture()">OK</button>
+  </div>
+
+  <script>
+    // Scripture verses (New World Translation) from jw.org
+    const scriptures = {
+      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9 (NWT)` + 
+                         `\n\nThese words show us that Jehovah does not tolerate rivals in our devotion; He wants our love, loyalty, and worship to belong to Him alone.` , 
+      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10 (NWT)` + 
+                      `\n\nJesus showed by His example that our worship belongs to Jehovah alone, not to anything or anyone else.`
+    };
+
+    let mode = 'cello';  // default
+    let score = 0;
+
+    const activitiesByMode = {
+      cello: [
+        { text: "Praying before bedtime", correct: "closer" },
+        { text: "Playing video games all evening", correct: "distraction" },
+        { text: "Helping clean up toys", correct: "closer" },
+        { text: "Watching things that scare me", correct: "distraction" }
+      ],
+      fina: [
+        { text: "Praying before bedtime", correct: "closer" },
+        { text: "Spending hours on social media", correct: "distraction" },
+        { text: "Trying to be popular by doing things Jehovah wouldn’t like", correct: "distraction" },
+        { text: "Attending meetings even when friends say it’s silly", correct: "closer" },
+        { text: "Putting what others think above obeying Jehovah", correct: "distraction" },
+        { text: "Reading the Bible instead of gossip", correct: "closer" }
+      ]
+    };
+
+    function loadCards() {
+      const cardContainer = document.getElementById("cards");
+      cardContainer.innerHTML = "";
+      feedback.textContent = "";
+      score = 0;
+      updateScore();
+      const list = activitiesByMode[mode];
+      list.forEach((activity, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.id = "card" + index;
+        card.draggable = true;
+        card.textContent = activity.text;
+        card.setAttribute("data-correct", activity.correct);
+        card.ondragstart = drag;
+        // delay to animate entry
+        setTimeout(() => {
+          card.classList.add("visible");
+        }, 100 * index);
+        cardContainer.appendChild(card);
+      });
+    }
+
+    document.getElementsByName("mode").forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        mode = e.target.value;
+        loadCards();
+        // reset dropzones
+        document.getElementById("closer").innerHTML = "";
+        document.getElementById("distraction").innerHTML = "";
+      });
+    });
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+      if (ev.target.classList.contains('dropzone')) {
+        ev.target.classList.add('over');
+      }
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      ev.target.classList.remove('over');
+      const cardId = ev.dataTransfer.getData("text");
+      const card = document.getElementById(cardId);
+      // if drop target is inside card, adjust to the dropzone
+      let zone = ev.target;
+      // ensure zone is correct (if dropped on child etc.)
+      while (!zone.classList.contains('dropzone')) {
+        zone = zone.parentElement;
+        if (!zone) break;
+      }
+      if (!zone) return;
+      const zoneId = zone.id;
+      const correctZone = card.getAttribute("data-correct");
+      const feedbackEl = document.getElementById("feedback");
+
+      if (zoneId === correctZone) {
+        zone.appendChild(card);
+        card.setAttribute("draggable", false);
+        feedbackEl.textContent = "✅ Good job!";
+        feedbackEl.style.color = "green";
+        // animate correct: maybe scale up and down
+        card.style.transition = "transform 0.5s";
+        card.style.transform = "scale(1.1)";
+        setTimeout(() => { card.style.transform = "scale(1)"; }, 500);
+        score += 1;
+        updateScore();
+        maybeShowScripture();
+      } else {
+        feedbackEl.textContent = "❌ That might be a distraction. Try again!";
+        feedbackEl.style.color = "red";
+        // animate shake
+        card.style.transition = "transform 0.2s";
+        card.style.transform = "translateX(-10px)";
+        setTimeout(() => { card.style.transform = "translateX(10px)"; }, 200);
+        setTimeout(() => { card.style.transform = "translateX(0)"; }, 400);
+      }
+    }
+
+    function updateScore() {
+      document.getElementById("scoreBoard").textContent = `Score: ${score}`;
+    }
+
+    function maybeShowScripture() {
+      // Show scripture every 2 correct answers
+      if (score > 0 && score % 2 === 0) {
+        // choose which scripture based on mode or content
+        let which;
+        if (mode === 'fina') {
+          which = scriptures.worshipJehovah;
+        } else {
+          which = scriptures.exclusiveDevotion;
+        }
+        showScripture(which);
+      }
+    }
+
+    function showScripture(text) {
+      const box = document.getElementById("scripturePopup");
+      document.getElementById("scriptureText").textContent = text;
+      box.style.display = "block";
+    }
+
+    function closeScripture() {
+      document.getElementById("scripturePopup").style.display = "none";
+    }
+
+    const feedback = document.getElementById("feedback");
+
+    // Initial load
+    loadCards();
+  </script>
+
+</body>
+</html>
