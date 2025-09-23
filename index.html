@@ -2,305 +2,534 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spot the Distraction — Fun Color Version</title>
-  <!-- Google Font -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spot the Distraction — Deluxe Edition</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap">
   <style>
+    :root {
+      --primary-blue: #1e88e5;
+      --light-blue: #bbdefb;
+      --dark-blue: #0d47a1;
+      --accent-green: #4caf50;
+      --light-green: #c8e6c9;
+      --accent-red: #f44336;
+      --light-red: #ffcdd2;
+      --accent-orange: #ff9800;
+      --accent-yellow: #ffeb3b;
+      --bg-color: #e3f2fd;
+      --font-header: 'Fredoka One', cursive;
+      --font-body: 'Comic Neue', sans-serif;
+    }
+
+    /* General Styles */
     body {
-      font-family: 'Comic Neue', sans-serif;
-      background-color: #f2f9ff;
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
       margin: 0;
       padding: 20px;
       text-align: center;
+      color: #333;
+      overflow-x: hidden;
     }
-    h1 {
-      color: #1a237e;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-      font-size: 2.5rem;
+
+    h1, h2, h3 {
+      font-family: var(--font-header);
+      color: var(--dark-blue);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
-    #modeSelect, #levelSelect {
-      margin: 15px;
+    h1 { font-size: 3rem; margin-bottom: 0;}
+    h2 { font-size: 1.8rem; }
+    h3 { font-size: 1.5rem; }
+
+    button, .btn {
+      font-family: var(--font-header);
+      padding: 12px 24px;
       font-size: 1.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      background-color: var(--accent-orange);
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    button:hover, .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    button:active, .btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Game Screens & Layout */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .screen.active {
+      display: flex;
+    }
+
+    /* Start Screen */
+    #startScreen h2 {
+      font-size: 2rem;
+      color: var(--primary-blue);
+    }
+    .game-options {
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+    .game-options label {
+        font-size: 1.2rem;
+        margin: 0 10px;
+        font-weight: 700;
+    }
+    #startGameBtn { background-color: var(--accent-green); }
+
+    /* Main Game Area */
+    #gameHeader {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+        max-width: 800px;
+        flex-wrap: wrap;
     }
     #scoreBoard {
-      margin: 15px;
-      font-size: 1.5rem;
-      color: #0d47a1;
+      font-size: 1.8rem;
+      font-family: var(--font-header);
+      color: var(--primary-blue);
+      background-color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
     }
+    #score-animation {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 2rem;
+        color: var(--accent-green);
+        opacity: 0;
+        transition: all 0.5s ease;
+    }
+
     .container {
       display: flex;
       justify-content: space-around;
       flex-wrap: wrap;
+      width: 100%;
+      gap: 20px;
+    }
+
+    .dropzone {
+      border: 4px dashed #bdbdbd;
+      min-height: 200px;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 20px;
+      transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+      flex: 1;
+      min-width: 300px;
+    }
+    #closer { background-color: var(--light-green); border-color: var(--accent-green); }
+    #distraction { background-color: var(--light-red); border-color: var(--accent-red); }
+    #closer h2 { color: var(--accent-green); }
+    #distraction h2 { color: var(--accent-red); }
+    .dropzone.over {
+      transform: scale(1.05);
+      border-color: var(--accent-orange);
+      background-color: #fffde7;
+    }
+
+    /* Cards */
+    #cards {
+      min-height: 150px;
     }
     .card {
       background-color: #ffffff;
-      border: 3px solid #90caf9;
-      padding: 12px;
+      border: 3px solid var(--primary-blue);
+      padding: 15px;
       margin: 10px;
-      width: 260px;
-      cursor: move;
-      border-radius: 12px;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: transform 0.4s, opacity 0.6s, background-color 0.3s;
+      width: 280px;
+      cursor: grab;
+      border-radius: 15px;
       display: flex;
       align-items: center;
       justify-content: left;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: scale(0.5) rotate(-15deg);
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     }
     .card.visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1) rotate(0deg);
     }
-    .emoji {
-      font-size: 2.5rem;
-      margin-right: 12px;
+    .card:hover {
+        transform: scale(1.05) rotate(2deg) !important;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
     }
-    .dropzone {
-      border: 3px dashed #bdbdbd;
-      min-height: 160px;
-      padding: 20px;
-      margin: 20px;
-      border-radius: 12px;
-      transition: background-color 0.3s, border-color 0.3s;
-      background-color: #e3f2fd;
+    .card.correct-drop {
+        animation: sparkle 0.7s ease-out;
     }
-    .dropzone#closer {
-      background-color: #c8e6c9; /* light greenish */
+    @keyframes sparkle {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1) rotate(5deg); box-shadow: 0 0 20px var(--accent-yellow); }
     }
-    .dropzone#distraction {
-      background-color: #ffcdd2; /* light reddish/pink */
+    .card.incorrect-drop {
+        animation: shake 0.5s;
     }
-    .dropzone.over {
-      border-color: #ff9800;
-      background-color: #fff9c4;
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px) rotate(-3deg); }
+        75% { transform: translateX(10px) rotate(3deg); }
     }
-    .feedback {
-      margin-top: 15px;
-      height: 2em;
-      font-size: 1.2rem;
+    .emoji { font-size: 3rem; margin-right: 15px; }
+
+    /* Popups and Modals */
+    .popup-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
     }
-    #scripturePopup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #ffffff;
-      padding: 25px;
-      border: 4px solid #1a237e;
-      border-radius: 15px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-      display: none;
-      max-width: 80%;
-      z-index: 1000;
-      font-size: 1.1rem;
-      color: #212121;
+    .popup-overlay.show { display: flex; }
+    .popup-content {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        max-width: 90%;
+        width: 500px;
+        animation: popup-appear 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     }
-    #scripturePopup button {
-      margin-top: 15px;
-      padding: 8px 16px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background-color: #1a237e;
-      color: white;
-      cursor: pointer;
+    @keyframes popup-appear {
+        from { transform: scale(0.7); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
     }
-    #scripturePopup button:hover {
-      background-color: #303f9f;
+
+    #scriptureText {
+      font-size: 1.3rem;
+      color: #333;
+      line-height: 1.6;
     }
-    #nextLevelBtn {
-      margin-top: 25px;
-      padding: 12px 24px;
-      font-size: 1.2rem;
-      background-color: #42a5f5;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      display: none;
-    }
-    #nextLevelBtn:hover {
-      background-color: #1e88e5;
+
+    /* Minigame Styles */
+    #minigameContainer {
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     canvas#minigameCanvas {
-      border: 3px solid #1a237e;
-      background-color: #bbdefb;
+      border: 4px solid var(--dark-blue);
+      background-color: var(--light-blue);
       margin-top: 25px;
       border-radius: 10px;
+      width: 100%;
+      max-width: 640px;
+      height: auto;
     }
-    #minigameControls button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 1.1rem;
-      background-color: #ffb74d;
-      color: #212121;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+
+    /* Settings Modal */
+    #settingsModal .settings-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+        font-size: 1.2rem;
     }
-    #minigameControls button:hover {
-      background-color: #ff9800;
+
+    /* Memory Game */
+    #memoryGameGrid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        max-width: 600px;
+        margin: 20px auto;
     }
+    .memory-card {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background-color: var(--primary-blue);
+        border-radius: 10px;
+        cursor: pointer;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+    }
+    .memory-card.is-flipped {
+        transform: rotateY(180deg);
+    }
+    .memory-card.is-matched {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 5px;
+        box-sizing: border-box;
+        border-radius: 10px;
+        font-size: 1.8rem;
+    }
+    .card-front {
+        background: white;
+        border: 3px solid var(--primary-blue);
+        transform: rotateY(180deg);
+    }
+    .card-front .emoji { font-size: 2.5rem; margin: 0; }
+    .card-front .text { font-size: 0.7rem; margin-top: 5px; text-align: center; }
+    .card-back {
+        background: linear-gradient(135deg, var(--accent-orange), #ffc107);
+        color: white;
+        font-size: 3rem;
+    }
+
   </style>
 </head>
 <body>
 
   <h1>🌟 Spot the Distraction 🌟</h1>
 
-  <div id="modeSelect">
-    <label><input type="radio" name="mode" value="cello" checked> Cello (7‑yr) </label>
-    <label><input type="radio" name="mode" value="fina"> Fina (11‑yr) </label>
-  </div>
-
-  <div id="levelSelect">
-    Level: <span id="levelLabel">1</span> / 3
-  </div>
-
-  <div id="scoreBoard">Score: 0</div>
-
-  <div class="container">
-    <div>
-      <h2 style="color: #2e7d32;">Keeps Me Close to Jehovah</h2>
-      <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
-    </div>
-    <div>
-      <h2 style="color: #c62828;">Could Be a Distraction</h2>
-      <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
+  <div id="startScreen" class="screen active">
+    <div class="game-options">
+      <h2>Choose Your Age Group</h2>
+      <div>
+        <label><input type="radio" name="mode" value="cello" checked> Younger (approx. 7) </label>
+        <label><input type="radio" name="mode" value="fina"> Older (approx. 11) </label>
+      </div>
+      <br>
+      <button id="startGameBtn">Start Sorting Game!</button>
+      <button id="startMemoryBtn" style="background-color:#9c27b0;">Start Memory Game!</button>
     </div>
   </div>
 
-  <h3>Activities</h3>
-  <div id="cards" class="container"></div>
+  <div id="mainGameScreen" class="screen">
+    <div id="gameHeader">
+      <button id="settingsBtn" style="background-color:#78909c;">⚙️ Settings</button>
+      <div id="levelSelect"><h2>Level: <span id="levelLabel">1</span></h2></div>
+      <div id="scoreBoard">Score: 0<span id="score-animation"></span></div>
+    </div>
 
-  <div class="feedback" id="feedback"></div>
+    <div class="container">
+      <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h2>Keeps Me Close to Jehovah</h2>
+      </div>
+      <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h2>Could Be a Distraction</h2>
+      </div>
+    </div>
 
-  <button id="nextLevelBtn" onclick="goToNextLevel()">Go to Next Level</button>
-
-  <div id="scripturePopup">
-    <div id="scriptureText"></div>
-    <button onclick="closeScripture()">OK</button>
+    <h3>Drag the Activities Below</h3>
+    <div id="cards" class="container"></div>
+    <div class="feedback" id="feedback"></div>
+    <button id="nextLevelBtn" style="display: none;">Go to Next Level</button>
   </div>
 
-  <canvas id="minigameCanvas" width="320" height="160"></canvas>
-  <div id="minigameControls">
-    <button onclick="startMinigame()">Start Mini‑Run</button>
+  <div id="memoryGameScreen" class="screen">
+      <h2>Memory Verse Match</h2>
+      <div id="memoryGameStats">Moves: 0 | Matches: 0</div>
+      <div id="memoryGameGrid"></div>
+      <button onclick="showScreen('startScreen')">Back to Menu</button>
+  </div>
+
+  <div id="minigameScreen" class="screen">
+    <h2>Jehovah's Witness Run!</h2>
+    <p>Jump over distractions and collect good things! (Use Spacebar or Tap)</p>
+    <div id="minigameContainer">
+        <canvas id="minigameCanvas" width="640" height="320"></canvas>
+    </div>
+    <button onclick="sideScroller.start()">Start Mini-Run</button>
+    <button onclick="showScreen('mainGameScreen')" style="background-color:#78909c;">Back to Sorting</button>
+  </div>
+
+  <div id="scripturePopup" class="popup-overlay">
+    <div class="popup-content">
+      <div id="scriptureText"></div><br>
+      <button onclick="closePopup('scripturePopup')">OK</button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="popup-overlay">
+      <div class="popup-content">
+          <h2>Settings</h2>
+          <div class="settings-row">
+              <label for="cardsPerLevel">Cards Per Level:</label>
+              <select id="cardsPerLevel">
+                  <option value="4">4</option>
+                  <option value="6">6</option>
+                  <option value="8">8</option>
+              </select>
+          </div>
+          <button onclick="saveSettings()">Save & Restart</button>
+      </div>
   </div>
 
   <script>
-    // Scriptures
-    const scriptures = {
-      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9 (NWT)`,
-      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10 (NWT)`
+    // --- GAME STATE & CONFIG ---
+    const game = {
+      mode: 'cello',
+      level: 1,
+      score: 0,
+      cardsPerLevel: 6,
+      currentScreen: 'startScreen'
     };
 
-    let mode = 'cello';
-    let level = 1;
-    let score = 0;
+    const scriptures = {
+      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9`,
+      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10`,
+      watchHowYouWalk: `"So keep strict watch on how you walk, not as unwise but as wise persons, making the best use of your time." — Ephesians 5:15, 16`,
+      thinkOnTheseThings: `"Whatever things are true, . . . righteous, . . . lovable, . . . praiseworthy, continue considering these things." — Philippians 4:8`,
+      safeguardHeart: `"Above all the things that you guard, safeguard your heart, for out of it are the sources of life." — Proverbs 4:23`
+    };
 
-    const activitiesByLevel = {
-      1: {
-        cello: [
-          { emoji: '🙏', text: "Praying before bedtime", correct: "closer" },
-          { emoji: '🎮', text: "Playing video games all evening", correct: "distraction" },
-          { emoji: '🧹', text: "Helping clean up toys", correct: "closer" },
-          { emoji: '📺', text: "Watching TV past bedtime", correct: "distraction" }
+    const allActivities = {
+      cello: {
+        closer: [
+          { emoji: '🙏', text: "Praying before bedtime" }, { emoji: '🧹', text: "Helping clean up toys" },
+          { emoji: '📖', text: "Reading a Bible story" }, { emoji: '🔇', text: "Listening quietly when asked" },
+          { emoji: '🤗', text: "Sharing my toys" }, { emoji: '❤️', text: "Drawing a picture for someone sad" },
+          { emoji: '🎶', text: "Singing Kingdom songs" }, { emoji: '👨‍👩‍👧‍👦', text: "Enjoying family worship" }
         ],
-        fina: [
-          { emoji: '🙏', text: "Praying before bedtime", correct: "closer" },
-          { emoji: '🎮', text: "Spending hours on social media", correct: "distraction" },
-          { emoji: '🧹', text: "Helping with chores", correct: "closer" },
-          { emoji: '📺', text: "Watching TV past bedtime", correct: "distraction" }
+        distraction: [
+          { emoji: '🎮', text: "Playing video games all evening" }, { emoji: '📺', text: "Watching TV past bedtime" },
+          { emoji: '📱', text: "Looking at a phone nonstop" }, { emoji: '😠', text: "Arguing with my brother or sister" },
+          { emoji: '😫', text: "Complaining about chores" }, { emoji: '🍬', text: "Eating snacks instead of dinner" },
+          { emoji: '🤫', text: "Keeping secrets from Mom and Dad" }, { emoji: '😴', text: "Being too tired for the meeting" }
         ]
       },
-      2: {
-        cello: [
-          { emoji: '📖', text: "Reading Bible story", correct: "closer" },
-          { emoji: '🏃‍♂️', text: "Running around outside", correct: "closer" },
-          { emoji: '📱', text: "Looking at phone nonstop", correct: "distraction" },
-          { emoji: '🛏️', text: "Skipping sleep to play", correct: "distraction" },
-          { emoji: '🔇', text: "Listening quietly when asked", correct: "closer" }
+      fina: {
+        closer: [
+          { emoji: '🙏', text: "Personal prayer about my day" }, { emoji: '🤝', text: "Helping a friend who is struggling" },
+          { emoji: '📖', text: "Personal Bible reading" }, { emoji: '📝', text: "Preparing for the meeting" },
+          { emoji: '😇', text: "Choosing good friends" }, { emoji: '🗣️', text: "Talking about Jehovah at school" },
+          { emoji: '💪', text: "Resisting peer pressure" }, { emoji: '😊', text: "Being encouraging to others" }
         ],
-        fina: [
-          { emoji: '📖', text: "Reading Bible instead of gossip", correct: "closer" },
-          { emoji: '🏃‍♂️', text: "Helping friends feel included", correct: "closer" },
-          { emoji: '📱', text: "Trying to impress friends online", correct: "distraction" },
-          { emoji: '🛏️', text: "Putting fun before responsibility", correct: "distraction" },
-          { emoji: '📺', text: "Watching something that makes you afraid", correct: "distraction" }
-        ]
-      },
-      3: {
-        cello: [
-          { emoji: '⏰', text: "Waking early to help", correct: "closer" },
-          { emoji: '🧵', text: "Making something creative", correct: "closer" },
-          { emoji: '💸', text: "Wanting expensive things all the time", correct: "distraction" },
-          { emoji: '📚', text: "Studying hard", correct: "closer" },
-          { emoji: '🎵', text: "Playing loud music late", correct: "distraction" },
-          { emoji: '👥', text: "Following peer pressure", correct: "distraction" }
-        ],
-        fina: [
-          { emoji: '⏰', text: "Waking early to help", correct: "closer" },
-          { emoji: '🧵', text: "Creating art or crafts", correct: "closer" },
-          { emoji: '💸', text: "Comparing possessions with others", correct: "distraction" },
-          { emoji: '📚', text: "Studying hard for good reasons", correct: "closer" },
-          { emoji: '🎵', text: "Listening to music that distracts from worship", correct: "distraction" },
-          { emoji: '👥', text: "Doing what friends want instead of what Jehovah wants", correct: "distraction" }
+        distraction: [
+          { emoji: '📱', text: "Spending hours on social media" }, { emoji: ' gossip', text: "Gossiping about friends" },
+          { emoji: '👻', text: "Watching scary or violent movies" }, { emoji: '🤔', text: "Worrying too much about what others think" },
+          { emoji: '💸', text: "Wanting the latest, most expensive things" }, { emoji: '🎵', text: "Music with bad words or ideas" },
+          { emoji: '😒', text: "Being jealous of others" }, { emoji: '⏳', text: "Putting off responsibilities" }
         ]
       }
     };
 
-    function updateScore() {
-      document.getElementById("scoreBoard").textContent = `Score: ${score}`;
+    // --- UI & DOM MANIPULATION ---
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        game.currentScreen = screenId;
+    }
+
+    function updateScore(points) {
+        game.score += points;
+        document.querySelector("#scoreBoard").innerHTML = `Score: ${game.score}<span id="score-animation">+${points}</span>`;
+        const scoreAnim = document.getElementById('score-animation');
+        setTimeout(() => {
+            scoreAnim.style.transform = 'translate(-50%, -30px)';
+            scoreAnim.style.opacity = '1';
+        }, 10);
+        setTimeout(() => {
+            scoreAnim.style.opacity = '0';
+        }, 500);
+    }
+
+    function showPopup(popupId) {
+        document.getElementById(popupId).classList.add('show');
+    }
+    function closePopup(popupId) {
+        document.getElementById(popupId).classList.remove('show');
+    }
+
+    function saveSettings() {
+        game.cardsPerLevel = parseInt(document.getElementById('cardsPerLevel').value);
+        closePopup('settingsModal');
+        restartMainGame();
+    }
+
+    function restartMainGame() {
+        game.level = 1;
+        game.score = 0;
+        updateScore(0);
+        loadCards();
+    }
+    
+    // --- MAIN DRAG & DROP GAME LOGIC ---
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
     }
 
     function loadCards() {
-      document.getElementById("levelLabel").textContent = level;
+      document.getElementById("levelLabel").textContent = game.level;
       const cardContainer = document.getElementById("cards");
       cardContainer.innerHTML = "";
-      document.getElementById("feedback").textContent = "";
+      clearDropzones();
       document.getElementById("nextLevelBtn").style.display = "none";
-      score = 0;
-      updateScore();
-      const list = activitiesByLevel[level][mode];
-      list.forEach((activity, idx) => {
+
+      let closerItems = [...allActivities[game.mode].closer];
+      let distractionItems = [...allActivities[game.mode].distraction];
+      shuffleArray(closerItems);
+      shuffleArray(distractionItems);
+
+      const numEach = game.cardsPerLevel / 2;
+      const levelActivities = [];
+      closerItems.slice(0, numEach).forEach(item => levelActivities.push({...item, correct: 'closer'}));
+      distractionItems.slice(0, numEach).forEach(item => levelActivities.push({...item, correct: 'distraction'}));
+      shuffleArray(levelActivities);
+
+      game.totalCards = levelActivities.length;
+
+      levelActivities.forEach((activity, idx) => {
         const card = document.createElement("div");
         card.className = "card";
         card.id = `card${idx}`;
         card.draggable = true;
-
-        const spanEmoji = document.createElement("span");
-        spanEmoji.className = "emoji";
-        spanEmoji.textContent = activity.emoji;
-        card.appendChild(spanEmoji);
-
-        const spanText = document.createElement("span");
-        spanText.textContent = activity.text;
-        card.appendChild(spanText);
-
+        card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`;
         card.setAttribute("data-correct", activity.correct);
         card.ondragstart = drag;
-        setTimeout(() => {
-          card.classList.add("visible");
-        }, 120 * idx);
-        document.getElementById("cards").appendChild(card);
+        cardContainer.appendChild(card);
+        setTimeout(() => card.classList.add("visible"), 100 * idx);
       });
     }
-
-    document.getElementsByName("mode").forEach(radio => {
-      radio.addEventListener("change", (e) => {
-        mode = e.target.value;
-        level = 1;
-        loadCards();
-        clearDropzones();
-      });
-    });
 
     function allowDrop(ev) {
       ev.preventDefault();
       if (ev.target.classList.contains('dropzone')) {
         ev.target.classList.add('over');
       }
+    }
+    document.ondragleave = (ev) => {
+        if (ev.target.classList.contains('dropzone')) {
+            ev.target.classList.remove('over');
+        }
     }
 
     function drag(ev) {
@@ -309,167 +538,301 @@
 
     function drop(ev) {
       ev.preventDefault();
-      ev.target.classList.remove('over');
       let zone = ev.target;
-      while (!zone.classList.contains('dropzone')) {
-        zone = zone.parentElement;
-        if (!zone) break;
-      }
-      if (!zone) return;
+      while (!zone.classList.contains('dropzone')) zone = zone.parentElement;
+      zone.classList.remove('over');
+      
       const cardId = ev.dataTransfer.getData("text");
       const card = document.getElementById(cardId);
-      const zoneId = zone.id;
-      const correctZone = card.getAttribute("data-correct");
-      const feedbackEl = document.getElementById("feedback");
+      const isCorrect = zone.id === card.getAttribute("data-correct");
 
-      if (zoneId === correctZone) {
+      if (isCorrect) {
         zone.appendChild(card);
         card.setAttribute("draggable", false);
-        feedbackEl.textContent = "✅ Good job!";
-        feedbackEl.style.color = "#2e7d32";
-        card.style.transition = "transform 0.5s";
-        card.style.transform = "scale(1.1)";
-        setTimeout(() => { card.style.transform = "scale(1)"; }, 500);
-        score += 1;
-        updateScore();
+        card.classList.add('correct-drop');
+        updateScore(10);
         maybeShowScripture();
         checkLevelComplete();
       } else {
-        feedbackEl.textContent = "❌ That might be a distraction. Try again!";
-        feedbackEl.style.color = "#c62828";
-        card.style.transition = "transform 0.2s";
-        card.style.transform = "translateX(-10px)";
-        setTimeout(() => { card.style.transform = "translateX(10px)"; }, 200);
-        setTimeout(() => { card.style.transform = "translateX(0)"; }, 400);
+        card.classList.add('incorrect-drop');
+        setTimeout(() => card.classList.remove('incorrect-drop'), 500);
       }
     }
 
     function clearDropzones() {
-      document.getElementById("closer").innerHTML = "";
-      document.getElementById("distraction").innerHTML = "";
+        const zones = document.querySelectorAll(".dropzone");
+        zones.forEach(zone => {
+            const h2 = zone.querySelector('h2');
+            zone.innerHTML = '';
+            zone.appendChild(h2);
+        });
     }
 
     function checkLevelComplete() {
-      const total = activitiesByLevel[level][mode].length;
-      if (score === total) {
-        document.getElementById("feedback").textContent = `🎉 Level ${level} complete!`;
-        document.getElementById("nextLevelBtn").style.display = level < 3 ? "inline-block" : "none";
+      const placedCards = document.querySelectorAll('.dropzone .card').length;
+      if (placedCards === game.totalCards) {
+        document.getElementById("feedback").textContent = `🎉 Level ${game.level} complete!`;
+        if (game.level < 3) {
+            document.getElementById("nextLevelBtn").style.display = "inline-block";
+        } else {
+            showScreen('minigameScreen'); // Go to minigame after final level
+        }
       }
     }
 
     function goToNextLevel() {
-      if (level < 3) {
-        level++;
-        clearDropzones();
+      if (game.level < 3) {
+        game.level++;
         loadCards();
       }
     }
 
-    // Scripture popups
     function maybeShowScripture() {
-      if (score > 0 && score % 2 === 0) {
-        let which = (mode === 'fina') ? scriptures.worshipJehovah : scriptures.exclusiveDevotion;
-        showScripture(which);
-      }
-    }
-
-    function showScripture(text) {
-      const box = document.getElementById("scripturePopup");
-      document.getElementById("scriptureText").textContent = text;
-      box.style.display = "block";
-    }
-
-    function closeScripture() {
-      document.getElementById("scripturePopup").style.display = "none";
-    }
-
-    // Simple minigame
-    const canvas = document.getElementById("minigameCanvas");
-    const ctx = canvas.getContext("2d");
-    let runnerX = 20, runnerY = canvas.height - 30;
-    let obstacles = [];
-    let token = null;
-    let minigameInterval, obstacleInterval;
-    let minigameActive = false;
-
-    function startMinigame() {
-      if (minigameActive) return;
-      minigameActive = true;
-      runnerX = 20;
-      obstacles = [];
-      token = { x: canvas.width, y: canvas.height - 60, width: 20, height: 20 };
-      document.addEventListener('keydown', handleKeyDown);
-      minigameInterval = setInterval(updateMinigame, 30);
-      obstacleInterval = setInterval(() => {
-        obstacles.push({ x: canvas.width, y: canvas.height - 30, width: 20, height: 20 });
-      }, 1500);
-    }
-
-    function handleKeyDown(e) {
-      if (e.key === 'ArrowUp' || e.key === ' ') {
-        runnerY = canvas.height - 80;
-        setTimeout(() => { runnerY = canvas.height - 30; }, 400);
-      }
-    }
-
-    function collision(x1, y1, w1, h1, x2, y2, w2, h2) {
-      return x1 < x2 + w2 &&
-             x1 + w1 > x2 &&
-             y1 < y2 + h2 &&
-             y1 + h1 > y2;
-    }
-
-    function updateMinigame() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Optional: draw sky, ground
-      ctx.fillStyle = '#90caf9';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-
-      // draw runner
-      ctx.fillStyle = '#2e7d32';
-      ctx.fillRect(runnerX, runnerY, 20, 20);
-
-      // draw token
-      if (token) {
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(token.x, token.y, token.width, token.height);
-        token.x -= 4;
-        if (collision(runnerX, runnerY, 20, 20, token.x, token.y, token.width, token.height)) {
-          score += 5;
-          updateScore();
-          token = null;
-        } else if (token.x < -20) {
-          token = { x: canvas.width, y: canvas.height - 60, width: 20, height: 20 };
+        const placedCards = document.querySelectorAll('.dropzone .card').length;
+        if (placedCards % 2 === 0 && placedCards > 0) {
+            const scriptureKeys = Object.keys(scriptures);
+            const randomKey = scriptureKeys[Math.floor(Math.random() * scriptureKeys.length)];
+            document.getElementById("scriptureText").textContent = scriptures[randomKey];
+            showPopup('scripturePopup');
         }
-      }
+    }
+    
+    // --- SIDE SCROLLER MINIGAME ---
+    const sideScroller = {
+        canvas: document.getElementById("minigameCanvas"),
+        ctx: null,
+        player: { x: 50, y: 240, w: 30, h: 40, vy: 0, grounded: true, spriteFrame: 0 },
+        obstacles: [],
+        collectibles: [],
+        gravity: 0.8,
+        gameSpeed: 4,
+        score: 0,
+        frameCount: 0,
+        gameInterval: null,
+        active: false,
 
-      // obstacles
-      ctx.fillStyle = '#d32f2f';
-      obstacles.forEach((obs, i) => {
-        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-        obs.x -= 5;
-        if (collision(runnerX, runnerY, 20, 20, obs.x, obs.y, obs.width, obs.height)) {
-          endMinigame();
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.canvas.addEventListener('click', () => this.jump());
+            document.addEventListener('keydown', (e) => {
+                if ((e.code === 'Space' || e.key === 'ArrowUp') && this.active) this.jump();
+            });
+        },
+
+        start() {
+            if (this.active) return;
+            this.active = true;
+            this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
+            this.obstacles = []; this.collectibles = []; this.score = 0; this.frameCount = 0;
+            this.gameInterval = setInterval(() => this.update(), 1000 / 60);
+        },
+
+        stop() {
+            this.active = false;
+            clearInterval(this.gameInterval);
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = '40px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('Game Over!', this.canvas.width / 2, this.canvas.height / 2 - 20);
+            this.ctx.font = '20px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
+            this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 20);
+        },
+
+        jump() {
+            if (this.player.grounded) {
+                this.player.vy = -16;
+                this.player.grounded = false;
+            }
+        },
+
+        drawPlayer() {
+            // Simple animated character
+            this.ctx.fillStyle = '#ffb74d'; // Skin tone
+            this.ctx.fillRect(this.player.x, this.player.y, this.player.w, this.player.h); // Body
+            this.ctx.fillStyle = '#424242'; // Hair
+            this.ctx.fillRect(this.player.x, this.player.y, this.player.w, 10); // Hair
+            // Running animation
+            if (!this.player.grounded) { // Jumping pose
+                 this.ctx.fillStyle = '#42a5f5';
+                 this.ctx.fillRect(this.player.x + 5, this.player.y + 30, 20, 10);
+            } else if (this.frameCount % 20 < 10) { // Leg 1
+                 this.ctx.fillStyle = '#42a5f5';
+                 this.ctx.fillRect(this.player.x, this.player.y + 30, 15, 10);
+            } else { // Leg 2
+                 this.ctx.fillStyle = '#42a5f5';
+                 this.ctx.fillRect(this.player.x + 15, this.player.y + 30, 15, 10);
+            }
+        },
+
+        drawObjects(arr, type) {
+            arr.forEach(obj => {
+                this.ctx.font = '28px sans-serif';
+                this.ctx.fillText(obj.emoji, obj.x, obj.y);
+            });
+        },
+        
+        update() {
+            this.frameCount++;
+            // Clear canvas
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw Ground
+            this.ctx.fillStyle = '#66bb6a';
+            this.ctx.fillRect(0, 280, this.canvas.width, 40);
+
+            // Player physics
+            this.player.vy += this.gravity;
+            this.player.y += this.player.vy;
+            if (this.player.y >= 240) {
+                this.player.y = 240;
+                this.player.vy = 0;
+                this.player.grounded = true;
+            }
+            this.drawPlayer();
+
+            // Spawn objects
+            if (this.frameCount % 100 === 0) {
+                this.obstacles.push({ x: this.canvas.width, y: 280, w: 30, h: 30, emoji: ['📺', '🎮', '📱'][Math.floor(Math.random()*3)] });
+            }
+            if (this.frameCount % 157 === 0) {
+                 this.collectibles.push({ x: this.canvas.width, y: 220, w: 30, h: 30, emoji: ['📖', '🍎', '🍇'][Math.floor(Math.random()*3)] });
+            }
+
+            // Update & Draw Obstacles
+            this.obstacles.forEach((obs, index) => {
+                obs.x -= this.gameSpeed;
+                if (obs.x < -30) this.obstacles.splice(index, 1);
+                // Collision
+                if (this.player.x < obs.x + obs.w && this.player.x + this.player.w > obs.x &&
+                    this.player.y < obs.y + obs.h && this.player.y + this.player.h > obs.y) {
+                    this.stop();
+                }
+            });
+            this.drawObjects(this.obstacles, 'obstacle');
+
+            // Update & Draw Collectibles
+            this.collectibles.forEach((col, index) => {
+                col.x -= this.gameSpeed;
+                 if (col.x < -30) this.collectibles.splice(index, 1);
+                // Collision
+                if (this.player.x < col.x + col.w && this.player.x + this.player.w > col.x &&
+                    this.player.y < col.y + col.h && this.player.y + this.player.h > col.y) {
+                    this.collectibles.splice(index, 1);
+                    this.score += 10;
+                }
+            });
+            this.drawObjects(this.collectibles, 'collectible');
+            
+            // Draw Score
+            this.ctx.fillStyle = 'black';
+            this.ctx.font = '20px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(`Score: ${this.score}`, 10, 30);
         }
-      });
+    };
+    
+    // --- MEMORY MATCH GAME LOGIC ---
+    const memoryGame = {
+        grid: document.getElementById('memoryGameGrid'),
+        stats: document.getElementById('memoryGameStats'),
+        cards: [],
+        flippedCards: [],
+        moves: 0,
+        matches: 0,
+        totalMatches: 0,
 
-      obstacles = obstacles.filter(o => o.x + o.width > 0);
-    }
+        start() {
+            this.grid.innerHTML = '';
+            this.flippedCards = [];
+            this.moves = 0;
+            this.matches = 0;
+            this.totalMatches = game.cardsPerLevel;
+            this.updateStats();
 
-    function endMinigame() {
-      clearInterval(minigameInterval);
-      clearInterval(obstacleInterval);
-      minigameActive = false;
-      document.getElementById("feedback").textContent = "💥 Oops! You hit a distraction!";
-      if (level < 3) {
-        document.getElementById("nextLevelBtn").style.display = "inline-block";
-      }
-    }
+            let items = [...allActivities[game.mode].closer];
+            shuffleArray(items);
+            let gameItems = items.slice(0, this.totalMatches).map(item => ({...item, id: item.text}));
+            let cardPool = [...gameItems, ...gameItems]; // Duplicate for pairs
+            shuffleArray(cardPool);
+            
+            cardPool.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.id = item.id;
+                card.innerHTML = `
+                    <div class="card-face card-back">?</div>
+                    <div class="card-face card-front">
+                        <span class="emoji">${item.emoji}</span>
+                        <span class="text">${item.text}</span>
+                    </div>`;
+                card.addEventListener('click', () => this.flipCard(card));
+                this.grid.appendChild(card);
+            });
+        },
 
-    // Initial
-    loadCards();
+        updateStats() {
+            this.stats.textContent = `Moves: ${this.moves} | Matches: ${this.matches} / ${this.totalMatches}`;
+        },
+
+        flipCard(card) {
+            if (this.flippedCards.length < 2 && !card.classList.contains('is-flipped')) {
+                card.classList.add('is-flipped');
+                this.flippedCards.push(card);
+
+                if (this.flippedCards.length === 2) {
+                    this.moves++;
+                    this.updateStats();
+                    this.checkForMatch();
+                }
+            }
+        },
+
+        checkForMatch() {
+            const [card1, card2] = this.flippedCards;
+            if (card1.dataset.id === card2.dataset.id) {
+                setTimeout(() => {
+                    card1.classList.add('is-matched');
+                    card2.classList.add('is-matched');
+                    this.matches++;
+                    this.updateStats();
+                    if (this.matches === this.totalMatches) {
+                        alert('You found all the matches!');
+                    }
+                    this.flippedCards = [];
+                }, 800);
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('is-flipped');
+                    card2.classList.remove('is-flipped');
+                    this.flippedCards = [];
+                }, 1200);
+            }
+        }
+    };
+
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        // Event listeners for screen transitions
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+            game.mode = document.querySelector('input[name="mode"]:checked').value;
+            restartMainGame();
+            showScreen('mainGameScreen');
+        });
+
+        document.getElementById('startMemoryBtn').addEventListener('click', () => {
+            game.mode = document.querySelector('input[name="mode"]:checked').value;
+            showScreen('memoryGameScreen');
+            memoryGame.start();
+        });
+
+        document.getElementById('nextLevelBtn').addEventListener('click', goToNextLevel);
+        document.getElementById('settingsBtn').addEventListener('click', () => showPopup('settingsModal'));
+        
+        sideScroller.init();
+    };
   </script>
 
 </body>
