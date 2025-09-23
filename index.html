@@ -53,6 +53,7 @@
       text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: 5px;
     }
     button:hover, .btn:hover {
       transform: translateY(-3px);
@@ -83,7 +84,7 @@
     }
     .game-options {
         background: white;
-        padding: 20px;
+        padding: 20px 30px;
         border-radius: 20px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         margin-top: 20px;
@@ -92,6 +93,12 @@
         font-size: 1.2rem;
         margin: 0 10px;
         font-weight: 700;
+    }
+    .game-options .button-group {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
     }
     #startGameBtn { background-color: var(--accent-green); }
 
@@ -258,28 +265,28 @@
         font-size: 1.2rem;
     }
 
-    /* Memory Game */
+    /* --- MEMORY GAME --- */
     #memoryGameGrid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 15px;
         max-width: 600px;
+        width: 100%; /* Ensure it takes up space */
         margin: 20px auto;
+        /* grid-template-columns is set by JS */
     }
     .memory-card {
         width: 100%;
         aspect-ratio: 1 / 1;
-        background-color: var(--primary-blue);
-        border-radius: 10px;
-        cursor: pointer;
         position: relative;
         transform-style: preserve-3d;
         transition: transform 0.6s;
+        cursor: pointer;
     }
     .memory-card.is-flipped {
         transform: rotateY(180deg);
     }
     .memory-card.is-matched {
+        transform: scale(0.9);
         opacity: 0.5;
         pointer-events: none;
     }
@@ -294,13 +301,14 @@
         flex-direction: column;
         padding: 5px;
         box-sizing: border-box;
-        border-radius: 10px;
+        border-radius: 15px;
         font-size: 1.8rem;
     }
     .card-front {
         background: white;
-        border: 3px solid var(--primary-blue);
+        border: 4px solid var(--primary-blue);
         transform: rotateY(180deg);
+        color: #333;
     }
     .card-front .emoji { font-size: 2.5rem; margin: 0; }
     .card-front .text { font-size: 0.7rem; margin-top: 5px; text-align: center; }
@@ -308,6 +316,7 @@
         background: linear-gradient(135deg, var(--accent-orange), #ffc107);
         color: white;
         font-size: 3rem;
+        border: 4px solid white;
     }
 
   </style>
@@ -323,9 +332,11 @@
         <label><input type="radio" name="mode" value="cello" checked> Younger (approx. 7) </label>
         <label><input type="radio" name="mode" value="fina"> Older (approx. 11) </label>
       </div>
-      <br>
-      <button id="startGameBtn">Start Sorting Game!</button>
-      <button id="startMemoryBtn" style="background-color:#9c27b0;">Start Memory Game!</button>
+      <div class="button-group">
+        <button id="startGameBtn">Start Sorting Game!</button>
+        <button id="startMemoryBtn" style="background-color:#9c27b0;">Start Memory Game!</button>
+        <button id="startScrollerBtn" style="background-color:#2196F3;">Start Mini-Run Game!</button>
+      </div>
     </div>
   </div>
 
@@ -360,12 +371,12 @@
 
   <div id="minigameScreen" class="screen">
     <h2>Jehovah's Witness Run!</h2>
-    <p>Jump over distractions and collect good things! (Use Spacebar or Tap)</p>
+    <p>Jump over distractions and collect good things! (Spacebar or Tap)</p>
     <div id="minigameContainer">
         <canvas id="minigameCanvas" width="640" height="320"></canvas>
     </div>
-    <button onclick="sideScroller.start()">Start Mini-Run</button>
-    <button onclick="showScreen('mainGameScreen')" style="background-color:#78909c;">Back to Sorting</button>
+    <button onclick="sideScroller.start()">Start / Restart</button>
+    <button onclick="showScreen('startScreen')" style="background-color:#78909c;">Back to Menu</button>
   </div>
 
   <div id="scripturePopup" class="popup-overlay">
@@ -381,9 +392,9 @@
           <div class="settings-row">
               <label for="cardsPerLevel">Cards Per Level:</label>
               <select id="cardsPerLevel">
-                  <option value="4">4</option>
-                  <option value="6">6</option>
-                  <option value="8">8</option>
+                  <option value="4">4 (8 cards)</option>
+                  <option value="6" selected>6 (12 cards)</option>
+                  <option value="8">8 (16 cards)</option>
               </select>
           </div>
           <button onclick="saveSettings()">Save & Restart</button>
@@ -564,7 +575,7 @@
         zones.forEach(zone => {
             const h2 = zone.querySelector('h2');
             zone.innerHTML = '';
-            zone.appendChild(h2);
+            if (h2) zone.appendChild(h2);
         });
     }
 
@@ -575,7 +586,9 @@
         if (game.level < 3) {
             document.getElementById("nextLevelBtn").style.display = "inline-block";
         } else {
-            showScreen('minigameScreen'); // Go to minigame after final level
+            // After final level, go to minigame
+            showScreen('minigameScreen');
+            sideScroller.start(); 
         }
       }
     }
@@ -620,7 +633,9 @@
         },
 
         start() {
-            if (this.active) return;
+            if (this.active) {
+                clearInterval(this.gameInterval);
+            }
             this.active = true;
             this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
             this.obstacles = []; this.collectibles = []; this.score = 0; this.frameCount = 0;
@@ -666,7 +681,7 @@
             }
         },
 
-        drawObjects(arr, type) {
+        drawObjects(arr) {
             arr.forEach(obj => {
                 this.ctx.font = '28px sans-serif';
                 this.ctx.fillText(obj.emoji, obj.x, obj.y);
@@ -675,7 +690,6 @@
         
         update() {
             this.frameCount++;
-            // Clear canvas
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
             // Draw Ground
@@ -686,9 +700,7 @@
             this.player.vy += this.gravity;
             this.player.y += this.player.vy;
             if (this.player.y >= 240) {
-                this.player.y = 240;
-                this.player.vy = 0;
-                this.player.grounded = true;
+                this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
             }
             this.drawPlayer();
 
@@ -710,7 +722,7 @@
                     this.stop();
                 }
             });
-            this.drawObjects(this.obstacles, 'obstacle');
+            this.drawObjects(this.obstacles);
 
             // Update & Draw Collectibles
             this.collectibles.forEach((col, index) => {
@@ -723,7 +735,7 @@
                     this.score += 10;
                 }
             });
-            this.drawObjects(this.collectibles, 'collectible');
+            this.drawObjects(this.collectibles);
             
             // Draw Score
             this.ctx.fillStyle = 'black';
@@ -733,23 +745,29 @@
         }
     };
     
-    // --- MEMORY MATCH GAME LOGIC ---
+    // --- MEMORY MATCH GAME LOGIC (REVISED) ---
     const memoryGame = {
         grid: document.getElementById('memoryGameGrid'),
         stats: document.getElementById('memoryGameStats'),
-        cards: [],
         flippedCards: [],
         moves: 0,
         matches: 0,
         totalMatches: 0,
+        isChecking: false,
 
         start() {
             this.grid.innerHTML = '';
             this.flippedCards = [];
             this.moves = 0;
             this.matches = 0;
-            this.totalMatches = game.cardsPerLevel;
+            this.isChecking = false;
+            // Use the value from the settings for consistency
+            this.totalMatches = game.cardsPerLevel / 2;
             this.updateStats();
+
+            // Set grid columns dynamically for a nice layout
+            const columns = (this.totalMatches * 2) > 12 ? 4 : 4;
+            this.grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
             let items = [...allActivities[game.mode].closer];
             shuffleArray(items);
@@ -777,36 +795,43 @@
         },
 
         flipCard(card) {
-            if (this.flippedCards.length < 2 && !card.classList.contains('is-flipped')) {
-                card.classList.add('is-flipped');
-                this.flippedCards.push(card);
+            if (this.isChecking || this.flippedCards.length >= 2 || card.classList.contains('is-flipped')) {
+                return;
+            }
 
-                if (this.flippedCards.length === 2) {
-                    this.moves++;
-                    this.updateStats();
-                    this.checkForMatch();
-                }
+            card.classList.add('is-flipped');
+            this.flippedCards.push(card);
+
+            if (this.flippedCards.length === 2) {
+                this.isChecking = true;
+                this.moves++;
+                this.updateStats();
+                this.checkForMatch();
             }
         },
 
         checkForMatch() {
             const [card1, card2] = this.flippedCards;
             if (card1.dataset.id === card2.dataset.id) {
+                // It's a match
                 setTimeout(() => {
                     card1.classList.add('is-matched');
                     card2.classList.add('is-matched');
                     this.matches++;
                     this.updateStats();
-                    if (this.matches === this.totalMatches) {
-                        alert('You found all the matches!');
-                    }
                     this.flippedCards = [];
+                    this.isChecking = false;
+                    if (this.matches === this.totalMatches) {
+                        setTimeout(() => alert('You found all the matches!'), 300);
+                    }
                 }, 800);
             } else {
+                // Not a match
                 setTimeout(() => {
                     card1.classList.remove('is-flipped');
                     card2.classList.remove('is-flipped');
                     this.flippedCards = [];
+                    this.isChecking = false;
                 }, 1200);
             }
         }
@@ -815,7 +840,6 @@
 
     // --- INITIALIZATION ---
     window.onload = () => {
-        // Event listeners for screen transitions
         document.getElementById('startGameBtn').addEventListener('click', () => {
             game.mode = document.querySelector('input[name="mode"]:checked').value;
             restartMainGame();
@@ -824,8 +848,15 @@
 
         document.getElementById('startMemoryBtn').addEventListener('click', () => {
             game.mode = document.querySelector('input[name="mode"]:checked').value;
+            // Get card setting from dropdown for memory game too
+            game.cardsPerLevel = parseInt(document.getElementById('cardsPerLevel').value);
             showScreen('memoryGameScreen');
             memoryGame.start();
+        });
+
+        document.getElementById('startScrollerBtn').addEventListener('click', () => {
+            showScreen('minigameScreen');
+            sideScroller.start();
         });
 
         document.getElementById('nextLevelBtn').addEventListener('click', goToNextLevel);
