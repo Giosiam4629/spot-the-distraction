@@ -3,894 +3,498 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spot the Distraction — Deluxe Edition</title>
+  <title>Spot the Distraction - Adventure Edition</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap">
   <style>
     :root {
-      --primary-blue: #1e88e5;
-      --light-blue: #bbdefb;
-      --dark-blue: #0d47a1;
-      --accent-green: #4caf50;
-      --light-green: #c8e6c9;
-      --accent-red: #f44336;
-      --light-red: #ffcdd2;
-      --accent-orange: #ff9800;
-      --accent-purple: #9c27b0;
-      --accent-yellow: #ffeb3b;
-      --bg-color: #e3f2fd;
+      --bg-color: #eaf5ff;
+      --panel-bg: #ffffff;
+      --primary-text: #3d5a80;
+      --accent-green: #2a9d8f;
+      --accent-red: #e76f51;
+      --accent-orange: #f4a261;
       --font-header: 'Fredoka One', cursive;
       --font-body: 'Comic Neue', sans-serif;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
 
-    /* General Styles */
+    /* --- General Setup --- */
     body {
       font-family: var(--font-body);
       background-color: var(--bg-color);
+      color: var(--primary-text);
       margin: 0;
       padding: 20px;
-      text-align: center;
-      color: #333;
-      overflow-x: hidden;
-    }
-
-    h1, h2, h3 {
-      font-family: var(--font-header);
-      color: var(--dark-blue);
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-    }
-    h1 { font-size: 3rem; margin-bottom: 0;}
-    h2 { font-size: 1.8rem; }
-    h3 { font-size: 1.5rem; }
-
-    button, .btn {
-      font-family: var(--font-header);
-      padding: 12px 24px;
-      font-size: 1.2rem;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      background-color: var(--accent-orange);
-      color: white;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      margin: 5px;
-    }
-    button:hover, .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-    }
-    button:active, .btn:active {
-      transform: translateY(1px);
-    }
-
-    /* Game Screens & Layout */
-    .screen {
-      display: none;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+    }
+    .main-container {
       width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
+      max-width: 900px;
     }
-    .screen.active {
-      display: flex;
+    .panel {
+      background-color: var(--panel-bg);
+      border-radius: 20px;
+      padding: 20px 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
     }
-
-    /* Start Screen */
-    #startScreen h2 {
-      font-size: 2rem;
-      color: var(--primary-blue);
-    }
-    .game-options {
-        background: white;
-        padding: 20px 30px;
-        border-radius: 20px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        margin-top: 20px;
-    }
-    .game-options label {
-        font-size: 1.2rem;
-        margin: 0 10px;
-        font-weight: 700;
-    }
-    .game-options .button-group {
-        margin-top: 20px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    #startGameBtn { background-color: var(--accent-green); }
-
-    /* Main Game Area */
-    #gameHeader {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        width: 100%;
-        max-width: 800px;
-        flex-wrap: wrap;
-    }
-    #scoreBoard {
-      font-size: 1.8rem;
+    h2, h3 {
       font-family: var(--font-header);
-      color: var(--primary-blue);
-      background-color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    #score-animation {
-        position: absolute;
-        top: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 2rem;
-        color: var(--accent-green);
-        opacity: 0;
-        transition: all 0.5s ease;
+      color: var(--primary-text);
+      margin-top: 0;
     }
 
-    .container {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      width: 100%;
-      gap: 20px;
-    }
-
-    .dropzone {
-      border: 4px dashed #bdbdbd;
-      min-height: 200px;
-      padding: 20px;
-      margin: 20px 0;
-      border-radius: 20px;
-      transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
-      flex: 1;
-      min-width: 300px;
-    }
-    #closer { background-color: var(--light-green); border-color: var(--accent-green); }
-    #distraction { background-color: var(--light-red); border-color: var(--accent-red); }
-    #closer h2 { color: var(--accent-green); }
-    #distraction h2 { color: var(--accent-red); }
-    .dropzone.over {
-      transform: scale(1.05);
-      border-color: var(--accent-orange);
-      background-color: #fffde7;
-    }
-
-    /* Cards */
-    #cards {
-      min-height: 150px;
-    }
-    .card {
-      background-color: #ffffff;
-      /* Default border, will be overridden by style classes */
-      border: 4px solid var(--primary-blue);
-      padding: 15px;
-      margin: 10px;
-      width: 280px;
-      cursor: grab;
-      border-radius: 15px;
+    /* --- Screens --- */
+    .screen { display: none; }
+    .screen.active { display: block; }
+    
+    /* --- Game Controls Panel --- */
+    #game-controls h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
-      justify-content: left;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      opacity: 0;
-      transform: scale(0.5) rotate(-15deg);
-      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      gap: 10px;
     }
-    /* NEW: Visual Variety for Cards */
-    .card.style-blue { border-color: #2196f3; }
-    .card.style-green { border-color: #4caf50; }
-    .card.style-orange { border-color: #ff9800; }
-    .card.style-purple { border-color: #9c27b0; }
-
-    .card.visible {
-      opacity: 1;
-      transform: scale(1) rotate(0deg);
+    .control-section {
+      margin-bottom: 20px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
     }
-    .card:hover {
-        transform: scale(1.05) rotate(2deg) !important;
-        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    .options-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
     }
-    .card.correct-drop {
-        animation: sparkle 0.7s ease-out;
+    .options-group input[type="radio"] { display: none; }
+    .options-group label {
+      padding: 8px 15px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      font-weight: bold;
+      background-color: #f0f0f0;
     }
-    @keyframes sparkle {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1) rotate(5deg); box-shadow: 0 0 20px var(--accent-yellow); }
+    .options-group input[type="radio"]:checked + label {
+      background-color: var(--accent-orange);
+      color: white;
+      transform: scale(1.1);
     }
-    .card.incorrect-drop {
-        animation: shake 0.5s;
-    }
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-10px) rotate(-3deg); }
-        75% { transform: translateX(10px) rotate(3deg); }
-    }
-    .emoji { font-size: 3rem; margin-right: 15px; }
-
-    /* Popups and Modals */
-    .popup-overlay {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        backdrop-filter: blur(5px);
-    }
-    .popup-overlay.show { display: flex; }
-    .popup-content {
-        background: white;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        max-width: 90%;
-        width: 500px;
-        animation: popup-appear 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
-    @keyframes popup-appear {
-        from { transform: scale(0.7); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-
-    #scriptureText {
-      font-size: 1.3rem;
-      color: #333;
-      line-height: 1.6;
-    }
-
-    /* Minigame Styles */
-    #minigameContainer {
-        width: 100%;
-        max-width: 640px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    canvas#minigameCanvas {
-      border: 4px solid var(--dark-blue);
-      background-color: var(--light-blue);
-      margin-top: 25px;
-      border-radius: 10px;
+    #game-progress-bar {
       width: 100%;
-      max-width: 640px;
-      height: auto;
+      height: 20px;
+      background-color: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
     }
+    #game-progress-fill {
+      width: 0%;
+      height: 100%;
+      background-color: var(--accent-green);
+      transition: width 0.5s ease;
+    }
+    .stats-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .stat-box {
+      background-color: #f7f9fc;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-family: var(--font-header);
+      font-size: 1.2rem;
+      min-width: 100px;
+      text-align: center;
+    }
+    
+    /* --- Sorting Game --- */
+    .drop-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .dropzone {
+      border: 3px dashed #ccc;
+      min-height: 200px;
+      padding: 15px;
+      border-radius: 15px;
+      transition: all 0.3s;
+    }
+    #closer { background-color: #e8f5e9; }
+    #distraction { background-color: #ffebee; }
+    .dropzone.over { transform: scale(1.02); border-color: var(--accent-orange); }
+    #cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      min-height: 150px;
+      padding: 20px 0;
+    }
+    .card {
+      background-color: var(--panel-bg);
+      border: 3px solid;
+      padding: 15px;
+      border-radius: 12px;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-5px); }
+    .card .emoji { font-size: 2rem; }
 
-    /* Settings Modal */
-    #settingsModal .settings-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 15px 0;
-        font-size: 1.2rem;
+    /* --- Minigame Screen --- */
+    #minigame-screen { text-align: center; }
+    .minigame-header {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
     }
+    .minigame-stat { font-family: var(--font-header); font-size: 1.2rem; }
+    .minigame-stat .hearts { font-size: 1.8rem; letter-spacing: 2px; }
+    canvas#minigame-canvas {
+      background: linear-gradient(#87CEEB, #90EE90);
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      margin: 20px 0;
+      width: 100%;
+      image-rendering: pixelated; /* Crucial for 16-bit look */
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    #minigame-start-btn {
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      background-color: var(--accent-orange);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+    #minigame-instructions { margin-top: 15px; font-style: italic; }
 
-    /* --- MEMORY GAME --- */
-    #memoryGameGrid {
-        display: grid;
-        gap: 15px;
-        max-width: 600px;
-        width: 100%; /* Ensure it takes up space */
-        margin: 20px auto;
-        /* grid-template-columns is set by JS */
-    }
-    .memory-card {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        position: relative;
-        transform-style: preserve-3d;
-        transition: transform 0.6s;
-        cursor: pointer;
-    }
-    .memory-card.is-flipped {
-        transform: rotateY(180deg);
-    }
-    .memory-card.is-matched {
-        transform: scale(0.9);
-        opacity: 0.5;
-        pointer-events: none;
-    }
-    .card-face {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        backface-visibility: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        padding: 5px;
-        box-sizing: border-box;
-        border-radius: 15px;
-        font-size: 1.8rem;
-    }
-    .card-front {
-        background: white;
-        border: 4px solid var(--primary-blue);
-        transform: rotateY(180deg);
-        color: #333;
-    }
-    .card-front .emoji { font-size: 2.5rem; margin: 0; }
-    .card-front .text { font-size: 0.7rem; margin-top: 5px; text-align: center; }
-    .card-back {
-        background: linear-gradient(135deg, var(--accent-orange), #ffc107);
+    /* Buttons */
+    #switch-to-minigame-btn {
+        margin-top: 20px;
+        background-color: #6a0dad;
         color: white;
-        font-size: 3rem;
-        border: 4px solid white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: var(--font-header);
     }
-
   </style>
 </head>
 <body>
 
-  <h1>🌟 Spot the Distraction 🌟</h1>
+<div class="main-container">
 
-  <div id="startScreen" class="screen active">
-    <div class="game-options">
-      <h2>Choose Your Age Group</h2>
-      <div>
-        <label><input type="radio" name="mode" value="cello" checked> Younger (approx. 7) </label>
-        <label><input type="radio" name="mode" value="fina"> Older (approx. 11) </label>
+  <div id="sorting-game-screen" class="screen active">
+    <div id="game-controls" class="panel">
+      <div class="control-section">
+        <h2>👤 Choose Your Character</h2>
+        <div class="options-group" id="character-selector">
+          <input type="radio" id="char-cello" name="character" value="cello" checked><label for="char-cello">Cello (7-yr) 👦</label>
+          <input type="radio" id="char-fina" name="character" value="fina"><label for="char-fina">Fina (11-yr) 👧</label>
+          <input type="radio" id="char-teen" name="character" value="teen"><label for="char-teen">Teen (15-yr) 👩‍🎓</label>
+          <input type="radio" id="char-adult" name="character" value="adult"><label for="char-adult">Adult 👨‍👩‍👧‍👦</label>
+        </div>
       </div>
-      <div class="button-group">
-        <button id="startGameBtn">Start Sorting Game!</button>
-        <button id="startMemoryBtn" style="background-color:#9c27b0;">Start Memory Game!</button>
-        <button id="startScrollerBtn" style="background-color:#2196F3;">Start Mini-Run Game!</button>
+      <div class="control-section">
+        <h2>⚡ Difficulty Level</h2>
+        <div class="options-group" id="difficulty-selector">
+          <input type="radio" id="diff-easy" name="difficulty" value="easy" checked><label for="diff-easy">Easy (No Timer) 😊</label>
+          <input type="radio" id="diff-medium" name="difficulty" value="medium"><label for="diff-medium">Medium (2 min timer) ⏰</label>
+          <input type="radio" id="diff-hard" name="difficulty" value="hard"><label for="diff-hard">Hard (1 min timer) 🔥</label>
+        </div>
+      </div>
+      <div class="control-section">
+        <h2>📊 Game Progress</h2>
+        <p>Level: <span id="level-label">1</span> / 5</p>
+        <div id="game-progress-bar"><div id="game-progress-fill"></div></div>
+      </div>
+      <div class="stats-container">
+        <div class="stat-box">Score: <span id="score-label">0</span></div>
+        <div class="stat-box">Streak: <span id="streak-label">0</span></div>
+        <div class="stat-box">Time: <span id="timer-label">--:--</span></div>
       </div>
     </div>
-  </div>
-
-  <div id="mainGameScreen" class="screen">
-    <div id="gameHeader">
-      <button id="settingsBtn" style="background-color:#78909c;">⚙️ Settings</button>
-      <div id="levelSelect"><h2>Level: <span id="levelLabel">1</span></h2></div>
-      <div id="scoreBoard">Score: 0<span id="score-animation"></span></div>
-    </div>
-
-    <div class="container">
-      <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)">
-        <h2>Keeps Me Close to Jehovah</h2>
-      </div>
-      <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)">
-        <h2>Could Be a Distraction</h2>
-      </div>
-    </div>
-
-    <h3>Drag the Activities Below</h3>
-    <div id="cards" class="container"></div>
-    <div class="feedback" id="feedback"></div>
-    <button id="nextLevelBtn" style="display: none;">Go to Next Level</button>
-  </div>
-
-  <div id="memoryGameScreen" class="screen">
-      <h2>Memory Verse Match</h2>
-      <div id="memoryGameStats">Moves: 0 | Matches: 0</div>
-      <div id="memoryGameGrid"></div>
-      <button onclick="showScreen('startScreen')">Back to Menu</button>
-  </div>
-
-  <div id="minigameScreen" class="screen">
-    <h2>Jehovah's Witness Run!</h2>
-    <p>Jump over distractions and collect good things! (Spacebar or Tap)</p>
-    <div id="minigameContainer">
-        <canvas id="minigameCanvas" width="640" height="320"></canvas>
-    </div>
-    <button onclick="sideScroller.start()">Start / Restart</button>
-    <button onclick="showScreen('startScreen')" style="background-color:#78909c;">Back to Menu</button>
-  </div>
-
-  <div id="scripturePopup" class="popup-overlay">
-    <div class="popup-content">
-      <div id="scriptureText"></div><br>
-      <button onclick="closePopup('scripturePopup')">OK</button>
-    </div>
-  </div>
-
-  <div id="settingsModal" class="popup-overlay">
-      <div class="popup-content">
-          <h2>Settings</h2>
-          <div class="settings-row">
-              <label for="cardsPerLevel">Cards Per Level:</label>
-              <select id="cardsPerLevel">
-                  <option value="4">4 (8 cards)</option>
-                  <option value="6" selected>6 (12 cards)</option>
-                  <option value="8">8 (16 cards)</option>
-              </select>
-          </div>
-          <button onclick="saveSettings()">Save & Restart</button>
-      </div>
-  </div>
-
-  <script>
-    // --- GAME STATE & CONFIG ---
-    const game = {
-      mode: 'cello',
-      level: 1,
-      score: 0,
-      cardsPerLevel: 6,
-      currentScreen: 'startScreen'
-    };
-
-    const scriptures = {
-      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9`,
-      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10`,
-      watchHowYouWalk: `"So keep strict watch on how you walk, not as unwise but as wise persons, making the best use of your time." — Ephesians 5:15, 16`,
-      thinkOnTheseThings: `"Whatever things are true, . . . righteous, . . . lovable, . . . praiseworthy, continue considering these things." — Philippians 4:8`,
-      safeguardHeart: `"Above all the things that you guard, safeguard your heart, for out of it are the sources of life." — Proverbs 4:23`
-    };
-
-    // NEW: Expanded list of activities for more variety
-    const allActivities = {
-      cello: {
-        closer: [
-          { emoji: '🙏', text: "Praying before bedtime" }, { emoji: '🧹', text: "Helping clean up toys" },
-          { emoji: '📖', text: "Reading a Bible story" }, { emoji: '🔇', text: "Listening quietly when asked" },
-          { emoji: '🤗', text: "Sharing my toys" }, { emoji: '❤️', text: "Drawing a picture for someone sad" },
-          { emoji: '🎶', text: "Singing Kingdom songs" }, { emoji: '👨‍👩‍👧‍👦', text: "Enjoying family worship" },
-          { emoji: '😊', text: "Saying 'please' and 'thank you'" }, { emoji: '🤝', text: "Helping a younger sibling" },
-          { emoji: '🥰', text: "Giving someone a hug" }, { emoji: '✔', text: "Obeying right away" }
-        ],
-        distraction: [
-          { emoji: '🎮', text: "Playing video games all evening" }, { emoji: '📺', text: "Watching TV past bedtime" },
-          { emoji: '📱', text: "Looking at a phone nonstop" }, { emoji: '😠', text: "Arguing with my brother or sister" },
-          { emoji: '😫', text: "Complaining about chores" }, { emoji: '🍬', text: "Eating snacks instead of dinner" },
-          { emoji: '🤫', text: "Keeping secrets from Mom and Dad" }, { emoji: '😴', text: "Being too tired for the meeting" },
-          { emoji: '😡', text: "Getting angry when I don't get my way" }, { emoji: '😭', text: "Whining to get something I want" },
-          { emoji: '💥', text: "Making a big mess and not cleaning it" }, { emoji: '🙉', text: "Not listening when being spoken to" }
-        ]
-      },
-      fina: {
-        closer: [
-          { emoji: '🙏', text: "Personal prayer about my day" }, { emoji: '🤝', text: "Helping a friend who is struggling" },
-          { emoji: '📖', text: "Personal Bible reading" }, { emoji: '📝', text: "Preparing for the meeting" },
-          { emoji: '😇', text: "Choosing good friends" }, { emoji: '🗣️', text: "Talking about Jehovah at school" },
-          { emoji: '💪', text: "Resisting peer pressure" }, { emoji: '😊', text: "Being encouraging to others" },
-          { emoji: '💖', text: "Showing hospitality" }, { emoji: ' diligently', text: "Studying hard for a test" },
-          { emoji: '⚖️', text: "Being honest even when it's hard" }, { emoji: '✨', text: "Setting a good example for others" }
-        ],
-        distraction: [
-          { emoji: '📱', text: "Spending hours on social media" }, { emoji: ' gossip', text: "Gossiping about friends" },
-          { emoji: '👻', text: "Watching scary or violent movies" }, { emoji: '🤔', text: "Worrying too much about what others think" },
-          { emoji: '💸', text: "Wanting the latest, most expensive things" }, { emoji: '🎵', text: "Music with bad words or ideas" },
-          { emoji: '😒', text: "Being jealous of others" }, { emoji: '⏳', text: "Putting off responsibilities" },
-          { emoji: '🙄', text: "Being disrespectful to adults" }, { emoji: '🛍️', text: "Focusing too much on material things" },
-          { emoji: '💬', text: "Spending all my time texting" }, { emoji: ' procrastination', text: "Procrastinating on homework" }
-        ]
-      }
-    };
-
-    // --- UI & DOM MANIPULATION ---
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-        game.currentScreen = screenId;
-    }
-
-    function updateScore(points) {
-        game.score += points;
-        document.querySelector("#scoreBoard").innerHTML = `Score: ${game.score}<span id="score-animation">+${points}</span>`;
-        const scoreAnim = document.getElementById('score-animation');
-        setTimeout(() => {
-            scoreAnim.style.transform = 'translate(-50%, -30px)';
-            scoreAnim.style.opacity = '1';
-        }, 10);
-        setTimeout(() => {
-            scoreAnim.style.opacity = '0';
-        }, 500);
-    }
-
-    function showPopup(popupId) {
-        document.getElementById(popupId).classList.add('show');
-    }
-    function closePopup(popupId) {
-        document.getElementById(popupId).classList.remove('show');
-    }
-
-    function saveSettings() {
-        game.cardsPerLevel = parseInt(document.getElementById('cardsPerLevel').value);
-        closePopup('settingsModal');
-        restartMainGame();
-    }
-
-    function restartMainGame() {
-        game.level = 1;
-        game.score = 0;
-        updateScore(0);
-        loadCards();
-    }
     
-    // --- MAIN DRAG & DROP GAME LOGIC ---
-    const cardVisualStyles = ['style-blue', 'style-green', 'style-orange', 'style-purple'];
+    <div class="panel">
+      <div class="drop-container">
+        <div id="closer" class="dropzone"><h3>👍 Keeps Me Close to Jehovah</h3></div>
+        <div id="distraction" class="dropzone"><h3>🤔 Could Be a Distraction</h3></div>
+      </div>
+      <h3 style="text-align: center;">Drag the Activities</h3>
+      <div id="cards-container"></div>
+    </div>
+    <div style="text-align:center;">
+        <button id="switch-to-minigame-btn">🎮 Play Side-Scroller Adventure!</button>
+    </div>
+  </div>
 
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+  <div id="minigame-screen" class="screen">
+    <div class="panel">
+      <h2>🎮 Advanced Mini-Game: Side-Scroller Adventure!</h2>
+      <div class="minigame-header">
+        <div class="minigame-stat">Adventure Score: <span id="minigame-score">0</span></div>
+        <div class="minigame-stat">Kingdom Tokens: <span id="minigame-tokens">0</span> / 10</div>
+        <div class="minigame-stat"><span class="hearts" id="minigame-lives">❤️❤️❤️</span></div>
+      </div>
+      <canvas id="minigame-canvas" width="600" height="300"></canvas>
+      <button id="minigame-start-btn">Start Adventure 🚀</button>
+      <div id="minigame-instructions">Use SPACE or ↑ to jump. Collect Kingdom Tokens 📖! Avoid distractions 📺!</div>
+      <button id="switch-to-sorting-btn" style="margin-top: 10px; background-color:#777;">Back to Sorting Game</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// --- GAME STATE ---
+const game = {
+    character: 'cello',
+    difficulty: 'easy',
+    level: 1,
+    maxLevels: 5,
+    score: 0,
+    streak: 0,
+    timerId: null,
+    timeLeft: 0,
+    activeScreen: 'sorting'
+};
+
+// --- DOM ELEMENTS ---
+const elements = {
+    sortingScreen: document.getElementById('sorting-game-screen'),
+    minigameScreen: document.getElementById('minigame-screen'),
+    characterSelector: document.getElementById('character-selector'),
+    difficultySelector: document.getElementById('difficulty-selector'),
+    levelLabel: document.getElementById('level-label'),
+    progressFill: document.getElementById('game-progress-fill'),
+    scoreLabel: document.getElementById('score-label'),
+    streakLabel: document.getElementById('streak-label'),
+    timerLabel: document.getElementById('timer-label'),
+    cardsContainer: document.getElementById('cards-container')
+};
+
+// --- 16-BIT PIXEL ART ASSETS ---
+const pixelArt = {
+    draw(ctx, drawFunc, x, y, size = 4) {
+        drawFunc(ctx, x, y, size);
+    },
+    // Character Sprites
+    characters: {
+        cello: (ctx, x, y, size) => { // Boy character
+            ctx.fillStyle = '#f2a66e'; // Skin
+            ctx.fillRect(x + size, y, size * 2, size * 2);
+            ctx.fillStyle = '#3a2d27'; // Hair
+            ctx.fillRect(x + size, y, size * 2, size);
+            ctx.fillStyle = '#4a90e2'; // Shirt
+            ctx.fillRect(x, y + size * 2, size * 4, size * 2);
+            ctx.fillStyle = '#333'; // Pants
+            ctx.fillRect(x + size, y + size * 4, size * 2, size);
+        },
+        fina: (ctx, x, y, size) => { // Girl character
+            ctx.fillStyle = '#ffbe87'; // Skin
+            ctx.fillRect(x + size, y, size * 2, size * 2);
+            ctx.fillStyle = '#8b572a'; // Hair
+            ctx.fillRect(x, y, size * 4, size);
+            ctx.fillRect(x, y + size, size, size*2);
+            ctx.fillRect(x + size * 3, y + size, size, size * 2);
+            ctx.fillStyle = '#e91e63'; // Dress
+            ctx.fillRect(x, y + size * 2, size * 4, size * 2);
+        },
+        teen: (ctx, x, y, size) => { pixelArt.characters.fina(ctx,x,y,size); },
+        adult: (ctx, x, y, size) => { pixelArt.characters.cello(ctx,x,y,size); }
+    },
+    // Game Objects
+    token: (ctx, x, y, size) => { // Kingdom Token / Bible
+        ctx.fillStyle = '#795548'; // Cover
+        ctx.fillRect(x, y, size * 4, size * 3);
+        ctx.fillStyle = '#fff'; // Pages
+        ctx.fillRect(x + size, y + size, size * 2, size);
+    },
+    distractions: {
+        tv: (ctx, x, y, size) => {
+            ctx.fillStyle = '#333'; // Frame
+            ctx.fillRect(x, y, size * 5, size * 4);
+            ctx.fillStyle = '#87ceeb'; // Screen
+            ctx.fillRect(x + size, y + size, size * 3, size * 2);
+        },
+        phone: (ctx, x, y, size) => {
+            ctx.fillStyle = '#555';
+            ctx.fillRect(x, y, size * 2, size * 4);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(x, y + size, size * 2, size * 2);
         }
     }
+};
 
-    function loadCards() {
-      document.getElementById("levelLabel").textContent = game.level;
-      const cardContainer = document.getElementById("cards");
-      cardContainer.innerHTML = "";
-      clearDropzones();
-      document.getElementById("nextLevelBtn").style.display = "none";
 
-      let closerItems = [...allActivities[game.mode].closer];
-      let distractionItems = [...allActivities[game.mode].distraction];
-      shuffleArray(closerItems);
-      shuffleArray(distractionItems);
+// --- SIDE SCROLLER MINIGAME ---
+const sideScroller = {
+    canvas: document.getElementById('minigame-canvas'),
+    ctx: null,
+    active: false,
+    gameInterval: null,
+    // State
+    score: 0, lives: 3, tokens: 0, goal: 10, frame: 0,
+    // Game Objects
+    player: { x: 50, y: 220, w: 16, h: 20, vy: 0, grounded: true },
+    objects: [], // { type, x, y, w, h, sprite }
+    backgroundLayers: [],
 
-      const numEach = game.cardsPerLevel / 2;
-      const levelActivities = [];
-      closerItems.slice(0, numEach).forEach(item => levelActivities.push({...item, correct: 'closer'}));
-      distractionItems.slice(0, numEach).forEach(item => levelActivities.push({...item, correct: 'distraction'}));
-      shuffleArray(levelActivities);
+    init() {
+        this.ctx = this.canvas.getContext('2d');
+        document.getElementById('minigame-start-btn').onclick = () => this.start();
+        document.addEventListener('keydown', e => {
+            if ((e.code === 'Space' || e.key === 'ArrowUp') && this.active) this.jump();
+        });
+        this.canvas.addEventListener('click', () => { if(this.active) this.jump(); });
+    },
+    start() {
+        this.active = true;
+        this.lives = 3; this.score = 0; this.tokens = 0; this.frame = 0;
+        this.player.y = 220; this.player.vy = 0; this.player.grounded = true;
+        this.objects = [];
+        this.backgroundLayers = [
+            { speed: 0.2, y: 50, height: 50, color: '#add8e6', objects: [{x: 100, w: 50}, {x: 400, w: 80}] }, // Far clouds
+            { speed: 0.5, y: 150, height: 100, color: '#228b22', objects: [{x: 50, w: 200}, {x: 500, w: 150}] }, // Hills
+        ];
+        if (this.gameInterval) clearInterval(this.gameInterval);
+        this.gameInterval = setInterval(() => this.loop(), 1000 / 60);
+        this.updateUI();
+    },
+    loop() {
+        this.frame++;
+        // --- Physics & Object Spawning ---
+        this.player.vy += 0.8; // Gravity
+        this.player.y += this.player.vy;
+        if (this.player.y >= this.canvas.height - 40 - this.player.h) {
+            this.player.y = this.canvas.height - 40 - this.player.h;
+            this.player.vy = 0;
+            this.player.grounded = true;
+        }
 
-      game.totalCards = levelActivities.length;
+        // Spawn new objects
+        if (this.frame % 120 === 0) { // Distractions
+            const isTV = Math.random() > 0.5;
+            this.objects.push({ type: 'distraction', x: this.canvas.width, y: this.canvas.height - (isTV ? 56 : 56), w: (isTV ? 20 : 8), h: (isTV ? 16 : 16), sprite: isTV ? 'tv' : 'phone' });
+        }
+        if (this.frame % 180 === 0) { // Tokens
+            this.objects.push({ type: 'token', x: this.canvas.width, y: 180, w: 16, h: 12, sprite: 'token' });
+        }
 
-      levelActivities.forEach((activity, idx) => {
-        const card = document.createElement("div");
-        card.className = "card";
+        // Move and check collisions
+        this.objects.forEach((obj, i) => {
+            obj.x -= 4; // Move object
+            if (this.player.x < obj.x + obj.w && this.player.x + this.player.w > obj.x &&
+                this.player.y < obj.y + obj.h && this.player.y + this.player.h > obj.y) {
+                this.handleCollision(obj, i);
+            }
+        });
+        this.objects = this.objects.filter(o => o.x > -50);
+        this.score++;
+
+        // --- Drawing ---
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.drawBackground();
+        this.drawObjects();
+        pixelArt.draw(this.ctx, pixelArt.characters[game.character], this.player.x, this.player.y);
         
-        // NEW: Add a random visual style to the card
-        const randomStyle = cardVisualStyles[Math.floor(Math.random() * cardVisualStyles.length)];
-        card.classList.add(randomStyle);
-
-        card.id = `card${idx}`;
-        card.draggable = true;
-        card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`;
-        card.setAttribute("data-correct", activity.correct);
-        card.ondragstart = drag;
-        cardContainer.appendChild(card);
-        setTimeout(() => card.classList.add("visible"), 100 * idx);
-      });
-    }
-
-    function allowDrop(ev) {
-      ev.preventDefault();
-      if (ev.target.classList.contains('dropzone')) {
-        ev.target.classList.add('over');
-      }
-    }
-    document.ondragleave = (ev) => {
-        if (ev.target.classList.contains('dropzone')) {
-            ev.target.classList.remove('over');
-        }
-    }
-
-    function drag(ev) {
-      ev.dataTransfer.setData("text", ev.target.id);
-    }
-
-    function drop(ev) {
-      ev.preventDefault();
-      let zone = ev.target;
-      while (!zone.classList.contains('dropzone')) zone = zone.parentElement;
-      zone.classList.remove('over');
-      
-      const cardId = ev.dataTransfer.getData("text");
-      const card = document.getElementById(cardId);
-      const isCorrect = zone.id === card.getAttribute("data-correct");
-
-      if (isCorrect) {
-        zone.appendChild(card);
-        card.setAttribute("draggable", false);
-        card.classList.add('correct-drop');
-        updateScore(10);
-        maybeShowScripture();
-        checkLevelComplete();
-      } else {
-        card.classList.add('incorrect-drop');
-        setTimeout(() => card.classList.remove('incorrect-drop'), 500);
-      }
-    }
-
-    function clearDropzones() {
-        const zones = document.querySelectorAll(".dropzone");
-        zones.forEach(zone => {
-            const h2 = zone.querySelector('h2');
-            zone.innerHTML = '';
-            if (h2) zone.appendChild(h2);
+        this.updateUI();
+        if (this.lives <= 0 || this.tokens >= this.goal) this.endGame();
+    },
+    drawBackground() {
+        // Parallax Layers
+        this.backgroundLayers.forEach(layer => {
+            this.ctx.fillStyle = layer.color;
+            layer.objects.forEach(obj => {
+                let objX = (obj.x - (this.frame * layer.speed)) % (this.canvas.width + obj.w);
+                if (objX < -obj.w) objX += (this.canvas.width + obj.w);
+                this.ctx.fillRect(objX, layer.y, obj.w, layer.height);
+            });
         });
-    }
-
-    function checkLevelComplete() {
-      const placedCards = document.querySelectorAll('.dropzone .card').length;
-      if (placedCards === game.totalCards) {
-        document.getElementById("feedback").textContent = `🎉 Level ${game.level} complete!`;
-        if (game.level < 3) {
-            document.getElementById("nextLevelBtn").style.display = "inline-block";
-        } else {
-            // After final level, go to minigame
-            showScreen('minigameScreen');
-            sideScroller.start(); 
-        }
-      }
-    }
-
-    function goToNextLevel() {
-      if (game.level < 3) {
-        game.level++;
-        loadCards();
-      }
-    }
-
-    function maybeShowScripture() {
-        const placedCards = document.querySelectorAll('.dropzone .card').length;
-        if (placedCards % 2 === 0 && placedCards > 0) {
-            const scriptureKeys = Object.keys(scriptures);
-            const randomKey = scriptureKeys[Math.floor(Math.random() * scriptureKeys.length)];
-            document.getElementById("scriptureText").textContent = scriptures[randomKey];
-            showPopup('scripturePopup');
-        }
-    }
-    
-    // --- SIDE SCROLLER MINIGAME ---
-    const sideScroller = {
-        canvas: document.getElementById("minigameCanvas"),
-        ctx: null,
-        player: { x: 50, y: 240, w: 30, h: 40, vy: 0, grounded: true, spriteFrame: 0 },
-        obstacles: [],
-        collectibles: [],
-        gravity: 0.8,
-        gameSpeed: 4,
-        score: 0,
-        frameCount: 0,
-        gameInterval: null,
-        active: false,
-
-        init() {
-            this.ctx = this.canvas.getContext('2d');
-            this.canvas.addEventListener('click', () => this.jump());
-            document.addEventListener('keydown', (e) => {
-                if ((e.code === 'Space' || e.key === 'ArrowUp') && this.active) this.jump();
-            });
-        },
-
-        start() {
-            if (this.active) {
-                clearInterval(this.gameInterval);
+        // Ground
+        this.ctx.fillStyle = '#556b2f';
+        this.ctx.fillRect(0, this.canvas.height - 40, this.canvas.width, 40);
+    },
+    drawObjects() {
+        this.objects.forEach(obj => {
+            if (obj.type === 'token') {
+                pixelArt.draw(this.ctx, pixelArt.token, obj.x, obj.y);
+            } else if (obj.type === 'distraction') {
+                pixelArt.draw(this.ctx, pixelArt.distractions[obj.sprite], obj.x, obj.y);
             }
-            this.active = true;
-            this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
-            this.obstacles = []; this.collectibles = []; this.score = 0; this.frameCount = 0;
-            this.gameInterval = setInterval(() => this.update(), 1000 / 60);
-        },
-
-        stop() {
-            this.active = false;
-            clearInterval(this.gameInterval);
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.fillStyle = 'white';
-            this.ctx.font = '40px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('Game Over!', this.canvas.width / 2, this.canvas.height / 2 - 20);
-            this.ctx.font = '20px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
-            this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 20);
-        },
-
-        jump() {
-            if (this.player.grounded) {
-                this.player.vy = -16;
-                this.player.grounded = false;
-            }
-        },
-
-        drawPlayer() {
-            // Simple animated character
-            this.ctx.fillStyle = '#ffb74d'; // Skin tone
-            this.ctx.fillRect(this.player.x, this.player.y, this.player.w, this.player.h); // Body
-            this.ctx.fillStyle = '#424242'; // Hair
-            this.ctx.fillRect(this.player.x, this.player.y, this.player.w, 10); // Hair
-            // Running animation
-            if (!this.player.grounded) { // Jumping pose
-                 this.ctx.fillStyle = '#42a5f5';
-                 this.ctx.fillRect(this.player.x + 5, this.player.y + 30, 20, 10);
-            } else if (this.frameCount % 20 < 10) { // Leg 1
-                 this.ctx.fillStyle = '#42a5f5';
-                 this.ctx.fillRect(this.player.x, this.player.y + 30, 15, 10);
-            } else { // Leg 2
-                 this.ctx.fillStyle = '#42a5f5';
-                 this.ctx.fillRect(this.player.x + 15, this.player.y + 30, 15, 10);
-            }
-        },
-
-        drawObjects(arr) {
-            arr.forEach(obj => {
-                this.ctx.font = '28px sans-serif';
-                this.ctx.fillText(obj.emoji, obj.x, obj.y);
-            });
-        },
-        
-        update() {
-            this.frameCount++;
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            
-            // Draw Ground
-            this.ctx.fillStyle = '#66bb6a';
-            this.ctx.fillRect(0, 280, this.canvas.width, 40);
-
-            // Player physics
-            this.player.vy += this.gravity;
-            this.player.y += this.player.vy;
-            if (this.player.y >= 240) {
-                this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
-            }
-            this.drawPlayer();
-
-            // Spawn objects
-            if (this.frameCount % 100 === 0) {
-                this.obstacles.push({ x: this.canvas.width, y: 280, w: 30, h: 30, emoji: ['📺', '🎮', '📱'][Math.floor(Math.random()*3)] });
-            }
-            if (this.frameCount % 157 === 0) {
-                 this.collectibles.push({ x: this.canvas.width, y: 220, w: 30, h: 30, emoji: ['📖', '🍎', '🍇'][Math.floor(Math.random()*3)] });
-            }
-
-            // Update & Draw Obstacles
-            this.obstacles.forEach((obs, index) => {
-                obs.x -= this.gameSpeed;
-                if (obs.x < -30) this.obstacles.splice(index, 1);
-                // Collision
-                if (this.player.x < obs.x + obs.w && this.player.x + this.player.w > obs.x &&
-                    this.player.y < obs.y + obs.h && this.player.y + this.player.h > obs.y) {
-                    this.stop();
-                }
-            });
-            this.drawObjects(this.obstacles);
-
-            // Update & Draw Collectibles
-            this.collectibles.forEach((col, index) => {
-                col.x -= this.gameSpeed;
-                 if (col.x < -30) this.collectibles.splice(index, 1);
-                // Collision
-                if (this.player.x < col.x + col.w && this.player.x + this.player.w > col.x &&
-                    this.player.y < col.y + col.h && this.player.y + this.player.h > col.y) {
-                    this.collectibles.splice(index, 1);
-                    this.score += 10;
-                }
-            });
-            this.drawObjects(this.collectibles);
-            
-            // Draw Score
-            this.ctx.fillStyle = 'black';
-            this.ctx.font = '20px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
-            this.ctx.textAlign = 'left';
-            this.ctx.fillText(`Score: ${this.score}`, 10, 30);
-        }
-    };
-    
-    // --- MEMORY MATCH GAME LOGIC ---
-    const memoryGame = {
-        grid: document.getElementById('memoryGameGrid'),
-        stats: document.getElementById('memoryGameStats'),
-        flippedCards: [],
-        moves: 0,
-        matches: 0,
-        totalMatches: 0,
-        isChecking: false,
-
-        start() {
-            this.grid.innerHTML = '';
-            this.flippedCards = [];
-            this.moves = 0;
-            this.matches = 0;
-            this.isChecking = false;
-            // Use the value from the settings for consistency
-            this.totalMatches = game.cardsPerLevel / 2;
-            this.updateStats();
-
-            // Set grid columns dynamically for a nice layout
-            const columns = (this.totalMatches * 2) > 12 ? 4 : 4;
-            this.grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-
-            let items = [...allActivities[game.mode].closer];
-            shuffleArray(items);
-            let gameItems = items.slice(0, this.totalMatches).map(item => ({...item, id: item.text}));
-            let cardPool = [...gameItems, ...gameItems]; // Duplicate for pairs
-            shuffleArray(cardPool);
-            
-            cardPool.forEach(item => {
-                const card = document.createElement('div');
-                card.classList.add('memory-card');
-                card.dataset.id = item.id;
-                card.innerHTML = `
-                    <div class="card-face card-back">?</div>
-                    <div class="card-face card-front">
-                        <span class="emoji">${item.emoji}</span>
-                        <span class="text">${item.text}</span>
-                    </div>`;
-                card.addEventListener('click', () => this.flipCard(card));
-                this.grid.appendChild(card);
-            });
-        },
-
-        updateStats() {
-            this.stats.textContent = `Moves: ${this.moves} | Matches: ${this.matches} / ${this.totalMatches}`;
-        },
-
-        flipCard(card) {
-            if (this.isChecking || this.flippedCards.length >= 2 || card.classList.contains('is-flipped')) {
-                return;
-            }
-
-            card.classList.add('is-flipped');
-            this.flippedCards.push(card);
-
-            if (this.flippedCards.length === 2) {
-                this.isChecking = true;
-                this.moves++;
-                this.updateStats();
-                this.checkForMatch();
-            }
-        },
-
-        checkForMatch() {
-            const [card1, card2] = this.flippedCards;
-            if (card1.dataset.id === card2.dataset.id) {
-                // It's a match
-                setTimeout(() => {
-                    card1.classList.add('is-matched');
-                    card2.classList.add('is-matched');
-                    this.matches++;
-                    this.updateStats();
-                    this.flippedCards = [];
-                    this.isChecking = false;
-                    if (this.matches === this.totalMatches) {
-                        setTimeout(() => alert('You found all the matches!'), 300);
-                    }
-                }, 800);
-            } else {
-                // Not a match
-                setTimeout(() => {
-                    card1.classList.remove('is-flipped');
-                    card2.classList.remove('is-flipped');
-                    this.flippedCards = [];
-                    this.isChecking = false;
-                }, 1200);
-            }
-        }
-    };
-
-
-    // --- INITIALIZATION ---
-    window.onload = () => {
-        document.getElementById('startGameBtn').addEventListener('click', () => {
-            game.mode = document.querySelector('input[name="mode"]:checked').value;
-            restartMainGame();
-            showScreen('mainGameScreen');
         });
+    },
+    handleCollision(obj, index) {
+        if (obj.type === 'distraction') {
+            this.lives--;
+            this.objects.splice(index, 1); // Remove object on hit
+        } else if (obj.type === 'token') {
+            this.tokens++;
+            this.score += 100;
+            this.objects.splice(index, 1);
+        }
+    },
+    endGame() {
+        this.active = false;
+        clearInterval(this.gameInterval);
+        this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = `24px "${getComputedStyle(document.body).getPropertyValue('--font-header')}"`;
+        this.ctx.textAlign = 'center';
+        const message = this.tokens >= this.goal ? "You Win! Great job!" : "Game Over. Try Again!";
+        this.ctx.fillText(message, this.canvas.width / 2, this.canvas.height / 2);
+    },
+    jump() {
+        if (this.player.grounded) {
+            this.player.vy = -16;
+            this.player.grounded = false;
+        }
+    },
+    updateUI() {
+        document.getElementById('minigame-score').textContent = this.score;
+        document.getElementById('minigame-tokens').textContent = `${this.tokens} / ${this.goal}`;
+        document.getElementById('minigame-lives').textContent = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
+    }
+};
 
+// --- UI AND EVENT HANDLERS ---
+function switchScreen(screenName) {
+    elements.sortingScreen.classList.toggle('active', screenName === 'sorting');
+    elements.minigameScreen.classList.toggle('active', screenName === 'minigame');
+    game.activeScreen = screenName;
+    if (screenName === 'minigame' && sideScroller.active) {
+        sideScroller.endGame();
+    }
+}
 
+document.getElementById('switch-to-minigame-btn').onclick = () => switchScreen('minigame');
+document.getElementById('switch-to-sorting-btn').onclick = () => switchScreen('sorting');
 
-        document.getElementById('startMemoryBtn').addEventListener('click', () => {
-            game.mode = document.querySelector('input[name="mode"]:checked').value;
-            // Get card setting from dropdown for memory game too
-            game.cardsPerLevel = parseInt(document.getElementById('cardsPerLevel').value);
-            showScreen('memoryGameScreen');
-            memoryGame.start();
-        });
+elements.characterSelector.onchange = (e) => { game.character = e.target.value; };
+// For now, sorting game is stubbed out but controls are here for future use
+elements.difficultySelector.onchange = (e) => { game.difficulty = e.target.value; };
 
-        document.getElementById('startScrollerBtn').addEventListener('click', () => {
-            showScreen('minigameScreen');
-            sideScroller.start();
-        });
+// --- INITIALIZE ---
+window.onload = () => {
+    sideScroller.init();
+};
 
-        document.getElementById('nextLevelBtn').addEventListener('click', goToNextLevel);
-        document.getElementById('settingsBtn').addEventListener('click', () => showPopup('settingsModal'));
-        
-        sideScroller.init();
-    };
-  </script>
-
+</script>
 </body>
 </html>
