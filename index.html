@@ -2,99 +2,171 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spot the Distraction</title>
+  <title>Spot the Distraction — Fun Color Version</title>
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f4f8;
-      text-align: center;
+      font-family: 'Comic Neue', sans-serif;
+      background-color: #f2f9ff;
+      margin: 0;
       padding: 20px;
+      text-align: center;
     }
     h1 {
-      color: #333;
+      color: #1a237e;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-size: 2.5rem;
     }
-    #modeSelect {
-      margin-bottom: 20px;
+    #modeSelect, #levelSelect {
+      margin: 15px;
+      font-size: 1.2rem;
     }
-    .card {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      padding: 12px;
-      margin: 10px;
-      width: 250px;
-      cursor: move;
-      border-radius: 8px;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: transform 0.3s, opacity 0.5s;
-    }
-    .card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .dropzone {
-      border: 2px dashed #999;
-      min-height: 150px;
-      padding: 20px;
-      margin: 20px;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-    }
-    .dropzone.over {
-      background-color: #e0f7fa;
+    #scoreBoard {
+      margin: 15px;
+      font-size: 1.5rem;
+      color: #0d47a1;
     }
     .container {
       display: flex;
       justify-content: space-around;
       flex-wrap: wrap;
     }
+    .card {
+      background-color: #ffffff;
+      border: 3px solid #90caf9;
+      padding: 12px;
+      margin: 10px;
+      width: 260px;
+      cursor: move;
+      border-radius: 12px;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: transform 0.4s, opacity 0.6s, background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: left;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .emoji {
+      font-size: 2.5rem;
+      margin-right: 12px;
+    }
+    .dropzone {
+      border: 3px dashed #bdbdbd;
+      min-height: 160px;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 12px;
+      transition: background-color 0.3s, border-color 0.3s;
+      background-color: #e3f2fd;
+    }
+    .dropzone#closer {
+      background-color: #c8e6c9; /* light greenish */
+    }
+    .dropzone#distraction {
+      background-color: #ffcdd2; /* light reddish/pink */
+    }
+    .dropzone.over {
+      border-color: #ff9800;
+      background-color: #fff9c4;
+    }
     .feedback {
       margin-top: 15px;
-      font-weight: bold;
       height: 2em;
-    }
-    #scoreBoard {
-      margin: 10px;
-      font-size: 1.2em;
-      color: #444;
+      font-size: 1.2rem;
     }
     #scripturePopup {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: white;
-      padding: 20px;
-      border: 2px solid #666;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      background: #ffffff;
+      padding: 25px;
+      border: 4px solid #1a237e;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
       display: none;
       max-width: 80%;
+      z-index: 1000;
+      font-size: 1.1rem;
+      color: #212121;
     }
     #scripturePopup button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #1a237e;
+      color: white;
+      cursor: pointer;
+    }
+    #scripturePopup button:hover {
+      background-color: #303f9f;
+    }
+    #nextLevelBtn {
+      margin-top: 25px;
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      background-color: #42a5f5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      display: none;
+    }
+    #nextLevelBtn:hover {
+      background-color: #1e88e5;
+    }
+    canvas#minigameCanvas {
+      border: 3px solid #1a237e;
+      background-color: #bbdefb;
+      margin-top: 25px;
+      border-radius: 10px;
+    }
+    #minigameControls button {
       margin-top: 10px;
-      padding: 5px 10px;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      background-color: #ffb74d;
+      color: #212121;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #minigameControls button:hover {
+      background-color: #ff9800;
     }
   </style>
 </head>
 <body>
 
-  <h1>Spot the Distraction</h1>
+  <h1>🌟 Spot the Distraction 🌟</h1>
 
   <div id="modeSelect">
-    <label><input type="radio" name="mode" value="cello" checked> Cello (7‑year‑old) </label>
-    <label><input type="radio" name="mode" value="fina"> Fina (11‑year‑old) </label>
+    <label><input type="radio" name="mode" value="cello" checked> Cello (7‑yr) </label>
+    <label><input type="radio" name="mode" value="fina"> Fina (11‑yr) </label>
+  </div>
+
+  <div id="levelSelect">
+    Level: <span id="levelLabel">1</span> / 3
   </div>
 
   <div id="scoreBoard">Score: 0</div>
 
   <div class="container">
     <div>
-      <h2>Keeps Me Close to Jehovah</h2>
+      <h2 style="color: #2e7d32;">Keeps Me Close to Jehovah</h2>
       <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
     </div>
     <div>
-      <h2>Could Be a Distraction</h2>
+      <h2 style="color: #c62828;">Could Be a Distraction</h2>
       <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)"></div>
     </div>
   </div>
@@ -104,70 +176,123 @@
 
   <div class="feedback" id="feedback"></div>
 
+  <button id="nextLevelBtn" onclick="goToNextLevel()">Go to Next Level</button>
+
   <div id="scripturePopup">
     <div id="scriptureText"></div>
     <button onclick="closeScripture()">OK</button>
   </div>
 
+  <canvas id="minigameCanvas" width="320" height="160"></canvas>
+  <div id="minigameControls">
+    <button onclick="startMinigame()">Start Mini‑Run</button>
+  </div>
+
   <script>
-    // Scripture verses (New World Translation) from jw.org
+    // Scriptures
     const scriptures = {
-      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9 (NWT)` + 
-                         `\n\nThese words show us that Jehovah does not tolerate rivals in our devotion; He wants our love, loyalty, and worship to belong to Him alone.` , 
-      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10 (NWT)` + 
-                      `\n\nJesus showed by His example that our worship belongs to Jehovah alone, not to anything or anyone else.`
+      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9 (NWT)`,
+      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10 (NWT)`
     };
 
-    let mode = 'cello';  // default
+    let mode = 'cello';
+    let level = 1;
     let score = 0;
 
-    const activitiesByMode = {
-      cello: [
-        { text: "Praying before bedtime", correct: "closer" },
-        { text: "Playing video games all evening", correct: "distraction" },
-        { text: "Helping clean up toys", correct: "closer" },
-        { text: "Watching things that scare me", correct: "distraction" }
-      ],
-      fina: [
-        { text: "Praying before bedtime", correct: "closer" },
-        { text: "Spending hours on social media", correct: "distraction" },
-        { text: "Trying to be popular by doing things Jehovah wouldn’t like", correct: "distraction" },
-        { text: "Attending meetings even when friends say it’s silly", correct: "closer" },
-        { text: "Putting what others think above obeying Jehovah", correct: "distraction" },
-        { text: "Reading the Bible instead of gossip", correct: "closer" }
-      ]
+    const activitiesByLevel = {
+      1: {
+        cello: [
+          { emoji: '🙏', text: "Praying before bedtime", correct: "closer" },
+          { emoji: '🎮', text: "Playing video games all evening", correct: "distraction" },
+          { emoji: '🧹', text: "Helping clean up toys", correct: "closer" },
+          { emoji: '📺', text: "Watching TV past bedtime", correct: "distraction" }
+        ],
+        fina: [
+          { emoji: '🙏', text: "Praying before bedtime", correct: "closer" },
+          { emoji: '🎮', text: "Spending hours on social media", correct: "distraction" },
+          { emoji: '🧹', text: "Helping with chores", correct: "closer" },
+          { emoji: '📺', text: "Watching TV past bedtime", correct: "distraction" }
+        ]
+      },
+      2: {
+        cello: [
+          { emoji: '📖', text: "Reading Bible story", correct: "closer" },
+          { emoji: '🏃‍♂️', text: "Running around outside", correct: "closer" },
+          { emoji: '📱', text: "Looking at phone nonstop", correct: "distraction" },
+          { emoji: '🛏️', text: "Skipping sleep to play", correct: "distraction" },
+          { emoji: '🔇', text: "Listening quietly when asked", correct: "closer" }
+        ],
+        fina: [
+          { emoji: '📖', text: "Reading Bible instead of gossip", correct: "closer" },
+          { emoji: '🏃‍♂️', text: "Helping friends feel included", correct: "closer" },
+          { emoji: '📱', text: "Trying to impress friends online", correct: "distraction" },
+          { emoji: '🛏️', text: "Putting fun before responsibility", correct: "distraction" },
+          { emoji: '📺', text: "Watching something that makes you afraid", correct: "distraction" }
+        ]
+      },
+      3: {
+        cello: [
+          { emoji: '⏰', text: "Waking early to help", correct: "closer" },
+          { emoji: '🧵', text: "Making something creative", correct: "closer" },
+          { emoji: '💸', text: "Wanting expensive things all the time", correct: "distraction" },
+          { emoji: '📚', text: "Studying hard", correct: "closer" },
+          { emoji: '🎵', text: "Playing loud music late", correct: "distraction" },
+          { emoji: '👥', text: "Following peer pressure", correct: "distraction" }
+        ],
+        fina: [
+          { emoji: '⏰', text: "Waking early to help", correct: "closer" },
+          { emoji: '🧵', text: "Creating art or crafts", correct: "closer" },
+          { emoji: '💸', text: "Comparing possessions with others", correct: "distraction" },
+          { emoji: '📚', text: "Studying hard for good reasons", correct: "closer" },
+          { emoji: '🎵', text: "Listening to music that distracts from worship", correct: "distraction" },
+          { emoji: '👥', text: "Doing what friends want instead of what Jehovah wants", correct: "distraction" }
+        ]
+      }
     };
 
+    function updateScore() {
+      document.getElementById("scoreBoard").textContent = `Score: ${score}`;
+    }
+
     function loadCards() {
+      document.getElementById("levelLabel").textContent = level;
       const cardContainer = document.getElementById("cards");
       cardContainer.innerHTML = "";
-      feedback.textContent = "";
+      document.getElementById("feedback").textContent = "";
+      document.getElementById("nextLevelBtn").style.display = "none";
       score = 0;
       updateScore();
-      const list = activitiesByMode[mode];
-      list.forEach((activity, index) => {
+      const list = activitiesByLevel[level][mode];
+      list.forEach((activity, idx) => {
         const card = document.createElement("div");
         card.className = "card";
-        card.id = "card" + index;
+        card.id = `card${idx}`;
         card.draggable = true;
-        card.textContent = activity.text;
+
+        const spanEmoji = document.createElement("span");
+        spanEmoji.className = "emoji";
+        spanEmoji.textContent = activity.emoji;
+        card.appendChild(spanEmoji);
+
+        const spanText = document.createElement("span");
+        spanText.textContent = activity.text;
+        card.appendChild(spanText);
+
         card.setAttribute("data-correct", activity.correct);
         card.ondragstart = drag;
-        // delay to animate entry
         setTimeout(() => {
           card.classList.add("visible");
-        }, 100 * index);
-        cardContainer.appendChild(card);
+        }, 120 * idx);
+        document.getElementById("cards").appendChild(card);
       });
     }
 
     document.getElementsByName("mode").forEach(radio => {
       radio.addEventListener("change", (e) => {
         mode = e.target.value;
+        level = 1;
         loadCards();
-        // reset dropzones
-        document.getElementById("closer").innerHTML = "";
-        document.getElementById("distraction").innerHTML = "";
+        clearDropzones();
       });
     });
 
@@ -185,16 +310,14 @@
     function drop(ev) {
       ev.preventDefault();
       ev.target.classList.remove('over');
-      const cardId = ev.dataTransfer.getData("text");
-      const card = document.getElementById(cardId);
-      // if drop target is inside card, adjust to the dropzone
       let zone = ev.target;
-      // ensure zone is correct (if dropped on child etc.)
       while (!zone.classList.contains('dropzone')) {
         zone = zone.parentElement;
         if (!zone) break;
       }
       if (!zone) return;
+      const cardId = ev.dataTransfer.getData("text");
+      const card = document.getElementById(cardId);
       const zoneId = zone.id;
       const correctZone = card.getAttribute("data-correct");
       const feedbackEl = document.getElementById("feedback");
@@ -203,18 +326,17 @@
         zone.appendChild(card);
         card.setAttribute("draggable", false);
         feedbackEl.textContent = "✅ Good job!";
-        feedbackEl.style.color = "green";
-        // animate correct: maybe scale up and down
+        feedbackEl.style.color = "#2e7d32";
         card.style.transition = "transform 0.5s";
         card.style.transform = "scale(1.1)";
         setTimeout(() => { card.style.transform = "scale(1)"; }, 500);
         score += 1;
         updateScore();
         maybeShowScripture();
+        checkLevelComplete();
       } else {
         feedbackEl.textContent = "❌ That might be a distraction. Try again!";
-        feedbackEl.style.color = "red";
-        // animate shake
+        feedbackEl.style.color = "#c62828";
         card.style.transition = "transform 0.2s";
         card.style.transform = "translateX(-10px)";
         setTimeout(() => { card.style.transform = "translateX(10px)"; }, 200);
@@ -222,20 +344,31 @@
       }
     }
 
-    function updateScore() {
-      document.getElementById("scoreBoard").textContent = `Score: ${score}`;
+    function clearDropzones() {
+      document.getElementById("closer").innerHTML = "";
+      document.getElementById("distraction").innerHTML = "";
     }
 
+    function checkLevelComplete() {
+      const total = activitiesByLevel[level][mode].length;
+      if (score === total) {
+        document.getElementById("feedback").textContent = `🎉 Level ${level} complete!`;
+        document.getElementById("nextLevelBtn").style.display = level < 3 ? "inline-block" : "none";
+      }
+    }
+
+    function goToNextLevel() {
+      if (level < 3) {
+        level++;
+        clearDropzones();
+        loadCards();
+      }
+    }
+
+    // Scripture popups
     function maybeShowScripture() {
-      // Show scripture every 2 correct answers
       if (score > 0 && score % 2 === 0) {
-        // choose which scripture based on mode or content
-        let which;
-        if (mode === 'fina') {
-          which = scriptures.worshipJehovah;
-        } else {
-          which = scriptures.exclusiveDevotion;
-        }
+        let which = (mode === 'fina') ? scriptures.worshipJehovah : scriptures.exclusiveDevotion;
         showScripture(which);
       }
     }
@@ -250,9 +383,92 @@
       document.getElementById("scripturePopup").style.display = "none";
     }
 
-    const feedback = document.getElementById("feedback");
+    // Simple minigame
+    const canvas = document.getElementById("minigameCanvas");
+    const ctx = canvas.getContext("2d");
+    let runnerX = 20, runnerY = canvas.height - 30;
+    let obstacles = [];
+    let token = null;
+    let minigameInterval, obstacleInterval;
+    let minigameActive = false;
 
-    // Initial load
+    function startMinigame() {
+      if (minigameActive) return;
+      minigameActive = true;
+      runnerX = 20;
+      obstacles = [];
+      token = { x: canvas.width, y: canvas.height - 60, width: 20, height: 20 };
+      document.addEventListener('keydown', handleKeyDown);
+      minigameInterval = setInterval(updateMinigame, 30);
+      obstacleInterval = setInterval(() => {
+        obstacles.push({ x: canvas.width, y: canvas.height - 30, width: 20, height: 20 });
+      }, 1500);
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'ArrowUp' || e.key === ' ') {
+        runnerY = canvas.height - 80;
+        setTimeout(() => { runnerY = canvas.height - 30; }, 400);
+      }
+    }
+
+    function collision(x1, y1, w1, h1, x2, y2, w2, h2) {
+      return x1 < x2 + w2 &&
+             x1 + w1 > x2 &&
+             y1 < y2 + h2 &&
+             y1 + h1 > y2;
+    }
+
+    function updateMinigame() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Optional: draw sky, ground
+      ctx.fillStyle = '#90caf9';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+      // draw runner
+      ctx.fillStyle = '#2e7d32';
+      ctx.fillRect(runnerX, runnerY, 20, 20);
+
+      // draw token
+      if (token) {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(token.x, token.y, token.width, token.height);
+        token.x -= 4;
+        if (collision(runnerX, runnerY, 20, 20, token.x, token.y, token.width, token.height)) {
+          score += 5;
+          updateScore();
+          token = null;
+        } else if (token.x < -20) {
+          token = { x: canvas.width, y: canvas.height - 60, width: 20, height: 20 };
+        }
+      }
+
+      // obstacles
+      ctx.fillStyle = '#d32f2f';
+      obstacles.forEach((obs, i) => {
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        obs.x -= 5;
+        if (collision(runnerX, runnerY, 20, 20, obs.x, obs.y, obs.width, obs.height)) {
+          endMinigame();
+        }
+      });
+
+      obstacles = obstacles.filter(o => o.x + o.width > 0);
+    }
+
+    function endMinigame() {
+      clearInterval(minigameInterval);
+      clearInterval(obstacleInterval);
+      minigameActive = false;
+      document.getElementById("feedback").textContent = "💥 Oops! You hit a distraction!";
+      if (level < 3) {
+        document.getElementById("nextLevelBtn").style.display = "inline-block";
+      }
+    }
+
+    // Initial
     loadCards();
   </script>
 
