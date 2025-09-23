@@ -2,819 +2,569 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spot the Distraction — Enhanced Edition</title>
-  <!-- Google Font -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spot the Distraction — Deluxe Edition</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap">
   <style>
+    :root {
+      --primary-blue: #1e88e5;
+      --light-blue: #bbdefb;
+      --dark-blue: #0d47a1;
+      --accent-green: #4caf50;
+      --light-green: #c8e6c9;
+      --accent-red: #f44336;
+      --light-red: #ffcdd2;
+      --accent-orange: #ff9800;
+      --accent-purple: #9c27b0;
+      --accent-yellow: #ffeb3b;
+      --bg-color: #e3f2fd;
+      --font-header: 'Fredoka One', cursive;
+      --font-body: 'Comic Neue', sans-serif;
+    }
+
+    /* General Styles */
     body {
-      font-family: 'Comic Neue', sans-serif;
-      background: linear-gradient(135deg, #e3f2fd 0%, #f2f9ff 100%);
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
       margin: 0;
       padding: 20px;
       text-align: center;
-      min-height: 100vh;
+      color: #333;
+      overflow-x: hidden;
     }
-    h1 {
-      color: #1a237e;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-      font-size: 2.5rem;
-      margin-bottom: 30px;
+
+    h1, h2, h3 {
+      font-family: var(--font-header);
+      color: var(--dark-blue);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
-    .game-controls {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      margin: 20px auto;
-      max-width: 800px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    #modeSelect, #levelSelect, #difficultySelect {
-      margin: 15px;
+    h1 { font-size: 3rem; margin-bottom: 0;}
+    h2 { font-size: 1.8rem; }
+    h3 { font-size: 1.5rem; }
+
+    button, .btn {
+      font-family: var(--font-header);
+      padding: 12px 24px;
       font-size: 1.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      background-color: var(--accent-orange);
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: 5px;
     }
-    .control-group {
-      margin: 20px 0;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 10px;
+    button:hover, .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     }
-    .control-group h3 {
-      margin-top: 0;
-      color: #1a237e;
+    button:active, .btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Game Screens & Layout */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .screen.active {
+      display: flex;
+    }
+
+    /* Start Screen */
+    #startScreen h2 {
+      font-size: 2rem;
+      color: var(--primary-blue);
+    }
+    .game-options {
+        background: white;
+        padding: 20px 30px;
+        border-radius: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+    .game-options label {
+        font-size: 1.2rem;
+        margin: 0 10px;
+        font-weight: 700;
+    }
+    .game-options .button-group {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    #startGameBtn { background-color: var(--accent-green); }
+
+    /* Main Game Area */
+    #gameHeader {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+        max-width: 800px;
+        flex-wrap: wrap;
     }
     #scoreBoard {
-      margin: 15px;
-      font-size: 1.5rem;
-      color: #0d47a1;
-      font-weight: bold;
-    }
-    .stats {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin: 20px 0;
-    }
-    .stat-item {
-      background: white;
+      font-size: 1.8rem;
+      font-family: var(--font-header);
+      color: var(--primary-blue);
+      background-color: white;
       padding: 10px 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
     }
+    #score-animation {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 2rem;
+        color: var(--accent-green);
+        opacity: 0;
+        transition: all 0.5s ease;
+    }
+
     .container {
       display: flex;
       justify-content: space-around;
       flex-wrap: wrap;
-      max-width: 1000px;
-      margin: 0 auto;
+      width: 100%;
+      gap: 20px;
+    }
+
+    .dropzone {
+      border: 4px dashed #bdbdbd;
+      min-height: 200px;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 20px;
+      transition: background-color 0.3s, border-color 0.3s, transform 0.3s;
+      flex: 1;
+      min-width: 300px;
+    }
+    #closer { background-color: var(--light-green); border-color: var(--accent-green); }
+    #distraction { background-color: var(--light-red); border-color: var(--accent-red); }
+    #closer h2 { color: var(--accent-green); }
+    #distraction h2 { color: var(--accent-red); }
+    .dropzone.over {
+      transform: scale(1.05);
+      border-color: var(--accent-orange);
+      background-color: #fffde7;
+    }
+
+    /* Cards */
+    #cards {
+      min-height: 150px;
     }
     .card {
       background-color: #ffffff;
-      border: 3px solid #90caf9;
+      /* Default border, will be overridden by style classes */
+      border: 4px solid var(--primary-blue);
       padding: 15px;
-      margin: 8px;
+      margin: 10px;
       width: 280px;
-      cursor: move;
-      border-radius: 12px;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: all 0.4s ease;
+      cursor: grab;
+      border-radius: 15px;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: left;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      position: relative;
+      opacity: 0;
+      transform: scale(0.5) rotate(-15deg);
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     }
+    /* NEW: Visual Variety for Cards */
+    .card.style-blue { border-color: #2196f3; }
+    .card.style-green { border-color: #4caf50; }
+    .card.style-orange { border-color: #ff9800; }
+    .card.style-purple { border-color: #9c27b0; }
+
     .card.visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1) rotate(0deg);
     }
-    .card.correct {
-      border-color: #4caf50;
-      background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);
+    .card:hover {
+        transform: scale(1.05) rotate(2deg) !important;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.2);
     }
-    .card.incorrect {
-      border-color: #f44336;
-      background: linear-gradient(135deg, #ffebee 0%, #ffffff 100%);
-      animation: shake 0.5s;
+    .card.correct-drop {
+        animation: sparkle 0.7s ease-out;
+    }
+    @keyframes sparkle {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1) rotate(5deg); box-shadow: 0 0 20px var(--accent-yellow); }
+    }
+    .card.incorrect-drop {
+        animation: shake 0.5s;
     }
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px) rotate(-3deg); }
+        75% { transform: translateX(10px) rotate(3deg); }
     }
-    .emoji {
-      font-size: 2.5rem;
-      margin-right: 15px;
+    .emoji { font-size: 3rem; margin-right: 15px; }
+
+    /* Popups and Modals */
+    .popup-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
     }
-    .card-text {
-      flex: 1;
-      text-align: left;
-      font-size: 1.1rem;
+    .popup-overlay.show { display: flex; }
+    .popup-content {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        max-width: 90%;
+        width: 500px;
+        animation: popup-appear 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
     }
-    .difficulty-indicator {
-      position: absolute;
-      top: 5px;
-      right: 8px;
-      font-size: 0.8rem;
-      color: #666;
+    @keyframes popup-appear {
+        from { transform: scale(0.7); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
     }
-    .dropzone {
-      border: 3px dashed #bdbdbd;
-      min-height: 180px;
-      padding: 20px;
-      margin: 20px;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      background-color: #e3f2fd;
-      position: relative;
-    }
-    .dropzone h2 {
-      margin-top: 0;
-      font-size: 1.4rem;
-    }
-    .dropzone#closer {
-      background: linear-gradient(135deg, #c8e6c9 0%, #e8f5e8 100%);
-      border-color: #4caf50;
-    }
-    .dropzone#distraction {
-      background: linear-gradient(135deg, #ffcdd2 0%, #ffebee 100%);
-      border-color: #f44336;
-    }
-    .dropzone.over {
-      border-color: #ff9800;
-      background-color: #fff9c4;
-      transform: scale(1.02);
-    }
-    .dropzone-counter {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: rgba(255,255,255,0.8);
-      padding: 5px 10px;
-      border-radius: 15px;
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-    .feedback {
-      margin: 20px 0;
-      height: 3em;
+
+    #scriptureText {
       font-size: 1.3rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #scripturePopup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      padding: 30px;
-      border: 4px solid #1a237e;
-      border-radius: 20px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-      display: none;
-      max-width: 90%;
-      max-height: 80%;
-      z-index: 1000;
-      font-size: 1.2rem;
-      color: #212121;
-      overflow-y: auto;
-    }
-    #scripturePopup .scripture-header {
-      color: #1a237e;
-      font-weight: bold;
-      margin-bottom: 15px;
-      font-size: 1.3rem;
-    }
-    #scripturePopup .scripture-text {
+      color: #333;
       line-height: 1.6;
-      margin-bottom: 20px;
-      font-style: italic;
     }
-    #scripturePopup .scripture-reference {
-      font-weight: bold;
-      color: #0d47a1;
-      margin-bottom: 15px;
+
+    /* Minigame Styles */
+    #minigameContainer {
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
-    #scripturePopup button {
-      margin: 10px 5px;
-      padding: 10px 20px;
-      font-size: 1.1rem;
-      border: none;
+    canvas#minigameCanvas {
+      border: 4px solid var(--dark-blue);
+      background-color: var(--light-blue);
+      margin-top: 25px;
       border-radius: 10px;
-      background-color: #1a237e;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    #scripturePopup button:hover {
-      background-color: #303f9f;
-    }
-    .action-buttons {
-      margin: 30px 0;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-    .btn {
-      padding: 12px 24px;
-      font-size: 1.2rem;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-      font-family: inherit;
-    }
-    .btn-primary {
-      background-color: #42a5f5;
-      color: white;
-    }
-    .btn-primary:hover {
-      background-color: #1e88e5;
-      transform: translateY(-2px);
-    }
-    .btn-success {
-      background-color: #66bb6a;
-      color: white;
-    }
-    .btn-success:hover {
-      background-color: #4caf50;
-      transform: translateY(-2px);
-    }
-    .btn-warning {
-      background-color: #ffb74d;
-      color: #212121;
-    }
-    .btn-warning:hover {
-      background-color: #ff9800;
-      transform: translateY(-2px);
-    }
-    .minigame-section {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      margin: 20px auto;
-      max-width: 650px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .minigame-section h3 {
-      color: #1a237e;
-      margin-top: 0;
-    }
-    canvas {
-      border: 3px solid #1a237e;
-      border-radius: 10px;
-      display: block;
-      margin: 15px auto;
-    }
-    #minigameCanvas {
-      background: linear-gradient(to bottom, #bbdefb 0%, #e3f2fd 100%);
-    }
-    #sideScrollerCanvas {
-      background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #8FBC8F 100%);
-    }
-    .progress-bar {
       width: 100%;
-      height: 20px;
-      background: #e0e0e0;
-      border-radius: 10px;
-      overflow: hidden;
-      margin: 15px 0;
+      max-width: 640px;
+      height: auto;
     }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
-      transition: width 0.3s ease;
-      border-radius: 10px;
+
+    /* Settings Modal */
+    #settingsModal .settings-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+        font-size: 1.2rem;
     }
-    .timer {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #f44336;
-      margin: 15px 0;
+
+    /* --- MEMORY GAME --- */
+    #memoryGameGrid {
+        display: grid;
+        gap: 15px;
+        max-width: 600px;
+        width: 100%; /* Ensure it takes up space */
+        margin: 20px auto;
+        /* grid-template-columns is set by JS */
     }
-    .hidden {
-      display: none;
+    .memory-card {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+        cursor: pointer;
     }
-    .game-stats {
-      display: flex;
-      justify-content: space-around;
-      margin: 10px 0;
-      font-size: 1rem;
-      font-weight: bold;
+    .memory-card.is-flipped {
+        transform: rotateY(180deg);
     }
-    .health-bar {
-      display: flex;
-      justify-content: center;
-      margin: 10px 0;
+    .memory-card.is-matched {
+        transform: scale(0.9);
+        opacity: 0.5;
+        pointer-events: none;
     }
-    .heart {
-      font-size: 1.5rem;
-      margin: 0 2px;
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 5px;
+        box-sizing: border-box;
+        border-radius: 15px;
+        font-size: 1.8rem;
     }
+    .card-front {
+        background: white;
+        border: 4px solid var(--primary-blue);
+        transform: rotateY(180deg);
+        color: #333;
+    }
+    .card-front .emoji { font-size: 2.5rem; margin: 0; }
+    .card-front .text { font-size: 0.7rem; margin-top: 5px; text-align: center; }
+    .card-back {
+        background: linear-gradient(135deg, var(--accent-orange), #ffc107);
+        color: white;
+        font-size: 3rem;
+        border: 4px solid white;
+    }
+
   </style>
 </head>
 <body>
 
-  <h1>🌟 Spot the Distraction — Enhanced Edition 🌟</h1>
+  <h1>🌟 Spot the Distraction 🌟</h1>
 
-  <div class="game-controls">
-    <div class="control-group">
-      <h3>👤 Choose Your Character</h3>
-      <div id="modeSelect">
-        <label><input type="radio" name="mode" value="cello" checked> Cello (7‑yr) 🧒</label>
-        <label><input type="radio" name="mode" value="fina"> Fina (11‑yr) 👧</label>
-        <label><input type="radio" name="mode" value="teen"> Teen (15‑yr) 🧑</label>
-        <label><input type="radio" name="mode" value="adult"> Adult 👨‍👩‍👧‍👦</label>
+  <div id="startScreen" class="screen active">
+    <div class="game-options">
+      <h2>Choose Your Age Group</h2>
+      <div>
+        <label><input type="radio" name="mode" value="cello" checked> Younger (approx. 7) </label>
+        <label><input type="radio" name="mode" value="fina"> Older (approx. 11) </label>
       </div>
-    </div>
-
-    <div class="control-group">
-      <h3>⚡ Difficulty Level</h3>
-      <div id="difficultySelect">
-        <label><input type="radio" name="difficulty" value="easy" checked> Easy (No Timer) 😊</label>
-        <label><input type="radio" name="difficulty" value="medium"> Medium (2 min timer) ⏰</label>
-        <label><input type="radio" name="difficulty" value="hard"> Hard (1 min timer) 🔥</label>
-      </div>
-    </div>
-
-    <div class="control-group">
-      <h3>📊 Game Progress</h3>
-      <div id="levelSelect">
-        Level: <span id="levelLabel">1</span> / 5
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill" style="width: 20%"></div>
+      <div class="button-group">
+        <button id="startGameBtn">Start Sorting Game!</button>
+        <button id="startMemoryBtn" style="background-color:#9c27b0;">Start Memory Game!</button>
+        <button id="startScrollerBtn" style="background-color:#2196F3;">Start Mini-Run Game!</button>
       </div>
     </div>
   </div>
 
-  <div class="stats">
-    <div class="stat-item">
-      <div id="scoreBoard">Score: 0</div>
+  <div id="mainGameScreen" class="screen">
+    <div id="gameHeader">
+      <button id="settingsBtn" style="background-color:#78909c;">⚙️ Settings</button>
+      <div id="levelSelect"><h2>Level: <span id="levelLabel">1</span></h2></div>
+      <div id="scoreBoard">Score: 0<span id="score-animation"></span></div>
     </div>
-    <div class="stat-item">
-      <div id="streakBoard">Streak: 0</div>
-    </div>
-    <div class="stat-item">
-      <div id="timerDisplay" class="timer hidden">Time: 0:00</div>
-    </div>
-  </div>
 
-  <div class="container">
-    <div>
-      <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)" ondragleave="dragLeave(event)">
-        <h2 style="color: #2e7d32;">✅ Keeps Me Close to Jehovah</h2>
-        <div class="dropzone-counter" id="closerCounter">0</div>
+    <div class="container">
+      <div class="dropzone" id="closer" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h2>Keeps Me Close to Jehovah</h2>
+      </div>
+      <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)">
+        <h2>Could Be a Distraction</h2>
       </div>
     </div>
-    <div>
-      <div class="dropzone" id="distraction" ondragover="allowDrop(event)" ondrop="drop(event)" ondragleave="dragLeave(event)">
-        <h2 style="color: #c62828;">⚠️ Could Be a Distraction</h2>
-        <div class="dropzone-counter" id="distractionCounter">0</div>
+
+    <h3>Drag the Activities Below</h3>
+    <div id="cards" class="container"></div>
+    <div class="feedback" id="feedback"></div>
+    <button id="nextLevelBtn" style="display: none;">Go to Next Level</button>
+  </div>
+
+  <div id="memoryGameScreen" class="screen">
+      <h2>Memory Verse Match</h2>
+      <div id="memoryGameStats">Moves: 0 | Matches: 0</div>
+      <div id="memoryGameGrid"></div>
+      <button onclick="showScreen('startScreen')">Back to Menu</button>
+  </div>
+
+  <div id="minigameScreen" class="screen">
+    <h2>Jehovah's Witness Run!</h2>
+    <p>Jump over distractions and collect good things! (Spacebar or Tap)</p>
+    <div id="minigameContainer">
+        <canvas id="minigameCanvas" width="640" height="320"></canvas>
+    </div>
+    <button onclick="sideScroller.start()">Start / Restart</button>
+    <button onclick="showScreen('startScreen')" style="background-color:#78909c;">Back to Menu</button>
+  </div>
+
+  <div id="scripturePopup" class="popup-overlay">
+    <div class="popup-content">
+      <div id="scriptureText"></div><br>
+      <button onclick="closePopup('scripturePopup')">OK</button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="popup-overlay">
+      <div class="popup-content">
+          <h2>Settings</h2>
+          <div class="settings-row">
+              <label for="cardsPerLevel">Cards Per Level:</label>
+              <select id="cardsPerLevel">
+                  <option value="4">4 (8 cards)</option>
+                  <option value="6" selected>6 (12 cards)</option>
+                  <option value="8">8 (16 cards)</option>
+              </select>
+          </div>
+          <button onclick="saveSettings()">Save & Restart</button>
       </div>
-    </div>
-  </div>
-
-  <h3>🎯 Activities to Sort</h3>
-  <div id="cards" class="container"></div>
-
-  <div class="feedback" id="feedback"></div>
-
-  <div class="action-buttons">
-    <button id="nextLevelBtn" class="btn btn-primary hidden" onclick="goToNextLevel()">Go to Next Level 🚀</button>
-    <button id="restartBtn" class="btn btn-warning" onclick="restartGame()">Restart Game 🔄</button>
-    <button id="hintBtn" class="btn btn-success" onclick="showHint()">Get Hint 💡</button>
-  </div>
-
-  <div id="scripturePopup">
-    <div class="scripture-header" id="scriptureHeader"></div>
-    <div class="scripture-text" id="scriptureText"></div>
-    <div class="scripture-reference" id="scriptureReference"></div>
-    <div style="text-align: center;">
-      <button onclick="closeScripture()">Continue Playing</button>
-      <button onclick="showMoreScriptures()">More Scriptures</button>
-    </div>
-  </div>
-
-  <!-- Simple Mini-Run Game -->
-  <div class="minigame-section">
-    <h3>🏃‍♂️ Simple Mini-Game: Avoid Distractions!</h3>
-    <canvas id="minigameCanvas" width="350" height="180"></canvas>
-    <div style="text-align: center;">
-      <button class="btn btn-warning" onclick="startMinigame()">Start Mini‑Run 🎮</button>
-      <p style="font-size: 0.9rem; color: #666;">Use SPACE or UP arrow to jump over distractions!</p>
-    </div>
-  </div>
-
-  <!-- Advanced Side-Scroller Game -->
-  <div class="minigame-section">
-    <h3>🎮 Advanced Mini-Game: Side-Scroller Adventure!</h3>
-    <div class="game-stats">
-      <div>Adventure Score: <span id="adventureScore">0</span></div>
-      <div>Kingdom Tokens: <span id="kingdomTokens">0</span></div>
-      <div>Goal: <span id="tokenGoal">10</span> tokens</div>
-    </div>
-    <div class="health-bar" id="healthBar">
-      <span class="heart">❤️</span>
-      <span class="heart">❤️</span>
-      <span class="heart">❤️</span>
-    </div>
-    <canvas id="sideScrollerCanvas" width="600" height="300"></canvas>
-    <div style="text-align: center;">
-      <button class="btn btn-warning" onclick="startSideScroller()">Start Adventure 🚀</button>
-      <p style="font-size: 0.9rem; color: #666;">Use SPACE or ↑ to jump. Collect Kingdom Tokens 📖! Avoid distractions 📱!</p>
-    </div>
   </div>
 
   <script>
-    // Enhanced scriptures from New World Translation
+    // --- GAME STATE & CONFIG ---
+    const game = {
+      mode: 'cello',
+      level: 1,
+      score: 0,
+      cardsPerLevel: 6,
+      currentScreen: 'startScreen'
+    };
+
     const scriptures = {
-      exclusiveDevotion: {
-        header: "Exclusive Devotion to Jehovah",
-        text: "I, Jehovah your God, am a God who requires exclusive devotion.",
-        reference: "Deuteronomy 5:9 (NWT)"
-      },
-      worshipJehovah: {
-        header: "True Worship",
-        text: "It is Jehovah your God you must worship, and it is to him alone you must render sacred service.",
-        reference: "Matthew 4:10 (NWT)"
-      },
-      seekFirst: {
-        header: "Priorities in Life",
-        text: "Keep on, then, seeking first the Kingdom and his righteousness, and all these other things will be added to you.",
-        reference: "Matthew 6:33 (NWT)"
-      },
-      badAssociations: {
-        header: "Choose Friends Wisely",
-        text: "Do not be misled. Bad associations spoil useful habits.",
-        reference: "1 Corinthians 15:33 (NWT)"
-      },
-      loveOfMoney: {
-        header: "Materialism Warning",
-        text: "For the love of money is a root of all sorts of injurious things, and by reaching out for this love some have been led astray from the faith.",
-        reference: "1 Timothy 6:10 (NWT)"
-      },
-      worldlyDesires: {
-        header: "Resist Worldly Desires",
-        text: "Everything in the world—the desire of the flesh and the desire of the eyes and the showy display of one's means of life—does not originate with the Father, but originates with the world.",
-        reference: "1 John 2:16 (NWT)"
-      },
-      prayer: {
-        header: "The Power of Prayer",
-        text: "Persevere in prayer, being watchful in it with thanksgiving.",
-        reference: "Colossians 4:2 (NWT)"
-      },
-      bibleStudy: {
-        header: "Value of Bible Study",
-        text: "All Scripture is inspired of God and beneficial for teaching, for reproving, for setting things straight, for disciplining in righteousness.",
-        reference: "2 Timothy 3:16 (NWT)"
-      }
+      exclusiveDevotion: `"I Jehovah your God am a God exacting exclusive devotion." — Deuteronomy 5:9`,
+      worshipJehovah: `"It is Jehovah your God you must worship, and it is to him alone you must render sacred service." — Matthew 4:10`,
+      watchHowYouWalk: `"So keep strict watch on how you walk, not as unwise but as wise persons, making the best use of your time." — Ephesians 5:15, 16`,
+      thinkOnTheseThings: `"Whatever things are true, . . . righteous, . . . lovable, . . . praiseworthy, continue considering these things." — Philippians 4:8`,
+      safeguardHeart: `"Above all the things that you guard, safeguard your heart, for out of it are the sources of life." — Proverbs 4:23`
     };
 
-    let mode = 'cello';
-    let difficulty = 'easy';
-    let level = 1;
-    let score = 0;
-    let streak = 0;
-    let maxStreak = 0;
-    let timer = null;
-    let timeLeft = 0;
-    let hintsUsed = 0;
-    let currentHintIndex = 0;
-
-    // Enhanced activities with more variety and age-appropriate content
-    const activitiesByLevel = {
-      1: {
-        cello: [
-          { emoji: '🙏', text: "Praying before meals and bedtime", correct: "closer", hint: "Talking to Jehovah is always good!" },
-          { emoji: '🎮', text: "Playing video games for many hours", correct: "distraction", hint: "Too much of anything can take time from Jehovah." },
-          { emoji: '🧹', text: "Helping mommy and daddy clean up", correct: "closer", hint: "Helping others shows love like Jehovah." },
-          { emoji: '📺', text: "Watching scary movies that give bad dreams", correct: "distraction", hint: "Things that scare us don't help us feel close to Jehovah." }
+    // NEW: Expanded list of activities for more variety
+    const allActivities = {
+      cello: {
+        closer: [
+          { emoji: '🙏', text: "Praying before bedtime" }, { emoji: '🧹', text: "Helping clean up toys" },
+          { emoji: '📖', text: "Reading a Bible story" }, { emoji: '🔇', text: "Listening quietly when asked" },
+          { emoji: '🤗', text: "Sharing my toys" }, { emoji: '❤️', text: "Drawing a picture for someone sad" },
+          { emoji: '🎶', text: "Singing Kingdom songs" }, { emoji: '👨‍👩‍👧‍👦', text: "Enjoying family worship" },
+          { emoji: '😊', text: "Saying 'please' and 'thank you'" }, { emoji: '🤝', text: "Helping a younger sibling" },
+          { emoji: '🥰', text: "Giving someone a hug" }, { emoji: '✔', text: "Obeying right away" }
         ],
-        fina: [
-          { emoji: '🙏', text: "Having personal prayer time daily", correct: "closer", hint: "Regular prayer strengthens our friendship with Jehovah." },
-          { emoji: '📱', text: "Spending hours scrolling social media", correct: "distraction", hint: "Too much screen time can distract from spiritual things." },
-          { emoji: '🤝', text: "Helping friends with their problems", correct: "closer", hint: "Showing love to others reflects Jehovah's love." },
-          { emoji: '🛍️', text: "Always wanting the latest trendy items", correct: "distraction", hint: "Focusing too much on material things can distract from spiritual goals." }
-        ],
-        teen: [
-          { emoji: '📖', text: "Reading the Bible daily for personal study", correct: "closer", hint: "God's Word helps us make good decisions." },
-          { emoji: '🎉', text: "Going to parties where people drink alcohol", correct: "distraction", hint: "Bad associations can lead us away from Jehovah." },
-          { emoji: '👥', text: "Participating in family worship regularly", correct: "closer", hint: "Family worship strengthens our spiritual foundation." },
-          { emoji: '💰', text: "Working extra hours just to buy expensive things", correct: "distraction", hint: "The love of money can become a root of problems." }
-        ],
-        adult: [
-          { emoji: '⛪', text: "Attending all congregation meetings regularly", correct: "closer", hint: "Meeting together encourages our faith." },
-          { emoji: '💼', text: "Putting career advancement above spiritual goals", correct: "distraction", hint: "Seeking first the Kingdom should be our priority." },
-          { emoji: '👨‍👩‍👧‍👦', text: "Teaching children about Jehovah daily", correct: "closer", hint: "Training children in God's ways is a sacred responsibility." },
-          { emoji: '🍷', text: "Drinking alcohol to cope with stress", correct: "distraction", hint: "Relying on substances instead of Jehovah can become harmful." }
+        distraction: [
+          { emoji: '🎮', text: "Playing video games all evening" }, { emoji: '📺', text: "Watching TV past bedtime" },
+          { emoji: '📱', text: "Looking at a phone nonstop" }, { emoji: '😠', text: "Arguing with my brother or sister" },
+          { emoji: '😫', text: "Complaining about chores" }, { emoji: '🍬', text: "Eating snacks instead of dinner" },
+          { emoji: '🤫', text: "Keeping secrets from Mom and Dad" }, { emoji: '😴', text: "Being too tired for the meeting" },
+          { emoji: '😡', text: "Getting angry when I don't get my way" }, { emoji: '😭', text: "Whining to get something I want" },
+          { emoji: '💥', text: "Making a big mess and not cleaning it" }, { emoji: '🙉', text: "Not listening when being spoken to" }
         ]
       },
-      2: {
-        cello: [
-          { emoji: '📚', text: "Listening to Bible stories before bed", correct: "closer", hint: "Bible stories teach us about Jehovah's love." },
-          { emoji: '🏃‍♂️', text: "Playing outside and getting exercise", correct: "closer", hint: "Taking care of our body is good!" },
-          { emoji: '📱', text: "Watching videos instead of listening to parents", correct: "distraction", hint: "Obeying parents is what Jehovah wants." },
-          { emoji: '🛏️', text: "Staying up very late when told to sleep", correct: "distraction", hint: "Rest helps us be ready for good things." },
-          { emoji: '🎵', text: "Singing Kingdom songs", correct: "closer", hint: "Songs about Jehovah make our hearts happy." }
+      fina: {
+        closer: [
+          { emoji: '🙏', text: "Personal prayer about my day" }, { emoji: '🤝', text: "Helping a friend who is struggling" },
+          { emoji: '📖', text: "Personal Bible reading" }, { emoji: '📝', text: "Preparing for the meeting" },
+          { emoji: '😇', text: "Choosing good friends" }, { emoji: '🗣️', text: "Talking about Jehovah at school" },
+          { emoji: '💪', text: "Resisting peer pressure" }, { emoji: '😊', text: "Being encouraging to others" },
+          { emoji: '💖', text: "Showing hospitality" }, { emoji: ' diligently', text: "Studying hard for a test" },
+          { emoji: '⚖️', text: "Being honest even when it's hard" }, { emoji: '✨', text: "Setting a good example for others" }
         ],
-        fina: [
-          { emoji: '📖', text: "Preparing for congregation meetings", correct: "closer", hint: "Preparation helps us participate and learn more." },
-          { emoji: '🏃‍♂️', text: "Including others in games and activities", correct: "closer", hint: "Being kind to others shows Christian love." },
-          { emoji: '📱', text: "Chatting online instead of doing homework", correct: "distraction", hint: "Responsibilities come first, then recreation." },
-          { emoji: '🎭', text: "Watching shows with bad language and violence", correct: "distraction", hint: "What we watch affects our thoughts and heart." },
-          { emoji: '🎨', text: "Using talents to praise Jehovah", correct: "closer", hint: "Our abilities can be used to honor God." }
-        ],
-        teen: [
-          { emoji: '🚪', text: "Sharing in the preaching work regularly", correct: "closer", hint: "Telling others about Jehovah is a privilege." },
-          { emoji: '🎓', text: "Focusing only on getting into prestigious universities", correct: "distraction", hint: "Education is good, but spiritual goals matter most." },
-          { emoji: '💝', text: "Showing appreciation for parents' guidance", correct: "closer", hint: "Honoring parents pleases Jehovah." },
-          { emoji: '👫', text: "Dating someone who doesn't share your beliefs", correct: "distraction", hint: "Marrying only in the Lord protects our faith." },
-          { emoji: '🎯', text: "Setting spiritual goals for the future", correct: "closer", hint: "Planning for spiritual service brings joy." }
-        ],
-        adult: [
-          { emoji: '🏠', text: "Making home a place of peace and worship", correct: "closer", hint: "Our homes should reflect our love for Jehovah." },
-          { emoji: '💳', text: "Accumulating debt for luxury items", correct: "distraction", hint: "Contentment with necessities brings peace." },
-          { emoji: '🤲', text: "Volunteering for congregation responsibilities", correct: "closer", hint: "Serving others in the congregation is rewarding." },
-          { emoji: '📺', text: "Binge-watching shows instead of family time", correct: "distraction", hint: "Family relationships need our attention and care." },
-          { emoji: '📝', text: "Keeping a regular schedule for Bible study", correct: "closer", hint: "Consistent study helps us grow spiritually." }
-        ]
-      },
-      3: {
-        cello: [
-          { emoji: '⏰', text: "Getting up early to help with chores", correct: "closer", hint: "Being helpful makes Jehovah happy." },
-          { emoji: '🧵', text: "Making gifts for family and friends", correct: "closer", hint: "Giving from the heart shows love." },
-          { emoji: '💸', text: "Always asking for expensive toys", correct: "distraction", hint: "Being content with what we have is better." },
-          { emoji: '📚', text: "Trying hard in school to learn", correct: "closer", hint: "Learning helps us serve Jehovah better." },
-          { emoji: '🎵', text: "Listening to music with bad words", correct: "distraction", hint: "Good music makes our hearts clean." },
-          { emoji: '👥', text: "Being mean to kids who are different", correct: "distraction", hint: "Jehovah loves all kinds of people." }
-        ],
-        fina: [
-          { emoji: '⏰', text: "Waking up early for family worship", correct: "closer", hint: "Starting the day with Jehovah sets a good tone." },
-          { emoji: '🎨', text: "Creating art that honors Jehovah", correct: "closer", hint: "Our creativity can glorify God." },
-          { emoji: '💸', text: "Comparing possessions with classmates", correct: "distraction", hint: "Contentment comes from spiritual riches, not material ones." },
-          { emoji: '📚', text: "Studying hard to develop useful skills", correct: "closer", hint: "Education helps us serve others better." },
-          { emoji: '🎵', text: "Choosing music that promotes wrong values", correct: "distraction", hint: "Music influences our thoughts and feelings." },
-          { emoji: '👥', text: "Following peer pressure instead of Bible principles", correct: "distraction", hint: "Pleasing Jehovah is more important than pleasing people." }
-        ],
-        teen: [
-          { emoji: '🎯', text: "Working toward spiritual goals like baptism", correct: "closer", hint: "Dedication to Jehovah is the most important decision." },
-          { emoji: '💼', text: "Choosing a career based only on money potential", correct: "distraction", hint: "Consider how your career can support spiritual goals." },
-          { emoji: '🤝', text: "Building friendships with those who love Jehovah", correct: "closer", hint: "Good friends encourage us spiritually." },
-          { emoji: '🎮', text: "Playing violent video games for hours", correct: "distraction", hint: "Violence in entertainment can harden our hearts." },
-          { emoji: '💕', text: "Developing a romantic relationship too young", correct: "distraction", hint: "There's a time for everything, including romance." },
-          { emoji: '📖', text: "Researching Bible topics that interest you", correct: "closer", hint: "Personal study deepens our love for truth." }
-        ],
-        adult: [
-          { emoji: '👨‍🏫', text: "Teaching Bible studies with enthusiasm", correct: "closer", hint: "Helping others learn about Jehovah brings great joy." },
-          { emoji: '🏆', text: "Pursuing worldly recognition and status", correct: "distraction", hint: "Seeking glory from men can distract from serving God." },
-          { emoji: '💒', text: "Strengthening marriage through Bible principles", correct: "closer", hint: "A godly marriage honors Jehovah." },
-          { emoji: '🍻', text: "Using alcohol or substances to escape problems", correct: "distraction", hint: "True comfort comes from Jehovah, not substances." },
-          { emoji: '💰', text: "Working excessive hours to accumulate wealth", correct: "distraction", hint: "Balance work with spiritual and family priorities." },
-          { emoji: '🌍', text: "Considering how to expand your ministry", correct: "closer", hint: "Looking for ways to serve Jehovah more fully is commendable." }
-        ]
-      },
-      4: {
-        cello: [
-          { emoji: '🎪', text: "Going to the circus with family", correct: "closer", hint: "Clean fun with family is good!" },
-          { emoji: '🍭', text: "Eating too much candy and getting sick", correct: "distraction", hint: "Taking care of our body is important." },
-          { emoji: '🐕', text: "Taking care of a pet responsibly", correct: "closer", hint: "Being responsible shows we're growing up." },
-          { emoji: '😡', text: "Getting angry and saying mean things", correct: "distraction", hint: "Kind words make everyone happy." },
-          { emoji: '🌱', text: "Helping in the garden and learning about plants", correct: "closer", hint: "Jehovah made all the beautiful plants!" },
-          { emoji: '📱', text: "Playing on tablet instead of playing with friends", correct: "distraction", hint: "Friends are more fun than screens!" }
-        ],
-        fina: [
-          { emoji: '🎭', text: "Participating in school drama that promotes good values", correct: "closer", hint: "Using talents in wholesome ways honors God." },
-          { emoji: '🛍️', text: "Shopping as a hobby and main interest", correct: "distraction", hint: "Finding identity in possessions is empty." },
-          { emoji: '🌿', text: "Learning about Jehovah's creation through nature", correct: "closer", hint: "Creation teaches us about Jehovah's qualities." },
-          { emoji: '😤', text: "Holding grudges against those who hurt you", correct: "distraction", hint: "Forgiveness frees our hearts and pleases Jehovah." },
-          { emoji: '📝', text: "Keeping a spiritual journal of your thoughts", correct: "closer", hint: "Reflecting on spiritual matters helps us grow." },
-          { emoji: '🎯', text: "Competing intensely to always be the best", correct: "distraction", hint: "Humility and cooperation are better than pride." }
-        ],
-        teen: [
-          { emoji: '🎓', text: "Using education to serve Jehovah better", correct: "closer", hint: "Knowledge can be used to advance Kingdom interests." },
-          { emoji: '🏆', text: "Making sports or achievements your main identity", correct: "distraction", hint: "Our identity should be rooted in our relationship with God." },
-          { emoji: '🤝', text: "Helping younger ones in the congregation", correct: "closer", hint: "Mentoring others strengthens the whole congregation." },
-          { emoji: '💔', text: "Dwelling on romantic disappointments", correct: "distraction", hint: "Trust in Jehovah's timing for all things." },
-          { emoji: '🌟', text: "Developing skills that could be used in theocratic assignments", correct: "closer", hint: "Preparing for future service opportunities is wise." },
-          { emoji: '📱', text: "Constantly checking social media for validation", correct: "distraction", hint: "Our worth comes from Jehovah's love, not likes and comments." }
-        ],
-        adult: [
-          { emoji: '🏡', text: "Creating a hospitable home for fellow believers", correct: "closer", hint: "Hospitality strengthens the brotherhood." },
-          { emoji: '💼', text: "Letting work stress affect family relationships", correct: "distraction", hint: "Family relationships need protection from work pressures." },
-          { emoji: '📚', text: "Continuing to learn and grow spiritually", correct: "closer", hint: "Spiritual growth should continue throughout life." },
-          { emoji: '🎭', text: "Living a double life in different social circles", correct: "distraction", hint: "Integrity means being the same person everywhere." },
-          { emoji: '🎁', text: "Using resources to support Kingdom work", correct: "closer", hint: "Generous giving supports the worldwide preaching work." },
-          { emoji: '📺', text: "Consuming entertainment that conflicts with Bible values", correct: "distraction", hint: "What we feed our minds affects our spiritual health." }
-        ]
-      },
-      5: {
-        cello: [
-          { emoji: '🎨', text: "Drawing pictures of Bible stories", correct: "closer", hint: "Art about Jehovah is beautiful!" },
-          { emoji: '🍎', text: "Eating healthy foods to grow strong", correct: "closer", hint: "Jehovah wants us to be healthy!" },
-          { emoji: '😢', text: "Crying when we don't get our way", correct: "distraction", hint: "Learning to be happy with what we have is good." },
-          { emoji: '🌈', text: "Learning about how Jehovah made the rainbow", correct: "closer", hint: "Everything beautiful comes from Jehovah!" },
-          { emoji: '🎮', text: "Playing games instead of helping when asked", correct: "distraction", hint: "Helping others is more important than games." },
-          { emoji: '🤗', text: "Giving hugs and being kind to everyone", correct: "closer", hint: "Love makes everyone happy!" },
-          { emoji: '📱', text: "Wanting to use grown-up apps and websites", correct: "distraction", hint: "Some things are for when we're older." }
-        ],
-        fina: [
-          { emoji: '🎤', text: "Using your voice to sing praises to Jehovah", correct: "closer", hint: "Our voices can be instruments of worship." },
-          { emoji: '🏃‍♀️', text: "Exercising to stay healthy for Jehovah's service", correct: "closer", hint: "Physical health supports our spiritual service." },
-          { emoji: '😔', text: "Feeling sorry for yourself when things don't go your way", correct: "distraction", hint: "Gratitude and trust in Jehovah bring peace." },
-          { emoji: '🌍', text: "Learning about different cultures to understand people better", correct: "closer", hint: "Understanding others helps us preach effectively." },
-          { emoji: '🎯', text: "Competing so intensely that you hurt friendships", correct: "distraction", hint: "Relationships are more valuable than winning." },
-          { emoji: '💌', text: "Writing encouraging notes to congregation members", correct: "closer", hint: "Encouragement builds up the brotherhood." },
-          { emoji: '🛒', text: "Always wanting what others have", correct: "distraction", hint: "Contentment comes from appreciating Jehovah's blessings." }
-        ],
-        teen: [
-          { emoji: '🎯', text: "Setting and working toward spiritual goals", correct: "closer", hint: "Goals give direction to our spiritual progress." },
-          { emoji: '💪', text: "Building physical strength to serve Jehovah better", correct: "closer", hint: "Physical fitness can support our ministry." },
-          { emoji: '😒', text: "Complaining about congregation responsibilities", correct: "distraction", hint: "Serving with joy brings blessings." },
-          { emoji: '🌏', text: "Learning languages to expand your ministry", correct: "closer", hint: "Language skills open doors for preaching." },
-          { emoji: '🏆', text: "Seeking recognition for your spiritual activities", correct: "distraction", hint: "Serve Jehovah for love, not recognition." },
-          { emoji: '💝', text: "Showing appreciation for spiritual mentors", correct: "closer", hint: "Honoring those who help us spiritually is important." },
-          { emoji: '🎭', text: "Pretending to be someone you're not to fit in", correct: "distraction", hint: "Authenticity and integrity please Jehovah." }
-        ],
-        adult: [
-          { emoji: '🏠', text: "Making your home a refuge for your family", correct: "closer", hint: "Homes should be havens of peace and spirituality." },
-          { emoji: '💼', text: "Building your entire identity around your career", correct: "distraction", hint: "Our primary identity should be as servants of Jehovah." },
-          { emoji: '🤝', text: "Mentoring younger ones in the congregation", correct: "closer", hint: "Passing on spiritual wisdom is a privilege." },
-          { emoji: '💰', text: "Constantly worrying about financial security", correct: "distraction", hint: "Trust in Jehovah's provision brings peace." },
-          { emoji: '🌟', text: "Looking for ways to expand your service to Jehovah", correct: "closer", hint: "Seeking greater service opportunities shows spiritual maturity." },
-          { emoji: '📱', text: "Allowing technology to dominate family time", correct: "distraction", hint: "Technology should serve us, not control us." },
-          { emoji: '🎁', text: "Generously supporting Kingdom work with time and resources", correct: "closer", hint: "Generous giving reflects Jehovah's generous spirit." }
+        distraction: [
+          { emoji: '📱', text: "Spending hours on social media" }, { emoji: ' gossip', text: "Gossiping about friends" },
+          { emoji: '👻', text: "Watching scary or violent movies" }, { emoji: '🤔', text: "Worrying too much about what others think" },
+          { emoji: '💸', text: "Wanting the latest, most expensive things" }, { emoji: '🎵', text: "Music with bad words or ideas" },
+          { emoji: '😒', text: "Being jealous of others" }, { emoji: '⏳', text: "Putting off responsibilities" },
+          { emoji: '🙄', text: "Being disrespectful to adults" }, { emoji: '🛍️', text: "Focusing too much on material things" },
+          { emoji: '💬', text: "Spending all my time texting" }, { emoji: ' procrastination', text: "Procrastinating on homework" }
         ]
       }
     };
 
-    function updateScore() {
-      document.getElementById("scoreBoard").textContent = `Score: ${score}`;
-      document.getElementById("streakBoard").textContent = `Streak: ${streak}`;
+    // --- UI & DOM MANIPULATION ---
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        game.currentScreen = screenId;
     }
 
-    function updateProgress() {
-      const progress = (level / 5) * 100;
-      document.getElementById("progressFill").style.width = `${progress}%`;
+    function updateScore(points) {
+        game.score += points;
+        document.querySelector("#scoreBoard").innerHTML = `Score: ${game.score}<span id="score-animation">+${points}</span>`;
+        const scoreAnim = document.getElementById('score-animation');
+        setTimeout(() => {
+            scoreAnim.style.transform = 'translate(-50%, -30px)';
+            scoreAnim.style.opacity = '1';
+        }, 10);
+        setTimeout(() => {
+            scoreAnim.style.opacity = '0';
+        }, 500);
     }
 
-    function startTimer() {
-      if (difficulty === 'easy') return;
-      
-      timeLeft = difficulty === 'medium' ? 120 : 60;
-      document.getElementById("timerDisplay").classList.remove("hidden");
-      
-      timer = setInterval(() => {
-        timeLeft--;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        document.getElementById("timerDisplay").textContent = 
-          `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
-        
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          endGame("Time's up! ⏰");
+    function showPopup(popupId) {
+        document.getElementById(popupId).classList.add('show');
+    }
+    function closePopup(popupId) {
+        document.getElementById(popupId).classList.remove('show');
+    }
+
+    function saveSettings() {
+        game.cardsPerLevel = parseInt(document.getElementById('cardsPerLevel').value);
+        closePopup('settingsModal');
+        restartMainGame();
+    }
+
+    function restartMainGame() {
+        game.level = 1;
+        game.score = 0;
+        updateScore(0);
+        loadCards();
+    }
+    
+    // --- MAIN DRAG & DROP GAME LOGIC ---
+    const cardVisualStyles = ['style-blue', 'style-green', 'style-orange', 'style-purple'];
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
-      }, 1000);
-    }
-
-    function stopTimer() {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
-      document.getElementById("timerDisplay").classList.add("hidden");
     }
 
     function loadCards() {
-      document.getElementById("levelLabel").textContent = level;
-      updateProgress();
+      document.getElementById("levelLabel").textContent = game.level;
       const cardContainer = document.getElementById("cards");
       cardContainer.innerHTML = "";
-      document.getElementById("feedback").textContent = "";
-      document.getElementById("nextLevelBtn").classList.add("hidden");
-      
-      // Reset counters
-      document.getElementById("closerCounter").textContent = "0";
-      document.getElementById("distractionCounter").textContent = "0";
-      
-      currentHintIndex = 0;
-      
-      const list = activitiesByLevel[level][mode];
-      list.forEach((activity, idx) => {
+      clearDropzones();
+      document.getElementById("nextLevelBtn").style.display = "none";
+
+      let closerItems = [...allActivities[game.mode].closer];
+      let distractionItems = [...allActivities[game.mode].distraction];
+      shuffleArray(closerItems);
+      shuffleArray(distractionItems);
+
+      const numEach = game.cardsPerLevel / 2;
+      const levelActivities = [];
+      closerItems.slice(0, numEach).forEach(item => levelActivities.push({...item, correct: 'closer'}));
+      distractionItems.slice(0, numEach).forEach(item => levelActivities.push({...item, correct: 'distraction'}));
+      shuffleArray(levelActivities);
+
+      game.totalCards = levelActivities.length;
+
+      levelActivities.forEach((activity, idx) => {
         const card = document.createElement("div");
         card.className = "card";
+        
+        // NEW: Add a random visual style to the card
+        const randomStyle = cardVisualStyles[Math.floor(Math.random() * cardVisualStyles.length)];
+        card.classList.add(randomStyle);
+
         card.id = `card${idx}`;
         card.draggable = true;
-
-        const spanEmoji = document.createElement("span");
-        spanEmoji.className = "emoji";
-        spanEmoji.textContent = activity.emoji;
-        card.appendChild(spanEmoji);
-
-        const spanText = document.createElement("div");
-        spanText.className = "card-text";
-        spanText.textContent = activity.text;
-        card.appendChild(spanText);
-
-        if (difficulty === 'hard') {
-          const difficultyIndicator = document.createElement("div");
-          difficultyIndicator.className = "difficulty-indicator";
-          difficultyIndicator.textContent = "🔥";
-          card.appendChild(difficultyIndicator);
-        }
-
+        card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`;
         card.setAttribute("data-correct", activity.correct);
-        card.setAttribute("data-hint", activity.hint);
         card.ondragstart = drag;
-        
-        setTimeout(() => {
-          card.classList.add("visible");
-        }, 150 * idx);
-        
         cardContainer.appendChild(card);
+        setTimeout(() => card.classList.add("visible"), 100 * idx);
       });
-      
-      startTimer();
     }
-
-    function showHint() {
-      const cards = document.querySelectorAll('.card:not([data-placed="true"])');
-      if (currentHintIndex >= cards.length) {
-        document.getElementById("feedback").textContent = "💡 No more hints available for this level!";
-        document.getElementById("feedback").style.color = "#ff9800";
-        return;
-      }
-      
-      const card = cards[currentHintIndex];
-      const hint = card.getAttribute("data-hint");
-      document.getElementById("feedback").textContent = `💡 Hint: ${hint}`;
-      document.getElementById("feedback").style.color = "#ff9800";
-      
-      // Highlight the card
-      card.style.border = "3px solid #ff9800";
-      card.style.boxShadow = "0 0 15px rgba(255, 152, 0, 0.5)";
-      
-      setTimeout(() => {
-        card.style.border = "3px solid #90caf9";
-        card.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
-      }, 3000);
-      
-      currentHintIndex++;
-      hintsUsed++;
-    }
-
-    function restartGame() {
-      level = 1;
-      score = 0;
-      streak = 0;
-      hintsUsed = 0;
-      stopTimer();
-      clearDropzones();
-      updateScore();
-      loadCards();
-    }
-
-    document.getElementsByName("mode").forEach(radio => {
-      radio.addEventListener("change", (e) => {
-        mode = e.target.value;
-        level = 1;
-        score = 0;
-        streak = 0;
-        stopTimer();
-        loadCards();
-        clearDropzones();
-        updateScore();
-      });
-    });
-
-    document.getElementsByName("difficulty").forEach(radio => {
-      radio.addEventListener("change", (e) => {
-        difficulty = e.target.value;
-        stopTimer();
-        if (level === 1) {
-          loadCards();
-        }
-      });
-    });
 
     function allowDrop(ev) {
       ev.preventDefault();
-      if (ev.target.classList.contains('dropzone') || ev.target.parentElement.classList.contains('dropzone')) {
-        const zone = ev.target.classList.contains('dropzone') ? ev.target : ev.target.parentElement;
-        zone.classList.add('over');
+      if (ev.target.classList.contains('dropzone')) {
+        ev.target.classList.add('over');
       }
     }
-
-    function dragLeave(ev) {
-      if (ev.target.classList.contains('dropzone')) {
-        ev.target.classList.remove('over');
-      }
+    document.ondragleave = (ev) => {
+        if (ev.target.classList.contains('dropzone')) {
+            ev.target.classList.remove('over');
+        }
     }
 
     function drag(ev) {
@@ -824,454 +574,323 @@
     function drop(ev) {
       ev.preventDefault();
       let zone = ev.target;
-      while (!zone.classList.contains('dropzone')) {
-        zone = zone.parentElement;
-        if (!zone) return;
-      }
+      while (!zone.classList.contains('dropzone')) zone = zone.parentElement;
       zone.classList.remove('over');
       
       const cardId = ev.dataTransfer.getData("text");
       const card = document.getElementById(cardId);
-      const zoneId = zone.id;
-      const correctZone = card.getAttribute("data-correct");
-      const feedbackEl = document.getElementById("feedback");
+      const isCorrect = zone.id === card.getAttribute("data-correct");
 
-      if (zoneId === correctZone) {
+      if (isCorrect) {
         zone.appendChild(card);
         card.setAttribute("draggable", false);
-        card.setAttribute("data-placed", "true");
-        card.classList.add("correct");
-        
-        feedbackEl.textContent = "✅ Excellent choice!";
-        feedbackEl.style.color = "#2e7d32";
-        
-        card.style.transform = "scale(1.05)";
-        setTimeout(() => { card.style.transform = "scale(1)"; }, 500);
-        
-        score += difficulty === 'hard' ? 15 : difficulty === 'medium' ? 10 : 5;
-        streak++;
-        if (streak > maxStreak) maxStreak = streak;
-        
-        updateScore();
-        updateCounters();
+        card.classList.add('correct-drop');
+        updateScore(10);
         maybeShowScripture();
         checkLevelComplete();
       } else {
-        card.classList.add("incorrect");
-        setTimeout(() => card.classList.remove("incorrect"), 500);
-        
-        feedbackEl.textContent = "❌ Think about it more. What would help you stay close to Jehovah?";
-        feedbackEl.style.color = "#c62828";
-        
-        streak = 0;
-        updateScore();
+        card.classList.add('incorrect-drop');
+        setTimeout(() => card.classList.remove('incorrect-drop'), 500);
       }
     }
 
-    function updateCounters() {
-      const closerCards = document.querySelectorAll('#closer .card').length;
-      const distractionCards = document.querySelectorAll('#distraction .card').length;
-      document.getElementById("closerCounter").textContent = closerCards;
-      document.getElementById("distractionCounter").textContent = distractionCards;
-    }
-
     function clearDropzones() {
-      document.getElementById("closer").innerHTML = `
-        <h2 style="color: #2e7d32;">✅ Keeps Me Close to Jehovah</h2>
-        <div class="dropzone-counter" id="closerCounter">0</div>
-      `;
-      document.getElementById("distraction").innerHTML = `
-        <h2 style="color: #c62828;">⚠️ Could Be a Distraction</h2>
-        <div class="dropzone-counter" id="distractionCounter">0</div>
-      `;
+        const zones = document.querySelectorAll(".dropzone");
+        zones.forEach(zone => {
+            const h2 = zone.querySelector('h2');
+            zone.innerHTML = '';
+            if (h2) zone.appendChild(h2);
+        });
     }
 
     function checkLevelComplete() {
-      const total = activitiesByLevel[level][mode].length;
-      const placed = document.querySelectorAll('.card[data-placed="true"]').length;
-      
-      if (placed === total) {
-        stopTimer();
-        let message = `🎉 Level ${level} complete! `;
-        if (streak === total) {
-          message += "Perfect streak! 🌟";
-          score += 20; // Bonus for perfect level
-        }
-        document.getElementById("feedback").textContent = message;
-        document.getElementById("feedback").style.color = "#2e7d32";
-        
-        if (level < 5) {
-          document.getElementById("nextLevelBtn").classList.remove("hidden");
+      const placedCards = document.querySelectorAll('.dropzone .card').length;
+      if (placedCards === game.totalCards) {
+        document.getElementById("feedback").textContent = `🎉 Level ${game.level} complete!`;
+        if (game.level < 3) {
+            document.getElementById("nextLevelBtn").style.display = "inline-block";
         } else {
-          endGame("🏆 Congratulations! You completed all levels!");
+            // After final level, go to minigame
+            showScreen('minigameScreen');
+            sideScroller.start(); 
         }
-        updateScore();
       }
     }
 
     function goToNextLevel() {
-      if (level < 5) {
-        level++;
-        clearDropzones();
+      if (game.level < 3) {
+        game.level++;
         loadCards();
       }
     }
 
-    function endGame(message) {
-      stopTimer();
-      document.getElementById("feedback").textContent = `${message} Final Score: ${score}`;
-      document.getElementById("feedback").style.color = "#1a237e";
-      
-      // Show final scripture
-      setTimeout(() => {
-        showScripture(scriptures.seekFirst);
-      }, 2000);
-    }
-
-    // Enhanced scripture system
     function maybeShowScripture() {
-      const placed = document.querySelectorAll('.card[data-placed="true"]').length;
-      if (placed > 0 && placed % 3 === 0) {
-        const scriptureKeys = Object.keys(scriptures);
-        const randomKey = scriptureKeys[Math.floor(Math.random() * scriptureKeys.length)];
-        showScripture(scriptures[randomKey]);
-      }
-    }
-
-    function showScripture(scriptureObj) {
-      const popup = document.getElementById("scripturePopup");
-      document.getElementById("scriptureHeader").textContent = scriptureObj.header;
-      document.getElementById("scriptureText").textContent = `"${scriptureObj.text}"`;
-      document.getElementById("scriptureReference").textContent = `— ${scriptureObj.reference}`;
-      popup.style.display = "block";
-    }
-
-    function closeScripture() {
-      document.getElementById("scripturePopup").style.display = "none";
-    }
-
-    function showMoreScriptures() {
-      const scriptureKeys = Object.keys(scriptures);
-      const randomKey = scriptureKeys[Math.floor(Math.random() * scriptureKeys.length)];
-      showScripture(scriptures[randomKey]);
-    }
-
-    // Simple minigame (original)
-    const canvas = document.getElementById("minigameCanvas");
-    const ctx = canvas.getContext("2d");
-    let runnerX = 30, runnerY = canvas.height - 40;
-    let runnerVelocityY = 0;
-    let isJumping = false;
-    let obstacles = [];
-    let collectibles = [];
-    let minigameInterval, spawnInterval;
-    let minigameActive = false;
-    let minigameScore = 0;
-    let gameSpeed = 3;
-
-    function startMinigame() {
-      if (minigameActive) return;
-      minigameActive = true;
-      runnerX = 30;
-      runnerY = canvas.height - 40;
-      runnerVelocityY = 0;
-      isJumping = false;
-      obstacles = [];
-      collectibles = [];
-      minigameScore = 0;
-      gameSpeed = 3;
-      
-      document.addEventListener('keydown', handleKeyDown);
-      document.addEventListener('keyup', handleKeyUp);
-      
-      minigameInterval = setInterval(updateMinigame, 20);
-      spawnInterval = setInterval(spawnObjects, 2000);
-    }
-
-    function handleKeyDown(e) {
-      if ((e.key === 'ArrowUp' || e.key === ' ') && !isJumping && minigameActive) {
-        e.preventDefault();
-        isJumping = true;
-        runnerVelocityY = -12;
-      }
-    }
-
-    function handleKeyUp(e) {
-      if (e.key === 'ArrowUp' || e.key === ' ') {
-        e.preventDefault();
-      }
-    }
-
-    function spawnObjects() {
-      if (!minigameActive) return;
-      
-      // Spawn obstacle
-      if (Math.random() < 0.7) {
-        obstacles.push({
-          x: canvas.width,
-          y: canvas.height - 40,
-          width: 25,
-          height: 25,
-          type: 'distraction'
-        });
-      }
-      
-      // Spawn collectible
-      if (Math.random() < 0.4) {
-        collectibles.push({
-          x: canvas.width,
-          y: canvas.height - 80,
-          width: 20,
-          height: 20,
-          type: 'blessing'
-        });
-      }
-      
-      // Increase difficulty over time
-      gameSpeed += 0.1;
-    }
-
-    function collision(x1, y1, w1, h1, x2, y2, w2, h2) {
-      return x1 < x2 + w2 &&
-             x1 + w1 > x2 &&
-             y1 < y2 + h2 &&
-             y1 + h1 > y2;
-    }
-
-    function updateMinigame() {
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw background
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#87CEEB');
-      gradient.addColorStop(1, '#98FB98');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw ground
-      ctx.fillStyle = '#8FBC8F';
-      ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-      
-      // Update runner physics
-      if (isJumping) {
-        runnerVelocityY += 0.8; // gravity
-        runnerY += runnerVelocityY;
-        
-        if (runnerY >= canvas.height - 40) {
-          runnerY = canvas.height - 40;
-          isJumping = false;
-          runnerVelocityY = 0;
+        const placedCards = document.querySelectorAll('.dropzone .card').length;
+        if (placedCards % 2 === 0 && placedCards > 0) {
+            const scriptureKeys = Object.keys(scriptures);
+            const randomKey = scriptureKeys[Math.floor(Math.random() * scriptureKeys.length)];
+            document.getElementById("scriptureText").textContent = scriptures[randomKey];
+            showPopup('scripturePopup');
         }
-      }
-      
-      // Draw runner
-      ctx.fillStyle = '#4169E1';
-      ctx.fillRect(runnerX, runnerY, 25, 25);
-      ctx.fillStyle = 'white';
-      ctx.font = '16px Arial';
-      ctx.fillText('🏃', runnerX + 2, runnerY + 18);
-      
-      // Update and draw obstacles
-      ctx.fillStyle = '#DC143C';
-      obstacles.forEach((obs, i) => {
-        obs.x -= gameSpeed;
-        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-        ctx.fillStyle = 'white';
-        ctx.font = '14px Arial';
-        ctx.fillText('📱', obs.x + 4, obs.y + 18);
-        ctx.fillStyle = '#DC143C';
-        
-        // Check collision
-        if (collision(runnerX, runnerY, 25, 25, obs.x, obs.y, obs.width, obs.height)) {
-          endMinigame();
-          return;
-        }
-        
-        // Remove off-screen obstacles
-        if (obs.x + obs.width < 0) {
-          obstacles.splice(i, 1);
-          minigameScore += 10;
-        }
-      });
-      
-      // Update and draw collectibles
-      ctx.fillStyle = '#FFD700';
-      collectibles.forEach((col, i) => {
-        col.x -= gameSpeed;
-        ctx.fillRect(col.x, col.y, col.width, col.height);
-        ctx.fillStyle = 'white';
-        ctx.font = '12px Arial';
-        ctx.fillText('📖', col.x + 2, col.y + 15);
-        ctx.fillStyle = '#FFD700';
-        
-        // Check collection
-        if (collision(runnerX, runnerY, 25, 25, col.x, col.y, col.width, col.height)) {
-          collectibles.splice(i, 1);
-          minigameScore += 25;
-          score += 5;
-          updateScore();
-        }
-        
-        // Remove off-screen collectibles
-        if (col.x + col.width < 0) {
-          collectibles.splice(i, 1);
-        }
-      });
-      
-      // Draw score
-      ctx.fillStyle = 'black';
-      ctx.font = '16px Arial';
-      ctx.fillText(`Mini-Game Score: ${minigameScore}`, 10, 25);
     }
-
-    function endMinigame() {
-      clearInterval(minigameInterval);
-      clearInterval(spawnInterval);
-      minigameActive = false;
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('keyup', handleKeyUp);
-      
-      // Draw game over screen
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      ctx.font = 'bold 20px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('Game Over!', canvas.width/2, canvas.height/2 - 20);
-      ctx.font = '16px Arial';
-      ctx.fillText(`Score: ${minigameScore}`, canvas.width/2, canvas.height/2 + 10);
-      ctx.fillText('Click "Start Mini-Run" to play again', canvas.width/2, canvas.height/2 + 35);
-      ctx.textAlign = 'left';
-      
-      document.getElementById("feedback").textContent = `🎮 Mini-game over! You avoided distractions and earned ${minigameScore} points!`;
-      document.getElementById("feedback").style.color = "#1a237e";
-    }
-
-    // Advanced Side-Scroller Game
-    const sideCanvas = document.getElementById("sideScrollerCanvas");
-    const sideCtx = sideCanvas.getContext("2d");
     
-    let adventureActive = false;
-    let adventureInterval, adventureSpawnInterval;
-    let adventureScore = 0;
-    let kingdomTokens = 0;
-    let tokenGoal = 10;
-    let playerHealth = 3;
-    let maxHealth = 3;
-    
-    // Player properties
-    let player = {
-      x: 50,
-      y: sideCanvas.height - 80,
-      width: 30,
-      height: 30,
-      velocityY: 0,
-      isJumping: false,
-      onGround: true
+    // --- SIDE SCROLLER MINIGAME ---
+    const sideScroller = {
+        canvas: document.getElementById("minigameCanvas"),
+        ctx: null,
+        player: { x: 50, y: 240, w: 30, h: 40, vy: 0, grounded: true, spriteFrame: 0 },
+        obstacles: [],
+        collectibles: [],
+        gravity: 0.8,
+        gameSpeed: 4,
+        score: 0,
+        frameCount: 0,
+        gameInterval: null,
+        active: false,
+
+        init() {
+            this.ctx = this.canvas.getContext('2d');
+            this.canvas.addEventListener('click', () => this.jump());
+            document.addEventListener('keydown', (e) => {
+                if ((e.code === 'Space' || e.key === 'ArrowUp') && this.active) this.jump();
+            });
+        },
+
+        start() {
+            if (this.active) {
+                clearInterval(this.gameInterval);
+            }
+            this.active = true;
+            this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
+            this.obstacles = []; this.collectibles = []; this.score = 0; this.frameCount = 0;
+            this.gameInterval = setInterval(() => this.update(), 1000 / 60);
+        },
+
+        stop() {
+            this.active = false;
+            clearInterval(this.gameInterval);
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.fillStyle = 'white';
+            this.ctx.font = '40px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('Game Over!', this.canvas.width / 2, this.canvas.height / 2 - 20);
+            this.ctx.font = '20px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
+            this.ctx.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 20);
+        },
+
+        jump() {
+            if (this.player.grounded) {
+                this.player.vy = -16;
+                this.player.grounded = false;
+            }
+        },
+
+        drawPlayer() {
+            // Simple animated character
+            this.ctx.fillStyle = '#ffb74d'; // Skin tone
+            this.ctx.fillRect(this.player.x, this.player.y, this.player.w, this.player.h); // Body
+            this.ctx.fillStyle = '#424242'; // Hair
+            this.ctx.fillRect(this.player.x, this.player.y, this.player.w, 10); // Hair
+            // Running animation
+            if (!this.player.grounded) { // Jumping pose
+                 this.ctx.fillStyle = '#42a5f5';
+                 this.ctx.fillRect(this.player.x + 5, this.player.y + 30, 20, 10);
+            } else if (this.frameCount % 20 < 10) { // Leg 1
+                 this.ctx.fillStyle = '#42a5f5';
+                 this.ctx.fillRect(this.player.x, this.player.y + 30, 15, 10);
+            } else { // Leg 2
+                 this.ctx.fillStyle = '#42a5f5';
+                 this.ctx.fillRect(this.player.x + 15, this.player.y + 30, 15, 10);
+            }
+        },
+
+        drawObjects(arr) {
+            arr.forEach(obj => {
+                this.ctx.font = '28px sans-serif';
+                this.ctx.fillText(obj.emoji, obj.x, obj.y);
+            });
+        },
+        
+        update() {
+            this.frameCount++;
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Draw Ground
+            this.ctx.fillStyle = '#66bb6a';
+            this.ctx.fillRect(0, 280, this.canvas.width, 40);
+
+            // Player physics
+            this.player.vy += this.gravity;
+            this.player.y += this.player.vy;
+            if (this.player.y >= 240) {
+                this.player.y = 240; this.player.vy = 0; this.player.grounded = true;
+            }
+            this.drawPlayer();
+
+            // Spawn objects
+            if (this.frameCount % 100 === 0) {
+                this.obstacles.push({ x: this.canvas.width, y: 280, w: 30, h: 30, emoji: ['📺', '🎮', '📱'][Math.floor(Math.random()*3)] });
+            }
+            if (this.frameCount % 157 === 0) {
+                 this.collectibles.push({ x: this.canvas.width, y: 220, w: 30, h: 30, emoji: ['📖', '🍎', '🍇'][Math.floor(Math.random()*3)] });
+            }
+
+            // Update & Draw Obstacles
+            this.obstacles.forEach((obs, index) => {
+                obs.x -= this.gameSpeed;
+                if (obs.x < -30) this.obstacles.splice(index, 1);
+                // Collision
+                if (this.player.x < obs.x + obs.w && this.player.x + this.player.w > obs.x &&
+                    this.player.y < obs.y + obs.h && this.player.y + this.player.h > obs.y) {
+                    this.stop();
+                }
+            });
+            this.drawObjects(this.obstacles);
+
+            // Update & Draw Collectibles
+            this.collectibles.forEach((col, index) => {
+                col.x -= this.gameSpeed;
+                 if (col.x < -30) this.collectibles.splice(index, 1);
+                // Collision
+                if (this.player.x < col.x + col.w && this.player.x + this.player.w > col.x &&
+                    this.player.y < col.y + col.h && this.player.y + this.player.h > col.y) {
+                    this.collectibles.splice(index, 1);
+                    this.score += 10;
+                }
+            });
+            this.drawObjects(this.collectibles);
+            
+            // Draw Score
+            this.ctx.fillStyle = 'black';
+            this.ctx.font = '20px ' + getComputedStyle(document.body).getPropertyValue('--font-header');
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(`Score: ${this.score}`, 10, 30);
+        }
     };
     
-    // Game world
-    let worldOffset = 0;
-    let backgroundOffset = 0;
-    let adventureObjects = [];
-    let adventureSpeed = 4;
-    
-    // Clouds for background
-    let clouds = [
-      { x: 100, y: 50, size: 30 },
-      { x: 300, y: 80, size: 25 },
-      { x: 500, y: 40, size: 35 },
-      { x: 700, y: 70, size: 28 }
-    ];
+    // --- MEMORY MATCH GAME LOGIC ---
+    const memoryGame = {
+        grid: document.getElementById('memoryGameGrid'),
+        stats: document.getElementById('memoryGameStats'),
+        flippedCards: [],
+        moves: 0,
+        matches: 0,
+        totalMatches: 0,
+        isChecking: false,
 
-    function startSideScroller() {
-      if (adventureActive) return;
-      
-      adventureActive = true;
-      adventureScore = 0;
-      kingdomTokens = 0;
-      playerHealth = maxHealth;
-      worldOffset = 0;
-      backgroundOffset = 0;
-      adventureObjects = [];
-      adventureSpeed = 4;
-      
-      // Reset player
-      player.x = 50;
-      player.y = sideCanvas.height - 80;
-      player.velocityY = 0;
-      player.isJumping = false;
-      player.onGround = true;
-      
-      updateAdventureUI();
-      
-      document.addEventListener('keydown', handleAdventureKeyDown);
-      document.addEventListener('keyup', handleAdventureKeyUp);
-      
-      adventureInterval = setInterval(updateSideScroller, 20);
-      adventureSpawnInterval = setInterval(spawnAdventureObjects, 1500);
-    }
+        start() {
+            this.grid.innerHTML = '';
+            this.flippedCards = [];
+            this.moves = 0;
+            this.matches = 0;
+            this.isChecking = false;
+            // Use the value from the settings for consistency
+            this.totalMatches = game.cardsPerLevel / 2;
+            this.updateStats();
 
-    function handleAdventureKeyDown(e) {
-      if ((e.key === 'ArrowUp' || e.key === ' ') && player.onGround && adventureActive) {
-        e.preventDefault();
-        player.isJumping = true;
-        player.onGround = false;
-        player.velocityY = -15;
-      }
-    }
+            // Set grid columns dynamically for a nice layout
+            const columns = (this.totalMatches * 2) > 12 ? 4 : 4;
+            this.grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
 
-    function handleAdventureKeyUp(e) {
-      if (e.key === 'ArrowUp' || e.key === ' ') {
-        e.preventDefault();
-      }
-    }
+            let items = [...allActivities[game.mode].closer];
+            shuffleArray(items);
+            let gameItems = items.slice(0, this.totalMatches).map(item => ({...item, id: item.text}));
+            let cardPool = [...gameItems, ...gameItems]; // Duplicate for pairs
+            shuffleArray(cardPool);
+            
+            cardPool.forEach(item => {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.id = item.id;
+                card.innerHTML = `
+                    <div class="card-face card-back">?</div>
+                    <div class="card-face card-front">
+                        <span class="emoji">${item.emoji}</span>
+                        <span class="text">${item.text}</span>
+                    </div>`;
+                card.addEventListener('click', () => this.flipCard(card));
+                this.grid.appendChild(card);
+            });
+        },
 
-    function spawnAdventureObjects() {
-      if (!adventureActive) return;
-      
-      const rand = Math.random();
-      
-      if (rand < 0.4) {
-        // Spawn Kingdom Token (collectible)
-        adventureObjects.push({
-          x: sideCanvas.width + 20,
-          y: sideCanvas.height - 120 - Math.random() * 60,
-          width: 25,
-          height: 25,
-          type: 'token',
-          emoji: '📖'
+        updateStats() {
+            this.stats.textContent = `Moves: ${this.moves} | Matches: ${this.matches} / ${this.totalMatches}`;
+        },
+
+        flipCard(card) {
+            if (this.isChecking || this.flippedCards.length >= 2 || card.classList.contains('is-flipped')) {
+                return;
+            }
+
+            card.classList.add('is-flipped');
+            this.flippedCards.push(card);
+
+            if (this.flippedCards.length === 2) {
+                this.isChecking = true;
+                this.moves++;
+                this.updateStats();
+                this.checkForMatch();
+            }
+        },
+
+        checkForMatch() {
+            const [card1, card2] = this.flippedCards;
+            if (card1.dataset.id === card2.dataset.id) {
+                // It's a match
+                setTimeout(() => {
+                    card1.classList.add('is-matched');
+                    card2.classList.add('is-matched');
+                    this.matches++;
+                    this.updateStats();
+                    this.flippedCards = [];
+                    this.isChecking = false;
+                    if (this.matches === this.totalMatches) {
+                        setTimeout(() => alert('You found all the matches!'), 300);
+                    }
+                }, 800);
+            } else {
+                // Not a match
+                setTimeout(() => {
+                    card1.classList.remove('is-flipped');
+                    card2.classList.remove('is-flipped');
+                    this.flippedCards = [];
+                    this.isChecking = false;
+                }, 1200);
+            }
+        }
+    };
+
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        document.getElementById('startGameBtn').addEventListener('click', () => {
+            game.mode = document.querySelector('input[name="mode"]:checked').value;
+            restartMainGame();
+            showScreen('mainGameScreen');
         });
-      } else if (rand < 0.6) {
-        // Spawn Prayer collectible
-        adventureObjects.push({
-          x: sideCanvas.width + 20,
-          y: sideCanvas.height - 100 - Math.random() * 40,
-          width: 22,
-          height: 22,
-          type: 'prayer',
-          emoji: '🙏'
+
+
+
+        document.getElementById('startMemoryBtn').addEventListener('click', () => {
+            game.mode = document.querySelector('input[name="mode"]:checked').value;
+            // Get card setting from dropdown for memory game too
+            game.cardsPerLevel = parseInt(document.getElementById('cardsPerLevel').value);
+            showScreen('memoryGameScreen');
+            memoryGame.start();
         });
-      } else if (rand < 0.8) {
-        // Spawn ground obstacle (distraction)
-        adventureObjects.push({
-          x: sideCanvas.width + 20,
-          y: sideCanvas.height - 50,
-          width: 30,
-          height: 30,
-          type: 'obstacle',
-          emoji: '📱'
+
+        document.getElementById('startScrollerBtn').addEventListener('click', () => {
+            showScreen('minigameScreen');
+            sideScroller.start();
         });
-      } else {
-        // Spawn floating distraction
-        adventureObjects.push({
-          x: sideCanvas.width + 20,
-          y: sideCanvas.height - 120,
-          width: 28,
-          height: 28,
-          type: 'obstacle',
-          emoji: '💸'
-        });
-      }
-      
+
+        document.getElementById('nextLevelBtn').addEventListener('click', goToNextLevel);
+        document.getElementById('settingsBtn').addEventListener('click', () => showPopup('settingsModal'));
+        
+        sideScroller.init();
+    };
+  </script>
+
+</body>
+</html>
