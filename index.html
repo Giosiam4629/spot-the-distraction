@@ -1,856 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>JW Fun & Games - Plagues Adventure</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plagues Platformer</title>
   <style>
-    :root {
-      --bg-color: #eaf5ff;
-      --panel-bg: #ffffff;
-      --primary-text: #3d5a80;
-      --accent-green: #2a9d8f;
-      --accent-red: #e76f51;
-      --accent-orange: #f4a261;
-      --font-header: 'Fredoka One', cursive;
-      --font-body: 'Comic Neue', sans-serif;
-      --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    /* --- General Setup & Home Button --- */
-    html, body {
-        overscroll-behavior-y: contain; /* Prevents pull-to-refresh on mobile */
-    }
-    body {
-      font-family: var(--font-body);
-      background-color: var(--bg-color);
-      color: var(--primary-text);
-      margin: 0;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      box-sizing: border-box;
-    }
-    .main-container {
-      width: 100%;
-      max-width: 900px;
-    }
-    .panel {
-      background-color: var(--panel-bg);
-      border-radius: 20px;
-      padding: 20px 30px;
-      box-shadow: var(--shadow);
-      margin-bottom: 20px;
-    }
-    h2, h3 {
-      font-family: var(--font-header);
-      color: var(--primary-text);
-      margin-top: 0;
-      text-align: center;
-    }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    
-    #home-reset-btn {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 1000;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: none;
-      background-color: var(--accent-orange);
-      color: white;
-      font-size: 1.8rem;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #home-reset-btn:hover {
-      transform: scale(1.1);
-      background-color: #e76f51;
-    }
-    .nav-button {
-      margin: 10px 0;
-      padding: 15px 25px;
-      width: 100%;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-      font-family: var(--font-header);
-      font-size: 1.2rem;
-      color: white;
-      box-shadow: var(--shadow);
-      display: block;
-    }
-    .instructions {
-        text-align: center;
-        margin-bottom: 15px;
-        font-style: italic;
-    }
-
-    /* --- Main Menu --- */
-    #main-menu-screen .panel { text-align: center; }
-    #character-selector { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
-    #character-selector input[type="radio"] { display: none; }
-    #character-selector label { padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; background-color: #f0f0f0; transition: all 0.2s ease-in-out; }
-    #character-selector input[type="radio"]:checked + label { background-color: var(--accent-orange); color: white; transform: scale(1.1); }
-    #game-selection-buttons { margin-top: 20px; }
-    
-    /* --- Sorting Game --- */
-    .drop-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .dropzone { border: 3px dashed #ccc; min-height: 200px; padding: 10px; border-radius: 15px; transition: all 0.3s; }
-    #makes-happy { background-color: #e8f5e9; }
-    #distraction { background-color: #ffebee; }
-    .dropzone.over { transform: scale(1.02); border-color: var(--accent-orange); }
-    #cards-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; min-height: 100px; padding: 20px 0; }
-    .card { background-color: var(--panel-bg); border: 3px solid #ccc; padding: 15px; border-radius: 12px; cursor: grab; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 5px; box-shadow: var(--shadow); transition: transform 0.2s; width: 120px; }
-    .card:hover { transform: translateY(-5px); }
-    .card .emoji { font-size: 2rem; }
-
-    /* --- Memory Game --- */
-    .memory-header { display: flex; justify-content: space-around; font-family: var(--font-header); font-size: 1.2rem; margin-bottom: 15px; }
-    #memory-game-grid { display: grid; gap: 10px; margin: 10px auto; max-width: 600px; }
-    .memory-card { width: 100%; aspect-ratio: 1 / 1; position: relative; transform-style: preserve-3d; transition: transform 0.6s; cursor: pointer; }
-    .memory-card.is-flipped { transform: rotateY(180deg); }
-    .memory-card.is-matched { opacity: 0.5; pointer-events: none; }
-    .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; border-radius: 10px; }
-    .card-front { background: white; border: 3px solid #ccc; transform: rotateY(180deg); font-size: 2.5rem; }
-    .card-back { background: linear-gradient(135deg, #6a0dad, #9c27b0); font-size: 3rem; color: white; }
-    @media (max-width: 600px) {
-        .card-front { font-size: 1.8rem; }
-        .card-back { font-size: 2.2rem; }
-    }
-
-    /* --- Platformer Game --- */
-    #platformer-game-screen { text-align: center; }
-    .platformer-header { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
-    .platformer-stat { font-family: var(--font-header); font-size: 1.2rem; }
-    .platformer-stat .hearts { font-size: 1.8rem; letter-spacing: 2px; }
-    #platformer-canvas-container { 
-        position: relative; 
-        width: 100%;
-        max-width: 800px;
-        margin: auto;
-        aspect-ratio: 16 / 9;
-        background-color: #7ec0ee; 
-        border-radius: 15px; 
-        overflow: hidden; 
-        box-shadow: var(--shadow); 
-    }
-    canvas#platformer-canvas { width: 100%; height: 100%; display: block; }
-    #platformer-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-shadow: 2px 2px 4px #000; font-family: var(--font-header); background: rgba(0,0,0,0.5); }
-    #platformer-overlay h2 { font-size: clamp(2rem, 10vw, 3.5rem); margin-bottom: 20px; }
-    #platformer-start-btn, #platformer-next-level-btn, #platformer-restart-btn { padding: 15px 30px; font-size: clamp(1rem, 5vw, 1.5rem); background-color: var(--accent-orange); color: white; border: none; border-radius: 15px; cursor: pointer; margin-top: 10px; }
+    :root{ --ui:#050913; --edge:#ffffff33; --txt:#e5e7eb; --gold:#f59e0b; }
+    body{margin:0;background:var(--ui);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif}
+    #wrap{display:grid;place-items:center;min-height:100vh;padding:16px}
+    canvas{background:#0a0f1c;width:min(100vw,1100px);aspect-ratio:16/9;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.65)}
+    .panel{position:absolute;inset:16px;display:flex;align-items:center;justify-content:center}
+    .card{background:linear-gradient(180deg, rgba(31,41,55,.96), rgba(17,24,39,.98));border:1px solid var(--edge);border-radius:18px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.5);max-width:92vw}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{appearance:none;background:linear-gradient(180deg,#0ea5e9,#2563eb);color:#fff;padding:12px 16px;border:none;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(37,99,235,.35)}
+    .btn.ghost{background:transparent;border:1px solid #ffffff40}
+    .btn.secondary{background:linear-gradient(180deg,#10b981,#059669)}
+    .btn:active{transform:translateY(1px)}
+    .subtle{opacity:.85}
+    a{color:#93c5fd}
   </style>
 </head>
 <body>
+  <div id="wrap">
+    <canvas id="game" width="1280" height="720"></canvas>
 
-<button id="home-reset-btn" title="Go Home">🏠</button>
-
-<div class="main-container">
-
-  <div id="main-menu-screen" class="screen active">
-    <div class="panel">
-      <h2>Fun & Games!</h2>
-      <p>Choose your character and pick a game to play.</p>
-      <div id="character-selector">
-        <input type="radio" id="char-boy" name="character" value="boy" checked><label for="char-boy">Boy 👦</label>
-        <input type="radio" id="char-girl" name="character" value="girl"><label for="char-girl">Girl 👧</label>
-      </div>
-      <div id="game-selection-buttons">
-        <button id="start-sorting-btn" class="nav-button" style="background-color: var(--accent-green);">Sorting Challenge</button>
-        <button id="start-memory-btn" class="nav-button" style="background-color: #9c27b0;">Memory Match</button>
-        <button id="start-platformer-btn" class="nav-button" style="background-color: #2196F3;">Plagues Adventure</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="sorting-game-screen" class="screen">
-    <div class="panel">
-        <h2>Sorting Challenge</h2>
-        <p class="instructions">Drag each activity to the correct box.</p>
-        <div class="drop-container">
-            <div id="makes-happy" class="dropzone"><h3>👍 Makes Jehovah Happy</h3></div>
-            <div id="distraction" class="dropzone"><h3>🤔 Could Be a Distraction</h3></div>
+    <!-- MAIN MENU -->
+    <div id="menu" class="panel">
+      <div class="card">
+        <h1>🐑 Plagues Platformer</h1>
+        <p class="subtle">Run, jump, and swat hazards as a young shepherd boy with a glowing staff. Finish levels to open New World Translation verses (wol.jw.org).</p>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnStart">Start Game</button>
+          <button class="btn ghost" id="btnHow">How to Play</button>
         </div>
-        <div id="cards-container"></div>
+        <div style="margin-top:10px" class="subtle">Controls: ←/→ move · ▲/Space jump · <b>X staff</b> · P pause · R restart · M menu</div>
+      </div>
+    </div>
+
+    <!-- HOW TO -->
+    <div id="how" class="panel" style="display:none">
+      <div class="card">
+        <h2>How to Play</h2>
+        <p>Reach the <b>flagpole</b> to finish. Staff (X) can bat away hail (Plague 7) and disperse gnats/flies (Plagues 3–4). Each completion shows a verse link in the New World Translation on wol.jw.org.</p>
+        <div class="row"><button class="btn ghost" id="btnBackHow">Back</button></div>
+      </div>
+    </div>
+
+    <!-- LEVEL COMPLETE (VERSE) -->
+    <div id="versePanel" class="panel" style="display:none">
+      <div class="card">
+        <h2 id="vpTitle">Level Complete</h2>
+        <p id="vpBlurb" style="margin-top:4px"></p>
+        <p style="margin:8px 0"><a id="vpLink" href="#" target="_blank" rel="noopener">Open verse in NWT →</a></p>
+        <div class="row">
+          <button class="btn secondary" id="btnNext">Next Level</button>
+          <button class="btn ghost" id="btnMenu">Main Menu</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="memory-game-screen" class="screen">
-      <div class="panel">
-          <h2>Memory Match</h2>
-          <div class="memory-header">
-              <span>Level: <span id="memory-level">1</span></span>
-              <span>Matches: <span id="memory-matches">0 / 0</span></span>
-          </div>
-          <div id="memory-game-grid"></div>
-      </div>
-  </div>
+  <script>
+  // ===== Core =====
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  let keys = {}; addEventListener('keydown', e=>{ keys[e.key.toLowerCase()] = true; if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase())) e.preventDefault();});
+  addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false;});
+  const down=k=>!!keys[k]; const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); const rand=(a,b)=>Math.random()*(b-a)+a;
+  function rectOverlap(ax,ay,aw,ah,bx,by,bw,bh){ return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by; }
 
-  <div id="platformer-game-screen" class="screen">
-    <div class="panel">
-      <h2>Plagues Adventure</h2>
-      <div class="platformer-header">
-        <div class="platformer-stat">Plague: <span id="platformer-level-name">N/A</span></div>
-        <div class="platformer-stat">Staff Power: <span id="platformer-tokens">0</span></div>
-        <div class="platformer-stat"><span class="hearts" id="platformer-lives">❤️❤️❤️</span></div>
-      </div>
-      <div id="platformer-canvas-container">
-          <canvas id="platformer-canvas"></canvas>
-          <div id="platformer-overlay">
-              <h2 id="platformer-message"></h2>
-              <button id="platformer-start-btn">Start Adventure 🚀</button>
-              <button id="platformer-next-level-btn" style="display:none;">Next Plague! ✨</button>
-              <button id="platformer-restart-btn" style="display:none;">Try Again</button>
-          </div>
-      </div>
-    </div>
-  </div>
-</div>
+  // ===== Plague meta (NWT links) =====
+  const PLAQUES=[
+    {name:'Water to Blood', verse:'Exodus 7:17', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/7#v7:17', blurb:"Jehovah showed his power over the Nile."},
+    {name:'Frogs', verse:'Exodus 8:2', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/8#v8:2', blurb:"Even small things can make a big point."},
+    {name:'Gnats', verse:'Exodus 8:17', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/8#v8:17', blurb:"Magicians said, “It is God’s finger.”"},
+    {name:'Flies', verse:'Exodus 8:24', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/8#v8:24', blurb:"Jehovah protected his people."},
+    {name:'Livestock Disease', verse:'Exodus 9:3', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/9#v9:3', blurb:"Jehovah controls life and health."},
+    {name:'Boils', verse:'Exodus 9:10', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/9#v9:10', blurb:"No one could stand against Jehovah."},
+    {name:'Hail', verse:'Exodus 9:23', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/9#v9:23', blurb:"Hail like never before."},
+    {name:'Locusts', verse:'Exodus 10:13', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/10#v10:13', blurb:"Fields were swept clean."},
+    {name:'Darkness', verse:'Exodus 10:22', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/10#v10:22', blurb:"Israel still had light."},
+    {name:'Passover Protection', verse:'Exodus 12:13', url:'https://wol.jw.org/en/wol/b/r1/lp-e/nwt/study/Ex/12#v12:13', blurb:"He remembers obedient ones."}
+  ];
 
-<script>
-// --- GLOBAL & MENU LOGIC ---
-const initialGameState = { character: 'boy' };
-let game = { ...initialGameState };
-
-function switchScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    
-    // Stop any active game when switching screens
-    if (platformerGame.active) platformerGame.endGame(false, true);
-    if (memoryGame.timerId) clearInterval(memoryGame.timerId);
-    if (sortingGame.active) sortingGame.endGame();
-}
-
-function resetAndGoHome() {
-    game = { ...initialGameState };
-    document.getElementById(`char-${game.character}`).checked = true;
-    switchScreen('main-menu-screen');
-}
-
-document.getElementById('home-reset-btn').onclick = resetAndGoHome;
-
-// --- 1. SORTING GAME ---
-const sortingGame = {
-    active: false,
-    cardCount: 0,
-    placedCount: 0,
-    allActivities: {
-        boy: {
-            happy: [ { emoji: '🙏', text: "Praying" }, { emoji: '🧹', text: "Chores" }, { emoji: '📖', text: "Bible Reading" }, { emoji: '🤗', text: "Sharing" } ],
-            distraction: [ { emoji: '🎮', text: "Too many games" }, { emoji: '😠', text: "Arguing" }, { emoji: '😫', text: "Complaining" }, { emoji: '📱', text: "Ignoring parents"} ]
-        },
-        girl: {
-            happy: [ { emoji: '🙏', text: "Prayer" }, { emoji: '🤝', text: "Helping friends" }, { emoji: '📖', text: "Personal Study" }, { emoji: '📝', text: "Meeting Prep" } ],
-            distraction: [ { emoji: '📱', text: "Social media" }, { emoji: ' gossip', text: "Gossiping" }, { emoji: '👻', text: "Scary movies" }, { emoji: '🤔', text: "Worrying"} ]
-        }
-    },
-    
-    start() {
-        this.active = true;
-        this.placedCount = 0;
-        this.loadCards();
-    },
-
-    loadCards() {
-        const cardContainer = document.getElementById('cards-container');
-        cardContainer.innerHTML = '';
-        document.getElementById('makes-happy').innerHTML = '<h3>👍 Makes Jehovah Happy</h3>';
-        document.getElementById('distraction').innerHTML = '<h3>🤔 Could Be a Distraction</h3>';
-
-        const mode = game.character;
-        const activities = [...this.allActivities[mode].happy, ...this.allActivities[mode].distraction];
-        activities.sort(() => 0.5 - Math.random());
-        this.cardCount = activities.length;
-
-        activities.forEach((activity, idx) => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.id = `card${idx}`;
-            card.draggable = true;
-            card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`;
-            
-            const isHappy = this.allActivities[mode].happy.some(c => c.text === activity.text);
-            card.dataset.correctZone = isHappy ? 'makes-happy' : 'distraction';
-            
-            card.addEventListener('dragstart', (e) => e.dataTransfer.setData("text", e.target.id));
-            cardContainer.appendChild(card);
-        });
-        
-        document.querySelectorAll('.dropzone').forEach(zone => {
-            zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('over'); };
-            zone.ondragleave = (e) => zone.classList.remove('over');
-            zone.ondrop = (e) => this.onDrop(e);
-        });
-    },
-
-    onDrop(e) {
-        e.preventDefault();
-        let dropzone = e.target;
-        while (!dropzone.classList.contains('dropzone')) dropzone = dropzone.parentElement;
-        dropzone.classList.remove('over');
-        
-        const cardId = e.dataTransfer.getData("text");
-        const card = document.getElementById(cardId);
-        
-        if (card.dataset.correctZone === dropzone.id) {
-            dropzone.appendChild(card);
-            card.draggable = false;
-            card.style.borderColor = 'var(--accent-green)';
-            this.placedCount++;
-            if (this.placedCount === this.cardCount) {
-                setTimeout(() => {
-                    alert("Great job! You sorted them all!");
-                    this.start(); // Restart for replay value
-                }, 500);
-            }
-        } else {
-            card.style.borderColor = 'var(--accent-red)';
-            setTimeout(() => card.style.borderColor = '#ccc', 500);
-        }
-    },
-    endGame() { this.active = false; }
-};
-
-// --- 2. MEMORY GAME ---
-const memoryGame = {
-    level: 1, timerId: null, matches: 0, goal: 0,
-    isChecking: false, flippedCards: [],
-    levelData: [
-        { pairs: 4, grid: '2x4' }, { pairs: 6, grid: '3x4' }, { pairs: 8, grid: '4x4' },
-        { pairs: 10, grid: '4x5' }, { pairs: 12, grid: '4x6' }
-    ],
-    
-    start() {
-        this.resetState();
-        const currentLevel = this.levelData[this.level - 1];
-        if (!currentLevel) {
-            alert("Wow! You've completed all memory levels!");
-            resetAndGoHome();
-            return;
-        }
-        
-        this.goal = currentLevel.pairs;
-        this.updateUI();
-        this.createGrid(currentLevel.pairs, currentLevel.grid);
-    },
-
-    createGrid(pairCount, gridLayout) {
-        const grid = document.getElementById('memory-game-grid');
-        grid.innerHTML = '';
-        const [rows, cols] = gridLayout.split('x');
-        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        
-        const cardEmojis = ['🙏','📖','🤝','😊','🧹','🎶','🤗','❤️','🌟','🐑','🦁','🕊️'];
-        let cardPool = cardEmojis.slice(0, pairCount);
-        cardPool = [...cardPool, ...cardPool];
-        cardPool.sort(() => 0.5 - Math.random());
-
-        cardPool.forEach(emoji => {
-            const cardEl = document.createElement('div');
-            cardEl.classList.add('memory-card');
-            cardEl.dataset.id = emoji;
-            cardEl.innerHTML = `<div class="card-face card-back">?</div><div class="card-face card-front">${emoji}</div>`;
-            cardEl.onclick = () => this.flipCard(cardEl);
-            grid.appendChild(cardEl);
-        });
-    },
-
-    flipCard(cardEl) {
-        if (this.isChecking || cardEl.classList.contains('is-flipped') || this.flippedCards.length >= 2) return;
-        cardEl.classList.add('is-flipped');
-        this.flippedCards.push(cardEl);
-        if (this.flippedCards.length === 2) this.checkForMatch();
-    },
-
-    checkForMatch() {
-        this.isChecking = true;
-        const [card1, card2] = this.flippedCards;
-        if (card1.dataset.id === card2.dataset.id) {
-            this.matches++;
-            this.updateUI();
-            setTimeout(() => {
-                card1.classList.add('is-matched');
-                card2.classList.add('is-matched');
-                this.flippedCards = [];
-                this.isChecking = false;
-                if (this.matches === this.goal) this.levelComplete();
-            }, 500);
-        } else {
-            setTimeout(() => {
-                card1.classList.remove('is-flipped');
-                card2.classList.remove('is-flipped');
-                this.flippedCards = [];
-                this.isChecking = false;
-            }, 1000);
-        }
-    },
-    
-    levelComplete() {
-        alert(`Level ${this.level} Complete!`);
-        this.level++;
-        this.start();
-    },
-    
-    updateUI() {
-        document.getElementById('memory-level').textContent = this.level;
-        document.getElementById('memory-matches').textContent = `${this.matches} / ${this.goal}`;
-    },
-
-    resetState() {
-        this.matches = 0;
-        this.isChecking = false;
-        this.flippedCards = [];
-        if (this.timerId) clearInterval(this.timerId);
-        this.timerId = null;
+  // ===== Player =====
+  class Shepherd{
+    constructor(x,y){ this.x=x;this.y=y;this.vx=0;this.vy=0;this.g=1700;this.w=48;this.h=64;this.face=1;this.onGround=false; this.state='idle';this.animT=0;this.squash=1; this.staffT=0; this.staffCD=0; this.justLanded=false; }
+    update(dt, platforms){
+      const base=260, jumpV=660; // input
+      if(down('arrowleft')||down('a')){this.vx=-base;this.face=-1}else if(down('arrowright')||down('d')){this.vx=base;this.face=1}else this.vx=0;
+      if((down('arrowup')||down(' ')||down('w')) && this.onGround){ this.vy=-jumpV; this.onGround=false; this.squash=0.88; spawnDust(this.x+this.w/2,this.y+this.h); }
+      if(down('x') && this.staffCD<=0){ this.staffT=0.18; this.staffCD=0.32; spawnSpark(this.frontX(), this.y+this.h*0.3); }
+      if(this.staffCD>0) this.staffCD-=dt; if(this.staffT>0) this.staffT-=dt;
+      // physics
+      this.vy+=this.g*dt; if(this.vy>900) this.vy=900;
+      // move + collide (separate axis)
+      this.x+=this.vx*dt; for(const p of platforms){ if(rectOverlap(this.x,this.y,this.w,this.h, p.x,p.y,p.w,p.h)){
+          if(this.vx>0) this.x=p.x-this.w; else if(this.vx<0) this.x=p.x+p.w;
+        }}
+      const prevVy=this.vy, prevY=this.y; this.y+=this.vy*dt; this.onGround=false;
+      for(const p of platforms){ if(rectOverlap(this.x,this.y,this.w,this.h, p.x,p.y,p.w,p.h)){
+          if(this.vy>0){ this.y=p.y-this.h; this.vy=0; this.onGround=true; if(prevVy>240){ spawnDust(this.x+this.w/2, this.y+this.h); this.squash=1.15; } }
+          else if(this.vy<0){ this.y=p.y+p.h; this.vy=0; }
+        }}
+      // squash/stretch
+      const target = (!this.onGround) ? clamp(1+(-this.vy/900)*0.15,0.9,1.18) : 1;
+      this.squash += (target - this.squash)*8*dt;
+      // animation state
+      const sp=Math.abs(this.vx); this.state = !this.onGround ? 'air' : sp>380? 'run' : sp>40? 'walk' : 'idle';
+      this.animT += dt*(this.state==='run'?8:this.state==='walk'?4:2);
     }
-};
+    frontX(){ return this.x + (this.face>0? this.w+8 : -8); }
+    draw(){ const {x,y,w,h}=this; const t=this.animT; ctx.save(); ctx.translate(x - camX + w/2, y + h/2); ctx.scale(this.face,this.squash);
+      // shadow
+      ctx.globalAlpha=.28; ctx.beginPath(); ctx.ellipse(0,h/2+10,18,6,0,0,Math.PI*2); ctx.fillStyle='#000'; ctx.fill(); ctx.globalAlpha=1;
+      const swing=(this.state==='run'||this.state==='walk')? Math.sin(t)*(this.state==='run'?12:6):0;
+      const leg=(this.state==='run'||this.state==='walk')? Math.cos(t)*(this.state==='run'?8:4):0;
+      // tunic
+      roundRect(-w/2+6,-h/2+6,w-12,h-16,12,'#fbd38d','#00000066'); ctx.fillStyle='#8b5a2b'; ctx.fillRect(-12,6,24,4);
+      // head
+      roundRect(-16,-h/2-18,32,28,12,'#ffe3b3'); dot(-6,-h/2-6,3.6,'#111827'); dot(6,-h/2-6,3.6,'#111827'); roundRect(-18,-h/2-24,36,12,6,'#6b4f37');
+      // arms & legs
+      drawLimb(-14,-6,8,22,swing); drawLimb(14,-6,8,22,-swing); drawLeg(-10,h/2-20,10,24,leg); drawLeg(10,h/2-20,10,24,-leg);
+      // staff + swing
+      roundRect(w/2-10,-h/2-10,6,h+20,3,'#facc15'); if(this.staffT>0){ ctx.globalAlpha=.35; ctx.beginPath(); ctx.arc(w/2+8,0,36, -0.8, 0.8); ctx.strokeStyle='#fde68a'; ctx.lineWidth=8; ctx.stroke(); ctx.globalAlpha=1; }
+      ctx.restore(); }
+  }
 
-// --- 3. PLATFORMER GAME ---
-const platformerGame = {
-    canvas: document.getElementById('platformer-canvas'),
-    ctx: null, active: false, gameInterval: null, frame: 0,
-    level: 1, lives: 3, tokens: 0,
-    
-    player: {
-        x: 100, y: 300, w: 40, h: 60, vx: 0, vy: 0, speed: 4, walkSpeed: 2.5, runSpeed: 5, jumpPower: 17,
-        grounded: false, doubleJumpUsed: false,
-        animState: 'idle', animFrame: 0, facing: 'right', squash: 0
-    },
-    platforms: [], particles: [], goal: null, levelData: [],
-    gravity: 0.7, camera: { x: 0 },
-
-    levelDesigns: [
-        {}, // Level 0 placeholder
-        { name: "Nile to Blood",bgColor: ['#a02a2a', '#6b1c1c'], platformType: 'stone', tokens: 5,
-          layout: [
-            { x: 0, y: 400, w: 400 }, { x: 500, y: 320, w: 200 }, { x: 800, y: 250, w: 150 },
-            { x: 1100, y: 350, w: 250 }, { x: 1500, y: 280, w: 180 }, { x: 1800, y: 400, w: 300, goal: true}
-          ]
-        },
-        { name: "Frogs", bgColor: ['#298c7a', '#1f6758'], platformType: 'lilypad', tokens: 7,
-          layout: [
-            { x: 0, y: 400, w: 200 }, { x: 350, y: 350, w: 150 }, { x: 600, y: 400, w: 150 },
-            { x: 900, y: 320, w: 180 }, { x: 1250, y: 250, w: 120 }, { x: 1500, y: 380, w: 200},
-            { x: 1850, y: 300, w: 250, goal: true}
-          ]
-        },
-        // ... Add layouts for remaining 8 plagues here
-    ],
-    
-    init() {
-        this.ctx = this.canvas.getContext('2d');
-        this.setCanvasSize();
-        window.addEventListener('resize', () => this.setCanvasSize());
-        
-        document.getElementById('platformer-start-btn').onclick = () => this.start(1);
-        document.getElementById('platformer-next-level-btn').onclick = () => { this.start(this.level + 1); };
-        document.getElementById('platformer-restart-btn').onclick = () => { this.start(this.level); };
-        
-        this.showOverlay("Plagues Adventure");
-    },
-    
-    setCanvasSize() {
-        const container = document.getElementById('platformer-canvas-container');
-        this.canvas.width = 800; // Internal resolution
-        this.canvas.height = 450;
-        // CSS handles the display scaling
-    },
-
-    start(level) {
-        this.hideOverlay();
-        this.active = true;
-        this.frame = 0;
-        this.level = level;
-        if(level === 1) { // Only reset lives/tokens on a fresh start
-            this.lives = 3;
-            this.tokens = 0;
-        }
-        
-        this.player.x = 100;
-        this.player.y = 300;
-        this.player.vx = 0;
-        this.player.vy = 0;
-        this.camera.x = 0;
-        this.particles = [];
-        this.levelData = [];
-
-        this.generateLevel();
-        if (this.gameInterval) clearInterval(this.gameInterval);
-        this.gameInterval = setInterval(() => this.loop(), 1000 / 60);
-        this.addKeyListeners();
-    },
-
-    keys: {},
-    addKeyListeners() {
-        this.keys = {};
-        const keydownHandler = e => {
-            this.keys[e.code] = true;
-            // Prevent space from scrolling page
-            if(e.code === 'Space') e.preventDefault();
-        };
-        const keyupHandler = e => this.keys[e.code] = false;
-        
-        window.addEventListener('keydown', keydownHandler);
-        window.addEventListener('keyup', keyupHandler);
-        
-        this.removeListeners = () => {
-             window.removeEventListener('keydown', keydownHandler);
-             window.removeEventListener('keyup', keyupHandler);
-        };
-    },
-    
-    generateLevel() {
-        const design = this.levelDesigns[this.level];
-        if (!design) { this.endGame(true); return; }
-
-        this.platforms = design.layout.map(p => ({...p, h: (design.platformType === 'lilypad' ? 20 : 40) }));
-        const goalPlatform = this.platforms.find(p => p.goal);
-        this.goal = {x: goalPlatform.x + goalPlatform.w / 2 - 25, y: goalPlatform.y - 50, w: 50, h: 50};
-        
-        // Distribute tokens
-        for(let i=0; i < design.tokens; i++){
-            const p = this.platforms[Math.floor(Math.random() * (this.platforms.length -1))];
-            this.levelData.push({ type: 'token', x: p.x + Math.random() * p.w, y: p.y - 40, w: 20, h: 20, collected: false });
-        }
-    },
-
-    loop() {
-        if(!this.active) return;
-        this.updatePlayerState();
-        this.updateWorld();
-        this.draw();
-        this.updateUI();
-    },
-
-    updatePlayerState() {
-        const p = this.player;
-        if (p.squash > 0) p.squash = Math.max(0, p.squash - 0.1);
-
-        const moving = this.keys.KeyA || this.keys.ArrowLeft || this.keys.KeyD || this.keys.ArrowRight;
-        p.speed = this.keys.ShiftLeft ? p.runSpeed : p.walkSpeed;
-
-        if (this.keys.KeyA || this.keys.ArrowLeft) { p.vx = -p.speed; p.facing = 'left'; }
-        else if (this.keys.KeyD || this.keys.ArrowRight) { p.vx = p.speed; p.facing = 'right'; }
-        else { p.vx = 0; }
-        
-        if ((this.keys.KeyW || this.keys.ArrowUp || this.keys.Space)) {
-            if (p.grounded) {
-                p.vy = -p.jumpPower;
-                p.grounded = false;
-                p.squash = 1; // Trigger squash for jump
-                this.spawnParticles(p.x + p.w / 2, p.y + p.h, 10, '#ffffff');
-            } else if (!p.doubleJumpUsed) {
-                p.vy = -p.jumpPower * 0.8;
-                p.doubleJumpUsed = true;
-                this.spawnParticles(p.x + p.w / 2, p.y + p.h/2, 15, 'rgba(255,255,255,0.7)');
-            }
-            this.keys.KeyW = this.keys.ArrowUp = this.keys.Space = false; // Prevent holding jump
-        }
-
-        p.vy += this.gravity;
-        p.x += p.vx;
-        
-        // Collision with floor
-        if (p.y + p.h + p.vy > this.canvas.height) {
-            p.y = this.canvas.height - p.h;
-            p.vy = 0;
-            this.land();
-        } else {
-             p.y += p.vy;
-        }
-
-        let onPlatform = false;
-        this.platforms.forEach(plat => {
-            if (p.x + p.w > plat.x && p.x < plat.x + plat.w &&
-                p.y + p.h >= plat.y && p.y + p.h <= plat.y + 20 && p.vy >= 0) {
-                onPlatform = true;
-                p.y = plat.y - p.h;
-                p.vy = 0;
-                this.land();
-            }
-        });
-        if(!onPlatform) p.grounded = false;
-        
-        // Animation state
-        if (!p.grounded) p.animState = p.vy < 0 ? 'jump' : 'fall';
-        else if (moving) p.animState = this.keys.ShiftLeft ? 'run' : 'walk';
-        else p.animState = 'idle';
-        p.animFrame++;
-    },
-    
-    land() {
-        if (!this.player.grounded) {
-            this.player.squash = 1; // Trigger squash for landing
-            this.spawnParticles(this.player.x + this.player.w / 2, this.player.y + this.player.h, 15, '#d3b897'); // Dust puff
-        }
-        this.player.grounded = true;
-        this.player.doubleJumpUsed = false;
-    },
-    
-    updateWorld() {
-        // Camera
-        const targetX = this.player.x - this.canvas.width / 3;
-        this.camera.x += (targetX - this.camera.x) * 0.1;
-        
-        // Particles
-        this.particles.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy; p.life--;
-            if (p.life <= 0) this.particles.splice(i, 1);
-        });
-
-        // Collectibles
-        this.levelData.forEach(item => {
-            if (item.type === 'token' && !item.collected && this.checkCollision(this.player, item)) {
-                item.collected = true;
-                this.tokens++;
-            }
-        });
-
-        // Goal collision
-        if (this.goal && this.checkCollision(this.player, this.goal)) {
-            this.showOverlay(`Plague ${this.level} Cleared!`, true, false);
-            this.endGame(true, true);
-        }
-
-        // Fall death
-        if (this.player.y > this.canvas.height + 50) {
-            this.loseLife();
-        }
-    },
-    
-    loseLife() {
-        this.lives--;
-        if (this.lives <= 0) {
-            this.endGame(false);
-            this.showOverlay("Game Over", false, true);
-        } else {
-            this.start(this.level); // Restart current level
-        }
-    },
-
-    checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + rect2.w &&
-               rect1.x + rect1.w > rect2.x &&
-               rect1.y < rect2.y + rect2.h &&
-               rect1.y + rect1.h > rect2.y;
-    },
-
-    spawnParticles(x, y, count, color) {
-        for (let i = 0; i < count; i++) {
-            this.particles.push({
-                x, y,
-                vx: (Math.random() - 0.5) * 5,
-                vy: (Math.random() - 0.5) * 5 - 1,
-                life: Math.random() * 30 + 20, color
-            });
-        }
-    },
-
-    draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        this.drawBackground(); // Draw background first
-
-        this.ctx.save();
-        this.ctx.translate(-this.camera.x, 0);
-
-        this.drawPlatforms();
-        this.drawCollectibles();
-        this.drawGoal();
-        this.drawParticles();
-        this.drawPlayer();
-        
-        this.ctx.restore();
-    },
-    
-    drawBackground() {
-        const design = this.levelDesigns[this.level];
-        if (!design) return;
-
-        const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        grad.addColorStop(0, design.bgColor[0]);
-        grad.addColorStop(1, design.bgColor[1]);
-        this.ctx.fillStyle = grad;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Level-specific details
-        if (this.level === 1) { // Nile to Blood
-            // Pyramids
-            this.ctx.fillStyle = '#4a2517';
-            this.ctx.beginPath(); this.ctx.moveTo(150, 400); this.ctx.lineTo(250, 200); this.ctx.lineTo(350, 400); this.ctx.fill();
-            this.ctx.fillStyle = '#6d3621';
-            this.ctx.beginPath(); this.ctx.moveTo(400, 400); this.ctx.lineTo(475, 250); this.ctx.lineTo(550, 400); this.ctx.fill();
-            // Palm trees will be drawn with platforms
-        } else if (this.level === 2) { // Frogs
-            // Reeds
-            this.ctx.strokeStyle = '#2a5b4f';
-            this.ctx.lineWidth = 3;
-            for(let i=0; i < 20; i++) {
-                const x = i * 50;
-                const h = 50 + Math.random() * 50;
-                this.ctx.beginPath(); this.ctx.moveTo(x, 450); this.ctx.lineTo(x, 450 - h); this.ctx.stroke();
-            }
-        }
-    },
-
-    drawPlatforms() {
-        const design = this.levelDesigns[this.level];
-        if (!design) return;
-        
-        this.platforms.forEach(p => {
-            if(design.platformType === 'stone') {
-                this.ctx.fillStyle = '#8d6e63'; this.ctx.fillRect(p.x, p.y, p.w, p.h);
-                this.ctx.fillStyle = '#a1887f'; this.ctx.fillRect(p.x, p.y, p.w, 10);
-            } else if (design.platformType === 'lilypad') {
-                this.ctx.fillStyle = '#4caf50';
-                this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, p.h * 0.8, 0, 0, Math.PI * 2); this.ctx.fill();
-                this.ctx.fillStyle = '#66bb6a';
-                this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2 - 2, p.w / 2 * 0.8, p.h * 0.7, 0, 0, Math.PI * 2); this.ctx.fill();
-            }
-        });
-    },
-
-    drawCollectibles() {
-        this.levelData.forEach(item => {
-            if (item.type === 'token' && !item.collected) {
-                this.ctx.fillStyle = 'gold';
-                this.ctx.beginPath();
-                this.ctx.arc(item.x + item.w/2, item.y + item.h/2 + Math.sin(this.frame * 0.1) * 5, item.w/2, 0, Math.PI * 2);
-                this.ctx.fill();
-                this.ctx.fillStyle = '#f9a825';
-                this.ctx.fillText('S', item.x + 5, item.y + 15, 10);
-            }
-        });
-    },
-
-    drawGoal() {
-        if (!this.goal) return;
-        this.ctx.fillStyle = '#f4a261';
-        this.ctx.globalAlpha = 0.5 + Math.sin(this.frame * 0.05) * 0.5;
-        this.ctx.fillRect(this.goal.x, this.goal.y, this.goal.w, this.goal.h);
-        this.ctx.globalAlpha = 1;
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '24px Fredoka One';
-        this.ctx.fillText("🏁", this.goal.x + 10, this.goal.y + 35);
-    },
-
-    drawParticles() {
-        this.particles.forEach(p => {
-            this.ctx.fillStyle = p.color;
-            this.ctx.globalAlpha = p.life / 40;
-            this.ctx.fillRect(p.x, p.y, 4, 4);
-            this.ctx.globalAlpha = 1;
-        });
-    },
-
-    drawPlayer() {
-        const p = this.player;
-        const art = game.character === 'boy' ? 
-            { tunic: '#4a90e2', skin: '#f2a66e', hair: '#3a2d27' } :
-            { tunic: '#e91e63', skin: '#ffbe87', hair: '#8b572a' };
-        
-        let squashY = 1 - Math.sin(p.squash * Math.PI) * 0.3;
-        let stretchX = 1 + Math.sin(p.squash * Math.PI) * 0.3;
-
-        this.ctx.save();
-        this.ctx.translate(p.x + p.w / 2, p.y + p.h);
-        if (p.facing === 'left') this.ctx.scale(-1, 1);
-        this.ctx.scale(stretchX, squashY);
-        this.ctx.translate(-(p.x + p.w / 2), -(p.y + p.h));
-        
-        const bob = (p.animState === 'walk' || p.animState === 'run') ? Math.sin(this.frame * (p.speed / 20)) * 3 : 0;
-
-        // Legs
-        this.ctx.fillStyle = art.skin;
-        this.ctx.fillRect(p.x + 8, p.y + 40, 10, 20);
-        this.ctx.fillRect(p.x + 22, p.y + 40, 10, 20);
-
-        // Tunic
-        this.ctx.fillStyle = art.tunic;
-        this.ctx.fillRect(p.x + 5, p.y + 15 + bob, 30, 30);
-        
-        // Head
-        this.ctx.fillStyle = art.skin;
-        this.ctx.beginPath();
-        this.ctx.arc(p.x + p.w/2, p.y + 12 + bob, 12, 0, Math.PI*2);
-        this.ctx.fill();
-
-        // Hair
-        this.ctx.fillStyle = art.hair;
-        this.ctx.beginPath();
-        this.ctx.arc(p.x + p.w/2, p.y + 8 + bob, 12, 0, Math.PI*2);
-        this.ctx.fill();
-
-        // Eyes
-        this.ctx.fillStyle = 'white';
-        this.ctx.beginPath();
-        this.ctx.ellipse(p.x + p.w/2 + 5, p.y + 12 + bob, 4, 5, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-        this.ctx.fillStyle = 'black';
-        this.ctx.beginPath();
-        this.ctx.arc(p.x + p.w/2 + 6, p.y + 13 + bob, 2, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        this.ctx.restore();
-    },
-
-    showOverlay(message, showNext = false, showRestart = false) {
-        const overlay = document.getElementById('platformer-overlay');
-        document.getElementById('platformer-message').textContent = message;
-        document.getElementById('platformer-start-btn').style.display = (!showNext && !showRestart) ? 'inline-block' : 'none';
-        document.getElementById('platformer-next-level-btn').style.display = showNext ? 'inline-block' : 'none';
-        document.getElementById('platformer-restart-btn').style.display = showRestart ? 'inline-block' : 'none';
-        overlay.style.display = 'flex';
-    },
-    hideOverlay() { document.getElementById('platformer-overlay').style.display = 'none'; },
-    
-    endGame(isComplete = false, isSoftEnd = false) {
-        this.active = false;
-        clearInterval(this.gameInterval);
-        if (this.removeListeners) this.removeListeners();
-        if (isSoftEnd) return; // Don't show overlay if just resetting
-        if (!isComplete) this.showOverlay("Game Over", false, true);
-    },
-    
-    updateUI() {
-        const design = this.levelDesigns[this.level] || {};
-        document.getElementById('platformer-level-name').textContent = `${this.level}. ${design.name || 'Finished!'}`;
-        document.getElementById('platformer-tokens').textContent = `${this.tokens}`;
-        document.getElementById('platformer-lives').textContent = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
+  // ===== World / Platforms / Flagpole =====
+  const groundY = H-80; let platforms=[]; let flagpole={x:0,y:groundY-90,h:90,progress:0,triggered:false}; let levelLen=2400; let levelIndex=0; let camX=0;
+  function buildPlatforms(i){
+    platforms=[]; // ground as a platform for unified collisions
+    platforms.push({x:-9999,y:groundY,w:999999,h:80,kind:'ground'});
+    let x=160; const count=18; for(let n=0;n<count;n++){
+      const kind = (i===1?'lily': i===6?'ice':'stone');
+      const w = rand(160, 280); const gap=rand(80, 200); const y=groundY - rand(120, 280);
+      platforms.push({x,y,w,h:22,kind}); x+=w+gap;
     }
-};
+    levelLen = x+520; flagpole = {x: levelLen-140, y: groundY-110, h:110, progress:0, triggered:false};
+  }
 
-// --- INITIALIZATION & EVENT LISTENERS ---
-window.onload = () => {
-    document.getElementById('start-sorting-btn').onclick = () => {
-        switchScreen('sorting-game-screen');
-        sortingGame.start();
-    };
-    document.getElementById('start-memory-btn').onclick = () => {
-        switchScreen('memory-game-screen');
-        memoryGame.level = 1;
-        memoryGame.start();
-    };
-    document.getElementById('start-platformer-btn').onclick = () => {
-        switchScreen('platformer-game-screen');
-        platformerGame.init();
-    };
-    document.getElementById('character-selector').onchange = (e) => {
-        game.character = e.target.value;
-    };
-};
-</script>
-</body>
-</html>
+  function drawPlatforms(){ ctx.save(); ctx.translate(-camX,0); for(const p of platforms){ if(p.kind==='ground'){ ctx.fillStyle='#111827'; ctx.fillRect(p.x,p.y,p.w,p.h); continue; }
+      if(p.kind==='stone'){ drawStoneBlock(p.x,p.y,p.w,p.h); }
+      else if(p.kind==='lily'){ drawLilyStrip(p.x,p.y,p.w,p.h); }
+      else if(p.kind==='ice'){ drawIceBlock(p.x,p.y,p.w,p.h); }
+      else { drawStoneBlock(p.x,p.y,p.w,p.h); }
+    }
+    // flagpole
+    drawFlagpole(flagpole);
+    ctx.restore(); }
+
+  function drawFlagpole(p){ const x=p.x, y=p.y; const raise=p.progress; const poleX=x - camX; // pole
+    ctx.fillStyle='#e5e7eb'; ctx.fillRect(poleX, y, 8, p.h); // base cap
+    ctx.fillStyle='#9ca3af'; ctx.fillRect(poleX-6, y+p.h, 20, 10);
+    // flag
+    const fy = y + (1-raise)*p.h*0.9 + 6; ctx.fillStyle='#ef4444'; triangle(poleX+8, fy, 70, 40, '#ef4444'); }
+
+  // ===== Hazards (hail, swarms) =====
+  const hazards=[]; function spawnHail(){ const x = camX + W + rand(0,300); const y = -40; hazards.push({type:'hail',x,y,vx:rand(-40,40),vy:rand(120,200),alive:true,batted:false}); }
+  function spawnSwarm(){ const x = camX + W + 40; const y = rand(140,H-220); hazards.push({type:'swarm',x,y,vx:rand(-80,-40),vy:rand(-10,10),alive:true,batted:false,t:rand(0,6)}); }
+  function updateHazards(dt){ for(const h of hazards){ if(!h.alive) continue; if(h.type==='hail'){ h.vy+=800*dt; h.x+=h.vx*dt; h.y+=h.vy*dt; if(h.y>H+60) h.alive=false; } if(h.type==='swarm'){ h.t+=dt; h.y += Math.sin(h.t*3)*22*dt; h.x += h.vx*dt; if(h.x < camX-60) h.alive=false; }
+      if(player.staffT>0){ const fx=player.frontX(), fy=player.y+player.h*0.3; const d=Math.hypot(h.x-fx,h.y-fy); if(d<64){ if(h.type==='hail'){ h.batted=true; h.vx = 340*(player.face); h.vy = -260; spawnSpark(h.x,h.y); } else { h.alive=false; spawnSpark(h.x,h.y); } } }
+      if(rectOverlap(player.x,player.y,player.w,player.h, h.x-12,h.y-12,24,24)){
+        if(h.type==='hail' && !h.batted){ player.x -= 18*(player.face); spawnDust(player.x+player.w/2, player.y+player.h); }
+        if(h.type==='swarm'){ player.x -= 10*(player.face); }
+      }
+    } for(let i=hazards.length-1;i>=0;i--) if(!hazards[i].alive) hazards.splice(i,1); }
+  function drawHazards(){ for(const h of hazards){ ctx.save(); ctx.translate(h.x - camX, h.y); if(h.type==='hail'){ ctx.fillStyle=h.batted?'#fef3c7':'#e5e7eb'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#ffffff66'; ctx.beginPath(); ctx.moveTo(-12,-12); ctx.lineTo(12,12); ctx.stroke(); } if(h.type==='swarm'){ ctx.fillStyle='rgba(34,197,94,.9)'; for(let k=0;k<4;k++){ ctx.beginPath(); ctx.arc(Math.cos(h.t*6+k)*4, Math.sin(h.t*6+k)*4, 2, 0, Math.PI*2); ctx.fill(); } } ctx.restore(); } }
+
+  // ===== FX & SFX =====
+  let effects=[]; function spawnDust(x,y){ effects.push({kind:'dust',x,y,t:0}); } function spawnSpark(x,y){ effects.push({kind:'spark',x,y,t:0}); }
+  function drawFX(dt){ effects = effects.filter(e=>{ e.t+=dt; if(e.kind==='dust'){ const r=6+e.t*26, a=Math.max(0,.4-e.t*.35); ctx.save(); ctx.globalAlpha=a; ctx.strokeStyle='#e5e7eb'; ctx.beginPath(); ctx.arc(e.x - camX, e.y, r, 0, Math.PI*2); ctx.stroke(); ctx.restore(); return e.t<1; } if(e.kind==='spark'){ const a=1-e.t; if(a<=0) return false; dot(e.x - camX, e.y, 3+e.t*18, `rgba(250,204,21,${a})`); return true; } return false; }); }
+  let ac; function ensureAudio(){ try{ ac = ac || new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  function playNote(freq, dur, when){ if(!ac) return; const o=ac.createOscillator(); const g=ac.createGain(); o.connect(g); g.connect(ac.destination); o.type='triangle'; o.frequency.value=freq; g.gain.value=.06; o.start(when); o.stop(when+dur); }
+  function fanfare(){ ensureAudio(); const t=ac.currentTime+0.02; const seq=[523.25,659.25,783.99,1046.5]; const dur=0.16; seq.forEach((f,i)=>playNote(f,dur,t+i*(dur*0.9))); }
+
+  // ===== Backgrounds =====
+  function bgNileBlood(){ let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#3b0d0d'); g.addColorStop(1,'#8b1a1a'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); ctx.fillStyle='#33140a'; ctx.fillRect(0,H-80,W,80); drawPyramid(220,H-80,120,'#eab308','#d97706'); drawPyramid(620,H-80,140,'#eab308','#b45309'); drawPalm(140,H-80); drawPalm(760,H-80); }
+  function bgFrogs(){ let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#052316'); g.addColorStop(1,'#0b3a1a'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); const rg=ctx.createLinearGradient(0,H-160,0,H); rg.addColorStop(0,'#60a5fa'); rg.addColorStop(1,'#1e3a8a'); ctx.fillStyle=rg; ctx.fillRect(0,H-160,W,160); ctx.strokeStyle='#065f46'; for(let i=0;i<40;i++){ const x=(i*60 - (camX*.25)%60); ctx.beginPath(); ctx.moveTo(x,H-160); ctx.lineTo(x+rand(-6,6), H-210+rand(0,20)); ctx.stroke(); } drawLily(W*0.22,H-90,60); drawLily(W*0.55,H-80,70); drawLily(W*0.82,H-100,60); }
+  function bgHail(){ let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#091426'); g.addColorStop(1,'#0f2747'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  function bgDefault(){ let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0b1630'); g.addColorStop(1,'#16294e'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  function drawBackground(){ if(levelIndex===0) bgNileBlood(); else if(levelIndex===1) bgFrogs(); else if(levelIndex===6) bgHail(); else bgDefault(); }
+
+  // ===== HUD & Panels =====
+  const versePanel=document.getElementById('versePanel'); const menu=document.getElementById('menu'); const how=document.getElementById('how');
+  function drawHUD(){ ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fillRect(0,0,W,44); ctx.fillStyle='#fff'; ctx.font='16px system-ui'; ctx.fillText(`Level ${levelIndex+1} — ${PLAQUES[levelIndex].name}`, 16, 26); ctx.textAlign='right'; ctx.fillText('X: staff  ·  P: pause  ·  R: restart  ·  M: menu', W-16, 26); ctx.textAlign='left'; }
+  function show(el){ [menu,how,versePanel].forEach(e=>e.style.display='none'); el.style.display='flex'; }
+  function hide(el){ el.style.display='none'; }
+  function showLevelComplete(){ pause=true; show(versePanel); document.getElementById('vpTitle').textContent=`Level ${levelIndex+1} — ${PLAQUES[levelIndex].name}`; document.getElementById('vpBlurb').textContent=PLAQUES[levelIndex].blurb + `  (Verse: ${PLAQUES[levelIndex].verse})`; const a=document.getElementById('vpLink'); a.href=PLAQUES[levelIndex].url; }
+
+  // ===== Input UI =====
+  document.getElementById('btnStart').onclick=()=>{ hide(menu); ensureAudio(); pause=false; resetLevel(0); };
+  document.getElementById('btnHow').onclick=()=>show(how);
+  document.getElementById('btnBackHow').onclick=()=>show(menu);
+  document.getElementById('btnNext').onclick=()=>{ nextLevel(); pause=false; };
+  document.getElementById('btnMenu').onclick=()=>{ show(menu); pause=true; };
+  addEventListener('keydown', e=>{ const k=e.key.toLowerCase(); if(k==='p'){ pause=!pause; } if(k==='r'){ resetLevel(levelIndex); } if(k==='m'){ show(menu); pause=true; } });
+
+  // ===== Game Loop =====
+  let player=new Shepherd(80,H-220); let time=0, last=performance.now()/1000, pause=true;
+  function resetLevel(i){ levelIndex=i; buildPlatforms(i); player=new Shepherd(80,groundY-200); camX=0; hazards.length=0; effects.length=0; }
+  function nextLevel(){ resetLevel((levelIndex+1)%PLAQUES.length); hide(versePanel); }
+  function updateCamera(){ const target=clamp(player.x - W*0.4, 0, Math.max(0, levelLen-W)); camX += (target-camX)*0.08; }
+
+  function tick(dt){ player.update(dt, platforms); updateCamera(); if(levelIndex===6 && Math.random()<0.08) spawnHail(); if((levelIndex===2||levelIndex===3) && Math.random()<0.04) spawnSwarm(); updateHazards(dt);
+    // Flagpole logic
+    const poleRect={x:flagpole.x, y:flagpole.y, w:12, h:flagpole.h}; if(!flagpole.triggered && rectOverlap(player.x,player.y,player.w,player.h, poleRect.x, poleRect.y, poleRect.w, poleRect.h)){
+      flagpole.triggered=true; fanfare(); setTimeout(showLevelComplete, 700);
+    }
+    if(flagpole.triggered && flagpole.progress<1) flagpole.progress = Math.min(1, flagpole.progress + dt*1.8);
+  }
+  function render(dt){ drawBackground(); drawPlatforms(); drawParallaxBlobs(); drawHazards(); player.draw(); drawFX(dt); drawHUD(); }
+
+  function drawParallaxBlobs(){ ctx.globalAlpha=.22; for(let i=0;i<7;i++){ const y=H-240 + Math.sin(i+time*.3)*18; roundRect((i*280 - (camX*.3)%280)-200,y,480,180,40,'#a7f3d0'); } ctx.globalAlpha=1; }
+
+  function loop(){ const now=performance.now()/1000, dt=clamp(now-last,0,1/30); last=now; if(!pause){ time+=dt; tick(dt); } render(dt); requestAnimationFrame(loop);} loop();
+
+  // ===== Drawing helpers =====
+  function roundRect(x,y,w,h,r,fill,stroke){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill){ctx.fillStyle=fill; ctx.fill();} if(stroke){ctx.strokeStyle=stroke; ctx.stroke();} }
+  function dot(x,y,r,c){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); if(typeof c==='string') ctx.fillStyle=c; ctx.fill(); }
+  function drawLimb(x,y,w,h,angle){ ctx.save(); ctx.translate(x,y); ctx.rotate(angle*0.06); roundRect(-w/2,0,w,h,6,'#ffe3b3'); ctx.restore(); }
+  function drawLeg(x,y,w,h,offset){ ctx.save(); ctx.translate(x+offset*0.2,y); roundRect(-w/2,0,w,h,6,'#ffe3b3'); roundRect(-w/2,h-6,w,8,4,'#8b5a2b'); ctx.restore(); }
+  function drawPyramid(bx,by,base,light,shade){ const h=base*0.7; ctx.fillStyle=light; ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+base,by); ctx.lineTo(bx+base*0.5,by-h); ctx.closePath(); ctx.fill(); ctx.fillStyle=shade; ctx.beginPath(); ctx.moveTo(bx+base*0.5,by-h); ctx.lineTo(bx+base,by); ctx.lineTo(bx+base*0.7,by-h*0.55); ctx.closePath(); ctx.fill(); }
+  function drawPalm(xBase,groundY){ ctx.fillStyle='#065f46'; ctx.fillRect(xBase,groundY-70,10,70); ctx.beginPath(); ctx.moveTo(xBase+5,groundY-70); ctx.quadraticCurveTo(xBase-36,groundY-110,xBase-6,groundY-84); ctx.quadraticCurveTo(xBase+36,groundY-110,xBase+16,groundY-84); ctx.fillStyle='#10b981'; ctx.fill(); }
+  function drawLily(cx,cy,r){ const g=ctx.createRadialGradient(cx,cy,r*0.2,cx,cy,r); g.addColorStop(0,'#4ade80'); g.addColorStop(1,'#166534'); ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,Math.PI*0.15,Math.PI*1.85); ctx.closePath(); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(cx-r*0.3,cy-r*0.3,r*0.35,0,Math.PI*2); ctx.fill(); }
+  function drawStoneBlock(x,y,w,h){ const top='#f3f4f6', face='#9ca3af', edge='#0f172a'; roundRect(x,y,w,h,6,face,edge); ctx.fillStyle=top; ctx.fillRect(x+4,y+4,w-8,6); ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.begin
