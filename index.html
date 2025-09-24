@@ -225,4 +225,11 @@
   function drawPyramid(bx,by,base,light,shade){ const h=base*0.7; ctx.fillStyle=light; ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+base,by); ctx.lineTo(bx+base*0.5,by-h); ctx.closePath(); ctx.fill(); ctx.fillStyle=shade; ctx.beginPath(); ctx.moveTo(bx+base*0.5,by-h); ctx.lineTo(bx+base,by); ctx.lineTo(bx+base*0.7,by-h*0.55); ctx.closePath(); ctx.fill(); }
   function drawPalm(xBase,groundY){ ctx.fillStyle='#065f46'; ctx.fillRect(xBase,groundY-70,10,70); ctx.beginPath(); ctx.moveTo(xBase+5,groundY-70); ctx.quadraticCurveTo(xBase-36,groundY-110,xBase-6,groundY-84); ctx.quadraticCurveTo(xBase+36,groundY-110,xBase+16,groundY-84); ctx.fillStyle='#10b981'; ctx.fill(); }
   function drawLily(cx,cy,r){ const g=ctx.createRadialGradient(cx,cy,r*0.2,cx,cy,r); g.addColorStop(0,'#4ade80'); g.addColorStop(1,'#166534'); ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,Math.PI*0.15,Math.PI*1.85); ctx.closePath(); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(cx-r*0.3,cy-r*0.3,r*0.35,0,Math.PI*2); ctx.fill(); }
-  function drawStoneBlock(x,y,w,h){ const top='#f3f4f6', face='#9ca3af', edge='#0f172a'; roundRect(x,y,w,h,6,face,edge); ctx.fillStyle=top; ctx.fillRect(x+4,y+4,w-8,6); ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.begin
+  function drawStoneBlock(x,y,w,h){ const top='#f3f4f6', face='#9ca3af', edge='#0f172a'; roundRect(x,y,w,h,6,face,edge); ctx.fillStyle=top; ctx.fillRect(x+4,y+4,w-8,6); ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.moveTo(x+6,y+h-6); ctx.lineTo(x+w-6,y+h-6); ctx.stroke(); }
+  function drawIceBlock(x,y,w,h){ const g=ctx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,'#e0f2fe'); g.addColorStop(1,'#93c5fd'); roundRect(x,y,w,h,8,g,'#1e3a8a'); }
+  function drawLilyStrip(x,y,w,h){ const r=Math.max(20, Math.min(40, w*0.12)); const grad=ctx.createLinearGradient(x,y,x,y+h); grad.addColorStop(0,'#4ade80'); grad.addColorStop(1,'#166534'); roundRect(x,y,w,h,Math.min(28,r+10),grad,'#064e3b'); // little notch
+    ctx.fillStyle='rgba(255,255,255,.18)'; ctx.beginPath(); ctx.moveTo(x+w*0.3,y+h*0.2); ctx.arc(x+w*0.3,y+h*0.2, r*0.6, Math.PI*0.1, Math.PI*1.1); ctx.fill(); }
+
+  </script>
+</body>
+</html>
