@@ -131,19 +131,36 @@
         .card-back { font-size: 2.2rem; }
     }
 
-    /* --- Platformer Game --- */
+    /* --- Platformer Game (NEW STYLE) --- */
     #platformer-game-screen { text-align: center; }
-    .platformer-header { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 10px; font-family: var(--font-header); font-size: 1.1rem; }
-    .platformer-stat .hearts { font-size: 1.8rem; letter-spacing: 2px; }
-    #platformer-staff-status { text-align: right; }
-    #platformer-level-name { grid-column: 1 / -1; font-size: 1.3rem; }
+    .platformer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      font-family: var(--font-header);
+      font-size: 1.2rem;
+    }
+    .platformer-stat .hearts {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      /* Align hearts vertically with text */
+      display: flex;
+      align-items: center;
+    }
+    #platformer-level-name {
+      text-align: center;
+    }
+    #platformer-staff-status {
+      text-align: right;
+    }
     #platformer-canvas-container { 
         position: relative; 
         width: 100%;
         max-width: 800px;
         margin: auto;
         aspect-ratio: 16 / 9;
-        background-color: #7ec0ee; 
+        background-color: #add8e6; /* Light blue color from image */
         border-radius: 15px; 
         overflow: hidden; 
         box-shadow: var(--shadow); 
@@ -175,7 +192,6 @@
       </div>
     </div>
   </div>
-
   <div id="sorting-game-screen" class="screen">
     <div class="panel">
         <div class="sorting-header">
@@ -190,7 +206,6 @@
         <div id="cards-container"></div>
     </div>
   </div>
-
   <div id="memory-game-screen" class="screen">
       <div class="panel">
           <h2>Memory Match</h2>
@@ -205,8 +220,8 @@
   <div id="platformer-game-screen" class="screen">
     <div class="panel">
       <div class="platformer-header">
-        <div id="platformer-level-name" class="platformer-stat">Plague: N/A</div>
         <div class="platformer-stat"><span class="hearts" id="platformer-lives">❤️❤️❤️</span></div>
+        <div id="platformer-level-name" class="platformer-stat">Plague: N/A</div>
         <div id="platformer-staff-status" class="platformer-stat">Staff: READY</div>
       </div>
       <div id="platformer-canvas-container">
@@ -435,7 +450,7 @@ const memoryGame = {
 };
 
 
-// --- 3. PLATFORMER GAME (ENHANCED) ---
+// --- 3. PLATFORMER GAME (JavaScript is Unchanged) ---
 const platformerGame = {
     canvas: document.getElementById('platformer-canvas'),
     ctx: null, active: false, gameInterval: null, frame: 0,
@@ -677,8 +692,6 @@ const platformerGame = {
         return rect1.x < rect2.x + rect2.w && rect1.x + rect1.w > rect2.x && rect1.y < rect2.y + rect2.h && rect1.y + rect1.h > rect2.y;
     },
 
-    spawnParticles(x, y, count, color) { /* ... same as before ... */ },
-
     draw() {
         const design = this.levelDesigns[this.level];
         if (!design) return;
@@ -689,7 +702,6 @@ const platformerGame = {
         this.drawPlatforms();
         this.drawLevelEntities();
         this.drawGoal();
-        // this.drawParticles();
         this.drawPlayer();
         
         this.ctx.restore();
@@ -697,10 +709,6 @@ const platformerGame = {
         if (design.isDark) this.drawDarkness();
     },
     
-    drawBackground() { /* ... same as before, simplified ... */ },
-    drawPlatforms() { /* ... same as before, simplified ... */ },
-    drawGoal() { /* ... same as before, simplified ... */ },
-
     drawLevelEntities() {
         this.levelData.forEach(item => {
             if (item.type === 'gnatSwarm' && item.active) {
@@ -766,9 +774,6 @@ const platformerGame = {
 
         this.ctx.restore();
     },
-
-    showOverlay(message, showNext = false, showRestart = false) { /* ... same ... */ },
-    hideOverlay() { /* ... same ... */ },
     
     endGame(isWin = false, isSoftEnd = false) {
         this.active = false;
@@ -781,7 +786,7 @@ const platformerGame = {
     
     updateUI() {
         const design = this.levelDesigns[this.level] || {};
-        document.getElementById('platformer-level-name').textContent = `Plague ${this.level}: ${design.name || 'Finished!'}`;
+        document.getElementById('platformer-level-name').textContent = `Plague: ${this.level}. ${design.name || 'Finished!'}`;
         document.getElementById('platformer-lives').textContent = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
 
         const staffCooldown = this.player.staff.cooldown;
@@ -792,16 +797,15 @@ const platformerGame = {
         } else {
             staffStatusEl.textContent = "Staff: READY (E)";
         }
-    }
-};
+    },
 
-// Simplified draw functions that were unchanged
-platformerGame.spawnParticles = function(x, y, count, color) { for (let i = 0; i < count; i++) { this.particles.push({ x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5 - 1, life: Math.random() * 30 + 20, color }); } };
-platformerGame.drawBackground = function() { const design = this.levelDesigns[this.level]; if (!design) return; const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height); grad.addColorStop(0, design.bgColor[0]); grad.addColorStop(1, design.bgColor[1]); this.ctx.fillStyle = grad; this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); };
-platformerGame.drawPlatforms = function() { const design = this.levelDesigns[this.level]; if (!design) return; this.platforms.forEach(p => { if(design.platformType === 'stone') { this.ctx.fillStyle = '#8d6e63'; this.ctx.fillRect(p.x, p.y, p.w, p.h); this.ctx.fillStyle = '#a1887f'; this.ctx.fillRect(p.x, p.y, p.w, 10); } else if (design.platformType === 'lilypad') { this.ctx.fillStyle = '#4caf50'; this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, p.h * 0.8, 0, 0, Math.PI * 2); this.ctx.fill(); this.ctx.fillStyle = '#66bb6a'; this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2 - 2, p.w / 2 * 0.8, p.h * 0.7, 0, 0, Math.PI * 2); this.ctx.fill(); } }); };
-platformerGame.drawGoal = function() { if (!this.goal) return; this.ctx.fillStyle = '#f4a261'; this.ctx.globalAlpha = 0.5 + Math.sin(this.frame * 0.05) * 0.5; this.ctx.fillRect(this.goal.x, this.goal.y, this.goal.w, this.goal.h); this.ctx.globalAlpha = 1; this.ctx.fillStyle = 'white'; this.ctx.font = '24px Fredoka One'; this.ctx.fillText("🏁", this.goal.x + 10, this.goal.y + 35); };
-platformerGame.showOverlay = function(message, showNext = false, showRestart = false) { const overlay = document.getElementById('platformer-overlay'); document.getElementById('platformer-message').textContent = message; document.getElementById('platformer-start-btn').style.display = (!showNext && !showRestart) ? 'inline-block' : 'none'; document.getElementById('platformer-next-level-btn').style.display = showNext ? 'inline-block' : 'none'; document.getElementById('platformer-restart-btn').style.display = showRestart ? 'inline-block' : 'none'; overlay.style.display = 'flex'; };
-platformerGame.hideOverlay = function() { document.getElementById('platformer-overlay').style.display = 'none'; };
+    spawnParticles(x, y, count, color) { for (let i = 0; i < count; i++) { this.particles.push({ x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5 - 1, life: Math.random() * 30 + 20, color }); } },
+    drawBackground() { const design = this.levelDesigns[this.level]; if (!design) return; const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height); grad.addColorStop(0, design.bgColor[0]); grad.addColorStop(1, design.bgColor[1]); this.ctx.fillStyle = grad; this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); },
+    drawPlatforms() { const design = this.levelDesigns[this.level]; if (!design) return; this.platforms.forEach(p => { if(design.platformType === 'stone') { this.ctx.fillStyle = '#8d6e63'; this.ctx.fillRect(p.x, p.y, p.w, p.h); this.ctx.fillStyle = '#a1887f'; this.ctx.fillRect(p.x, p.y, p.w, 10); } else if (design.platformType === 'lilypad') { this.ctx.fillStyle = '#4caf50'; this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, p.h * 0.8, 0, 0, Math.PI * 2); this.ctx.fill(); this.ctx.fillStyle = '#66bb6a'; this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w / 2, p.y + p.h / 2 - 2, p.w / 2 * 0.8, p.h * 0.7, 0, 0, Math.PI * 2); this.ctx.fill(); } }); },
+    drawGoal() { if (!this.goal) return; this.ctx.fillStyle = '#f4a261'; this.ctx.globalAlpha = 0.5 + Math.sin(this.frame * 0.05) * 0.5; this.ctx.fillRect(this.goal.x, this.goal.y, this.goal.w, this.goal.h); this.ctx.globalAlpha = 1; this.ctx.fillStyle = 'white'; this.ctx.font = '24px Fredoka One'; this.ctx.fillText("🏁", this.goal.x + 10, this.goal.y + 35); },
+    showOverlay(message, showNext = false, showRestart = false) { const overlay = document.getElementById('platformer-overlay'); document.getElementById('platformer-message').textContent = message; document.getElementById('platformer-start-btn').style.display = (!showNext && !showRestart) ? 'inline-block' : 'none'; document.getElementById('platformer-next-level-btn').style.display = showNext ? 'inline-block' : 'none'; document.getElementById('platformer-restart-btn').style.display = showRestart ? 'inline-block' : 'none'; overlay.style.display = 'flex'; },
+    hideOverlay() { document.getElementById('platformer-overlay').style.display = 'none'; }
+};
 
 
 // --- INITIALIZATION & EVENT LISTENERS ---
