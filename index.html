@@ -424,7 +424,7 @@ const platformFighter = {
             if (this.checkCollision(p, plat)) {
                 if (axis === 'y') {
                     if (p.vy > 0) { // Moving down
-                        if (p.y + p.h - p.vy <= plat.y) { // Was above platform last frame
+                        if (p.y + p.h - p.vy <= plat.y + 1) { // Was above platform last frame
                             p.y = plat.y - p.h;
                             p.vy = 0;
                             if (!p.grounded) {
@@ -435,13 +435,22 @@ const platformFighter = {
                             p.jumps = p.maxJumps;
                         }
                     } else if (p.vy < 0) { // Moving up
-                        p.y = plat.y + plat.h;
-                        p.vy = 0;
+                         if (p.y - p.vy >= plat.y + plat.h) {
+                            p.y = plat.y + plat.h;
+                            p.vy = 0;
+                         }
                     }
                 }
                 if (axis === 'x') {
-                    if (p.vx > 0) p.x = plat.x - p.w; // Moving right
-                    else if (p.vx < 0) p.x = plat.x + plat.w; // Moving left
+                    if (p.vx > 0) { // Moving right
+                        if (p.x + p.w - p.vx <= plat.x) {
+                           p.x = plat.x - p.w;
+                        }
+                    } else if (p.vx < 0) { // Moving left
+                        if (p.x - p.vx >= plat.x + plat.w) {
+                           p.x = plat.x + plat.w;
+                        }
+                    }
                 }
             }
         });
@@ -496,10 +505,10 @@ const platformFighter = {
             sound.levelComplete();
             if (this.level < levelDesigns.length - 1) {
                 this.showOverlay(`Level ${this.level} Complete!`, true);
-                this.endGame(true);
+                this.endGame(true, false);
             } else {
                 this.showOverlay("You Win! 🎉");
-                this.endGame(true);
+                this.endGame(true, false);
             }
         }
     },
@@ -509,7 +518,7 @@ const platformFighter = {
         this.lives--;
         sound.hurt();
         if (this.lives <= 0) {
-            this.endGame(false);
+            this.endGame(false, false);
             this.showOverlay("Game Over");
         } else {
             this.player.isInvincible = true;
@@ -545,8 +554,23 @@ const platformFighter = {
         if(this.camera.x < 0) this.camera.x = 0;
     },
     
-    spawnParticles(x, y, count, color) { /* Same as before */ },
-    updateParticles() { /* Same as before */ },
+    spawnParticles(x, y, count, color) {
+        for (let i = 0; i < count; i++) {
+            this.particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4 - 2,
+                life: Math.random() * 40 + 20,
+                color
+            });
+        }
+    },
+    updateParticles() {
+        this.particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.life--;
+            if (p.life <= 0) this.particles.splice(i, 1);
+        });
+    },
     checkCollision(r1, r2) { return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.h + r1.y > r2.y; },
 
     draw() {
@@ -560,13 +584,31 @@ const platformFighter = {
         this.drawPowerups();
         this.tokens.forEach(t => { if (!t.collected) this.drawToken(t); });
         this.enemies.forEach(e => this.drawEnemy(e));
-        this.particles.forEach(p => { /* ... */ });
+        this.particles.forEach(p => {
+            this.ctx.fillStyle = p.color;
+            this.ctx.globalAlpha = p.life / 60;
+            this.ctx.fillRect(p.x, p.y, 3, 3);
+            this.ctx.globalAlpha = 1;
+        });
         this.drawCharacter();
         this.ctx.restore();
     },
     
-    drawBackground() { /* Same as before */ },
-    drawPlatform(p) { /* Same as before */ },
+    drawBackground() {
+        const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        grad.addColorStop(0, '#87CEEB'); grad.addColorStop(1, '#bde0fe');
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(this.camera.x, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(200 - this.camera.x * 0.2, 100, 150, 40, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(600 - this.camera.x * 0.2, 150, 200, 60, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+    },
+    drawPlatform(p) {
+        this.ctx.fillStyle = '#6d4c41'; this.ctx.fillRect(p.x, p.y, p.w, p.h);
+        this.ctx.fillStyle = '#8bc34a'; this.ctx.fillRect(p.x, p.y, p.w, 10);
+    },
     drawGoal() {
         this.ctx.fillStyle = this.tokens >= this.tokenGoal ? 'gold' : 'rgba(255, 215, 0, 0.3)';
         this.ctx.fillRect(this.goal.x, this.goal.y, this.goal.w, this.goal.h);
@@ -596,13 +638,80 @@ const platformFighter = {
     },
     drawCharacter() {
         if (this.player.isInvincible && this.frame % 10 < 5) return;
-        // The rest of the character drawing logic remains the same
-        /* Same as before */
+        const p = this.player;
+        const art = this.characterArt[game.character];
+        const frame = p.animFrame;
+        const ctx = this.ctx;
+
+        let squashFactor = 1 - Math.sin(p.squash * Math.PI) * 0.2;
+        let stretchFactor = 1 + Math.sin(p.squash * Math.PI) * 0.2;
+
+        ctx.save();
+        ctx.translate(p.x + p.w / 2, p.y + p.h);
+        if (p.facing === 'left') ctx.scale(-1, 1);
+        ctx.translate(0, -p.h); 
+        ctx.scale(stretchFactor, squashFactor);
+        ctx.translate(0, p.h);
+
+        let bob = Math.sin(frame * 0.2) * 2;
+        let armSwing = Math.sin(frame * 0.4) * 35;
+        let legSwing = Math.sin(frame * 0.4) * 45;
+
+        if (p.animState === 'idle') { armSwing /= 4; legSwing = 0; }
+        if (p.animState === 'jump' || p.animState === 'fall') {
+            bob = 0; armSwing = -30; legSwing = 30;
+            if (p.animState === 'fall') { armSwing = 30; legSwing = -30; }
+        }
+        
+        const drawLimb = (x, y, angle, length, width, color1, color2) => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.fillStyle = color2;
+            ctx.fillRect(-width/2 -1, 0, width+2, -length-1);
+            ctx.fillStyle = color1;
+            ctx.fillRect(-width/2, 0, width, -length);
+            ctx.beginPath(); ctx.arc(0, -length, width/2, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        };
+        
+        const torsoY = -p.h / 2 + bob, headY = -p.h + 10 + bob * 1.5;
+        
+        drawLimb(5, torsoY, legSwing, p.h * 0.45, 12, art.pants_s, '#000'); 
+        drawLimb(-5, torsoY, armSwing, p.h * 0.4, 10, art.skin_s, '#000');
+        
+        ctx.fillStyle = art.shirt_s; ctx.fillRect(-16, torsoY-21, 32, 42); 
+        ctx.fillStyle = art.shirt; ctx.fillRect(-15, torsoY-20, 30, 40);
+        
+        drawLimb(-5, torsoY, -legSwing, p.h * 0.45, 12, art.pants, '#000');
+        drawLimb(5, torsoY, -armSwing, p.h * 0.4, 10, art.skin, '#000');
+
+        ctx.fillStyle = art.skin_s; ctx.beginPath(); ctx.arc(0, headY+1, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = art.skin; ctx.beginPath(); ctx.arc(0, headY, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = art.hair; ctx.beginPath(); ctx.arc(0, headY-5, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'white'; ctx.beginPath(); ctx.ellipse(8, headY, 5, 7, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(10, headY, 3, 0, Math.PI * 2); ctx.fill();
+
+        ctx.restore();
     },
 
-    showOverlay(message, showNextLevelBtn = false) { /* Same as before */ },
-    hideOverlay() { /* Same as before */ },
-    endGame(isComplete = false, isReset = false) { /* Same as before */ },
+    showOverlay(message, showNextLevelBtn = false) {
+        const overlay = document.getElementById('minigame-overlay');
+        document.getElementById('minigame-message').textContent = message;
+        document.getElementById('minigame-start-btn').style.display = showNextLevelBtn ? 'none' : 'inline-block';
+        document.getElementById('minigame-next-level-btn').style.display = showNextLevelBtn ? 'inline-block' : 'none';
+        overlay.style.display = 'flex';
+    },
+    hideOverlay() { 
+        document.getElementById('minigame-overlay').style.display = 'none'; 
+    },
+    endGame(isComplete = false, isReset = false) {
+        this.active = false;
+        clearInterval(this.gameInterval);
+        window.onkeydown = null; window.onkeyup = null;
+        if (isReset) return;
+        if (!isComplete) this.showOverlay("Game Over");
+    },
     updateUI() {
         const levelData = levelDesigns[this.level];
         if(!levelData) return;
@@ -613,15 +722,6 @@ const platformFighter = {
 };
 
 // --- 2. SORTING GAME ---
-const sortingGame = { /* ... (Original Code Unchanged) ... */ };
-
-// --- 3. MEMORY GAME ---
-const memoryGame = { /* ... (Original Code Unchanged) ... */ };
-
-
-// --- PASTE UNCHANGED sortingGame AND memoryGame objects here ---
-// For brevity in this example, I'm omitting them, but in your file,
-// you would keep your original, unchanged code for those two games.
 const sortingGame = {
     active: false,
     allActivities: {
@@ -689,6 +789,7 @@ const sortingGame = {
     endGame() { this.active = false; }
 };
 
+// --- 3. MEMORY GAME ---
 const memoryGame = {
     level: 1, timer: 0, timerId: null, matches: 0, goal: 0,
     isChecking: false, flippedCards: [],
