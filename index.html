@@ -1,3 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JW Fun & Games - All-in-One</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap">
+  <style>
+    :root {
+      --bg-color: #eaf5ff;
+      --panel-bg: #ffffff;
+      --primary-text: #3d5a80;
+      --accent-green: #2a9d8f;
+      --accent-red: #e76f51;
+      --accent-orange: #f4a261;
+      --font-header: 'Fredoka One', cursive;
+      --font-body: 'Comic Neue', sans-serif;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    /* --- General Setup & Home Button --- */
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      color: var(--primary-text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .main-container {
+      width: 100%;
+      max-width: 900px;
+    }
+    .panel {
+      background-color: var(--panel-bg);
+      border-radius: 20px;
+      padding: 20px 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    h2, h3 {
+      font-family: var(--font-header);
+      color: var(--primary-text);
+      margin-top: 0;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    
+    #home-reset-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      background-color: var(--accent-orange);
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #home-reset-btn:hover {
+      transform: scale(1.1);
+      background-color: #e76f51;
+    }
+    .nav-button {
+      margin: 10px;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      font-family: var(--font-header);
+      font-size: 1.2rem;
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    /* --- Main Menu --- */
+    #main-menu-screen .panel { text-align: center; }
+    #character-selector { display: flex; justify-content: center; gap: 15px; margin-top: 15px; }
+    #character-selector input[type="radio"] { display: none; }
+    #character-selector label { padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: bold; background-color: #f0f0f0; transition: all 0.2s ease-in-out; }
+    #character-selector input[type="radio"]:checked + label { background-color: var(--accent-orange); color: white; transform: scale(1.1); }
+    #game-selection-buttons { margin-top: 20px; }
+    
+    /* --- Sorting Game --- */
+    .drop-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .dropzone { border: 3px dashed #ccc; min-height: 200px; padding: 15px; border-radius: 15px; transition: all 0.3s; }
+    #closer { background-color: #e8f5e9; }
+    #distraction { background-color: #ffebee; }
+    .dropzone.over { transform: scale(1.02); border-color: var(--accent-orange); }
+    #cards-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; min-height: 150px; padding: 20px 0; }
+    .card { background-color: var(--panel-bg); border: 3px solid #ccc; padding: 15px; border-radius: 12px; cursor: grab; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); transition: transform 0.2s; }
+    .card:hover { transform: translateY(-5px); }
+    .card .emoji { font-size: 2rem; }
+
+    /* --- Memory Game --- */
+    .memory-header { display: flex; justify-content: space-around; font-family: var(--font-header); font-size: 1.2rem; }
+    #memory-game-grid { display: grid; gap: 10px; margin: 20px auto; max-width: 600px; }
+    .memory-card { width: 100%; aspect-ratio: 1 / 1; position: relative; transform-style: preserve-3d; transition: transform 0.6s; cursor: pointer; }
+    .memory-card.is-flipped { transform: rotateY(180deg); }
+    .memory-card.is-matched { opacity: 0.5; pointer-events: none; }
+    .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; border-radius: 10px; }
+    .card-front { background: white; border: 3px solid #ccc; transform: rotateY(180deg); font-size: 3rem; }
+    .card-back { background: linear-gradient(135deg, #6a0dad, #9c27b0); font-size: 3rem; color: white; }
+
+    /* --- Minigame --- */
+    #minigame-screen { text-align: center; }
+    .minigame-header { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; }
+    .minigame-stat { font-family: var(--font-header); font-size: 1.2rem; }
+    .minigame-stat .hearts { font-size: 1.8rem; letter-spacing: 2px; }
+    #minigame-canvas-container { position: relative; background-color: #f0f8ff; border-radius: 15px; overflow: hidden; box-shadow: var(--shadow); border: 4px solid #333; }
+    canvas#minigame-canvas { width: 100%; display: block; }
+    #minigame-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-shadow: 2px 2px 4px #000; font-family: var(--font-header); background: rgba(0,0,0,0.4); }
+    #minigame-overlay h2 { font-size: 3rem; margin-bottom: 20px; }
+    #minigame-start-btn, #minigame-next-level-btn { padding: 15px 30px; font-size: 1.5rem; background-color: var(--accent-orange); color: white; border: none; border-radius: 15px; cursor: pointer; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<button id="home-reset-btn" title="Reset Game and Go Home">🏠</button>
+
+<div class="main-container">
+
+  <div id="main-menu-screen" class="screen active">
+    <div class="panel">
+      <h2>JW Fun & Games!</h2>
+      <p>Choose your character and pick a game to play.</p>
+      <div id="character-selector">
+        <input type="radio" id="char-boy" name="character" value="boy" checked><label for="char-boy">Boy 👦</label>
+        <input type="radio" id="char-girl" name="character" value="girl"><label for="char-girl">Girl 👧</label>
+      </div>
+      <div id="game-selection-buttons">
+        <button id="start-sorting-btn" class="nav-button" style="background-color: var(--accent-green);">Spot the Distraction</button>
+        <button id="start-memory-btn" class="nav-button" style="background-color: #9c27b0;">Memory Match</button>
+        <button id="start-minigame-btn" class="nav-button" style="background-color: #2196F3;">Platform Adventure</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sorting-game-screen" class="screen">
+    <div class="panel">
+        <h2>Spot the Distraction</h2>
+        <div class="drop-container">
+            <div id="closer" class="dropzone"><h3>👍 Keeps Me Close to Jehovah</h3></div>
+            <div id="distraction" class="dropzone"><h3>🤔 Could Be a Distraction</h3></div>
+        </div>
+        <h3 style="text-align: center;">Drag the Activities</h3>
+        <div id="cards-container"></div>
+    </div>
+  </div>
+
+  <div id="memory-game-screen" class="screen">
+      <div class="panel">
+          <h2>Memory Match Challenge</h2>
+          <div class="memory-header">
+              <span>Level: <span id="memory-level">1</span></span>
+              <span>Matches: <span id="memory-matches">0 / 0</span></span>
+              <span>Time: <span id="memory-timer">--</span></span>
+          </div>
+          <div id="memory-game-grid"></div>
+      </div>
+  </div>
+
+  <div id="minigame-screen" class="screen">
+    <div class="panel">
+      <h2>Platform Adventure!</h2>
+      <div class="minigame-header">
+        <div class="minigame-stat">Level: <span id="minigame-level">1</span></div>
+        <div class="minigame-stat">Tokens: <span id="minigame-tokens">0 / 5</span></div>
+        <div class="minigame-stat"><span class="hearts" id="minigame-lives">❤️❤️❤️</span></div>
+      </div>
+      <div id="minigame-canvas-container">
+          <canvas id="minigame-canvas" width="800" height="450"></canvas>
+          <div id="minigame-overlay">
+              <h2 id="minigame-message"></h2>
+              <button id="minigame-start-btn">Start Adventure 🚀</button>
+              <button id="minigame-next-level-btn" style="display:none;">Next Level! ✨</button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // --- GLOBAL & MENU LOGIC ---
 const initialGameState = { character: 'boy' };
@@ -164,6 +357,7 @@ const platformFighter = {
         this.keys = {};
         window.onkeydown = e => {
             if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
                 if (this.player.jumps > 0) {
                     this.player.vy = -this.player.jumpPower;
                     this.player.jumps--;
@@ -173,7 +367,12 @@ const platformFighter = {
             }
             this.keys[e.code] = true;
         };
-        window.onkeyup = e => this.keys[e.code] = false;
+        window.onkeyup = e => {
+             if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                e.preventDefault();
+             }
+            this.keys[e.code] = false
+        };
     },
     
     loop() {
@@ -408,14 +607,18 @@ const platformFighter = {
 
         // Simple cartoony clouds
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.ellipse(200 - this.camera.x * 0.2, 100, 100, 30, 0, 0, Math.PI * 2);
         ctx.ellipse(250 - this.camera.x * 0.2, 80, 80, 25, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.beginPath();
         ctx.ellipse(600 - this.camera.x * 0.2, 150, 120, 35, 0, 0, Math.PI * 2);
         ctx.ellipse(680 - this.camera.x * 0.2, 130, 90, 30, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = '#333';
         ctx.stroke();
     },
     drawPlatform(p) {
@@ -433,15 +636,13 @@ const platformFighter = {
 
         // Add some small grass tufts
         ctx.fillStyle = '#558B2F';
-        for (let i = 0; i < p.w; i += 15 + Math.random() * 10) {
-            if (i > 5 && i < p.w - 5) {
-                ctx.beginPath();
-                ctx.moveTo(p.x + i, p.y);
-                ctx.lineTo(p.x + i + 5, p.y - 8);
-                ctx.lineTo(p.x + i + 10, p.y);
-                ctx.fill();
-                ctx.stroke();
-            }
+        for (let i = 0; i < p.w / 20; i++) {
+            const gx = p.x + 10 + Math.random() * (p.w - 20);
+            ctx.beginPath();
+            ctx.moveTo(gx - 5, p.y);
+            ctx.lineTo(gx, p.y - 8 - Math.random() * 5);
+            ctx.lineTo(gx + 5, p.y);
+            ctx.fill();
         }
     },
     drawGoal() {
@@ -474,29 +675,16 @@ const platformFighter = {
         const ctx = this.ctx;
         ctx.lineWidth = 3;
         
-        // Gold coin with a star
         ctx.fillStyle = 'gold';
-        ctx.strokeStyle = '#c78d00'; // Darker gold outline
-        ctx.beginPath();
-        ctx.arc(t.x + t.w/2, t.y + t.h/2, t.w/2 + 2, 0, Math.PI * 2); // Thicker outer outline
-        ctx.stroke();
+        ctx.strokeStyle = '#c78d00';
         ctx.beginPath();
         ctx.arc(t.x + t.w/2, t.y + t.h/2, t.w/2, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Draw a star inside
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = '#FFFDE7'; // Creamy white for shine
         ctx.beginPath();
-        const outerRadius = t.w / 3;
-        const innerRadius = t.w / 6;
-        for (let i = 0; i < 5; i++) {
-            const angle1 = Math.PI / 2 + i * 2 * Math.PI / 5;
-            const angle2 = Math.PI / 2 + (i * 2 + 1) * Math.PI / 5;
-            ctx.lineTo(t.x + t.w/2 + outerRadius * Math.sin(angle1), t.y + t.h/2 - outerRadius * Math.cos(angle1));
-            ctx.lineTo(t.x + t.w/2 + innerRadius * Math.sin(angle2), t.y + t.h/2 - innerRadius * Math.cos(angle2));
-        }
-        ctx.closePath();
+        ctx.arc(t.x + t.w/2 - 3, t.y + t.h/2 - 3, t.w/4, 0, Math.PI * 1.5, true);
         ctx.fill();
     },
     drawEnemy(e) {
@@ -504,42 +692,37 @@ const platformFighter = {
         ctx.lineWidth = 3;
 
         // A simple bouncing blob enemy with eyes
+        const bounce = Math.sin(this.frame * 0.1 + e.x) * 5;
         ctx.fillStyle = '#FF6347'; // Tomato red
         ctx.strokeStyle = '#333';
         ctx.beginPath();
-        ctx.arc(e.x + e.w / 2, e.y + e.h / 2, e.w / 2, 0, Math.PI * 2);
+        ctx.ellipse(e.x + e.w / 2, e.y + e.h / 2 + bounce, e.w / 2, e.h / 2 - bounce/2, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         // Eyes
         ctx.fillStyle = 'white';
         ctx.beginPath();
-        ctx.arc(e.x + e.w * 0.35, e.y + e.h * 0.35, e.w * 0.15, 0, Math.PI * 2);
-        ctx.arc(e.x + e.w * 0.65, e.y + e.h * 0.35, e.w * 0.15, 0, Math.PI * 2);
+        ctx.arc(e.x + e.w * 0.35, e.y + e.h * 0.35 + bounce, e.w * 0.15, 0, Math.PI * 2);
+        ctx.arc(e.x + e.w * 0.65, e.y + e.h * 0.35 + bounce, e.w * 0.15, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = 'black';
         ctx.beginPath();
-        ctx.arc(e.x + e.w * 0.35 + 2, e.y + e.h * 0.35 + 2, e.w * 0.08, 0, Math.PI * 2);
-        ctx.arc(e.x + e.w * 0.65 + 2, e.y + e.h * 0.35 + 2, e.w * 0.08, 0, Math.PI * 2);
+        ctx.arc(e.x + e.w * 0.35 + 2, e.y + e.h * 0.35 + 2 + bounce, e.w * 0.08, 0, Math.PI * 2);
+        ctx.arc(e.x + e.w * 0.65 + 2, e.y + e.h * 0.35 + 2 + bounce, e.w * 0.08, 0, Math.PI * 2);
         ctx.fill();
-
-        // Mouth
-        ctx.beginPath();
-        ctx.arc(e.x + e.w / 2, e.y + e.h * 0.65, e.w * 0.2, 0, Math.PI, false);
-        ctx.stroke();
     },
     drawCheckpoints() {
         const ctx = this.ctx;
         ctx.lineWidth = 3;
         this.checkpoints.forEach(c => {
-            ctx.fillStyle = c.activated ? 'rgba(76, 175, 80, 0.8)' : 'rgba(100, 100, 100, 0.6)'; // Green when activated
+            ctx.fillStyle = c.activated ? 'rgba(76, 175, 80, 0.8)' : 'rgba(100, 100, 100, 0.6)';
             ctx.strokeStyle = '#333';
             ctx.fillRect(c.x, c.y, c.w, c.h);
             ctx.strokeRect(c.x, c.y, c.w, c.h);
 
-            // Draw a more stylized flag
             ctx.fillStyle = c.activated ? '#4CAF50' : '#888';
             ctx.beginPath();
             ctx.moveTo(c.x + c.w / 2, c.y);
@@ -548,30 +731,24 @@ const platformFighter = {
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
-
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Fredoka One';
-            ctx.textAlign = 'center';
-            ctx.fillText('CP', c.x + c.w / 2, c.y + 40);
-            ctx.strokeText('CP', c.x + c.w / 2, c.y + 40);
         });
     },
     drawPowerups() {
         const ctx = this.ctx;
         ctx.lineWidth = 3;
         this.powerups.forEach(p => {
-            ctx.fillStyle = '#9C27B0'; // Purple
+            ctx.fillStyle = '#9C27B0';
             ctx.strokeStyle = '#333';
-            ctx.fillRect(p.x, p.y, p.w, p.h);
-            ctx.strokeRect(p.x, p.y, p.w, p.h);
+            ctx.beginPath();
+            ctx.arc(p.x + p.w/2, p.y + p.h/2, p.w/2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.stroke();
 
-            // Draw a stylized "J+"
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 24px Fredoka One';
+            ctx.font = 'bold 20px Fredoka One';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('J+', p.x + p.w / 2, p.y + p.h / 2 + 2);
-            ctx.strokeText('J+', p.x + p.w / 2, p.y + p.h / 2 + 2);
         });
     },
     drawCharacter() {
@@ -584,121 +761,77 @@ const platformFighter = {
         ctx.save();
         ctx.translate(p.x + p.w / 2, p.y + p.h);
         if (p.facing === 'left') ctx.scale(-1, 1);
-        ctx.translate(0, -p.h); // Adjust origin for drawing
-
-        // Apply squash/stretch directly to player dimensions for cartoony effect
-        let displayW = p.w * (1 + Math.sin(p.squash * Math.PI) * 0.2);
-        let displayH = p.h * (1 - Math.sin(p.squash * Math.PI) * 0.2);
-
-        // Center the scaled character
-        ctx.translate(-displayW / 2, -displayH + p.h); 
         
-        ctx.lineWidth = 4; // Thicker outline for character
+        let squashY = 1 - Math.sin(p.squash * Math.PI) * 0.2;
+        let squashX = 1 + Math.sin(p.squash * Math.PI) * 0.2;
+        ctx.scale(squashX, squashY);
+        
+        ctx.lineWidth = 4;
         ctx.strokeStyle = '#333';
 
         let bob = Math.sin(frame * 0.2) * 2;
-        let armSwing = Math.sin(frame * 0.4) * 35;
-        let legSwing = Math.sin(frame * 0.4) * 45;
+        if(p.animState !== 'run') bob = 0;
+        let armSwing = Math.sin(frame * 0.4) * 45;
+        let legSwing = Math.cos(frame * 0.4) * 45;
 
-        if (p.animState === 'idle') { armSwing /= 4; legSwing = 0; }
+        if (p.animState === 'idle') { armSwing = 10; legSwing = 0; }
         if (p.animState === 'jump' || p.animState === 'fall') {
-            bob = 0; armSwing = -30; legSwing = 30;
-            if (p.animState === 'fall') { armSwing = 30; legSwing = -30; }
+            bob = 0; armSwing = -45; legSwing = 45;
+            if (p.animState === 'fall') { armSwing = 45; legSwing = -45; }
         }
         
-        // --- Custom Cartoony Character Drawing ---
-        const drawRoundedRect = (x, y, w, h, r, fill, stroke) => {
+        const drawLimb = (x, y, angle, length, width, color) => {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.moveTo(x + r, y);
-            ctx.lineTo(x + w - r, y);
-            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-            ctx.lineTo(x + w, y + h - r);
-            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-            ctx.lineTo(x + r, y + h);
-            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-            ctx.lineTo(x, y + r);
-            ctx.quadraticCurveTo(x, y, x + r, y);
-            ctx.closePath();
-            if (fill) { ctx.fillStyle = fill; ctx.fill(); }
-            if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
+            ctx.roundRect(-width/2, 0, width, length, width/2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
         };
 
-        // Torso
-        const torsoW = displayW * 0.8;
-        const torsoH = displayH * 0.7;
-        const torsoX = (displayW - torsoW) / 2;
-        const torsoY = displayH - torsoH + bob;
-        drawRoundedRect(torsoX, torsoY, torsoW, torsoH, 8, art.shirt, '#333');
+        const headY = -p.h * 0.7 + bob;
+        const bodyY = -p.h * 0.4;
+        
+        // Limbs (behind body)
+        drawLimb(p.w*0.2, bodyY, -legSwing, p.h*0.4, 12, art.pants); // Back Leg
+        drawLimb(-p.w*0.15, bodyY, -armSwing, p.h*0.35, 10, art.skin); // Back Arm
 
-        // Head (large and round)
-        const headRadius = displayW * 0.4;
-        const headX = displayW / 2;
-        const headY = torsoY - headRadius + bob * 1.5 - 5;
+        // Body
+        ctx.fillStyle = art.shirt;
         ctx.beginPath();
-        ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
-        ctx.fillStyle = art.skin; ctx.fill();
+        ctx.roundRect(-p.w*0.4, -p.h*0.6, p.w*0.8, p.h*0.5, 10);
+        ctx.fill();
         ctx.stroke();
+        
+        // Limbs (front of body)
+        drawLimb(-p.w*0.2, bodyY, legSwing, p.h*0.4, 12, art.pants); // Front Leg
+        drawLimb(p.w*0.15, bodyY, armSwing, p.h*0.35, 10, art.skin); // Front Arm
 
-        // Hair (simple blob on top)
+        // Head
+        ctx.fillStyle = art.skin;
         ctx.beginPath();
-        ctx.arc(headX, headY - headRadius / 2, headRadius * 0.9, Math.PI * 1.2, Math.PI * 1.8);
-        ctx.lineTo(headX + headRadius * 0.9, headY - headRadius / 2);
-        ctx.fillStyle = art.hair; ctx.fill();
+        ctx.arc(0, headY, p.w*0.45, 0, Math.PI * 2);
+        ctx.fill();
         ctx.stroke();
-
-        // Eyes (larger, cartoon style)
+        
+        // Eyes
         ctx.fillStyle = 'white';
         ctx.beginPath();
-        ctx.ellipse(headX - headRadius * 0.3, headY - headRadius * 0.1, 7, 10, 0, 0, Math.PI * 2);
-        ctx.ellipse(headX + headRadius * 0.3, headY - headRadius * 0.1, 7, 10, 0, 0, Math.PI * 2);
+        ctx.ellipse(-p.w*0.15, headY, 6, 9, 0, 0, Math.PI * 2);
+        ctx.ellipse(p.w*0.15, headY, 6, 9, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = 'black';
         ctx.beginPath();
-        ctx.arc(headX - headRadius * 0.3 + 2, headY - headRadius * 0.1 + 2, 4, 0, Math.PI * 2);
-        ctx.arc(headX + headRadius * 0.3 + 2, headY - headRadius * 0.1 + 2, 4, 0, Math.PI * 2);
+        ctx.arc(-p.w*0.15 + 2, headY + 2, 3, 0, Math.PI * 2);
+        ctx.arc(p.w*0.15 + 2, headY + 2, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Mouth (simple curve)
-        ctx.beginPath();
-        ctx.arc(headX, headY + headRadius * 0.3, headRadius * 0.3, 0, Math.PI);
-        ctx.stroke();
-
-
-        // Arms and Legs (simple rectangles, can be rotated)
-        const limbW = 10;
-        const limbL = displayH * 0.3;
-
-        // Right Arm
-        ctx.save();
-        ctx.translate(torsoX + torsoW, torsoY + torsoH * 0.2);
-        ctx.rotate(armSwing * Math.PI / 180);
-        drawRoundedRect(-limbW/2, 0, limbW, limbL, 5, art.shirt, '#333');
         ctx.restore();
-
-        // Left Arm
-        ctx.save();
-        ctx.translate(torsoX, torsoY + torsoH * 0.2);
-        ctx.rotate(-armSwing * Math.PI / 180);
-        drawRoundedRect(-limbW/2, 0, limbW, limbL, 5, art.shirt, '#333');
-        ctx.restore();
-
-        // Right Leg
-        ctx.save();
-        ctx.translate(torsoX + torsoW * 0.7, torsoY + torsoH - 5);
-        ctx.rotate(legSwing * Math.PI / 180);
-        drawRoundedRect(-limbW/2, 0, limbW, limbL, 5, art.pants, '#333');
-        ctx.restore();
-
-        // Left Leg
-        ctx.save();
-        ctx.translate(torsoX + torsoW * 0.3, torsoY + torsoH - 5);
-        ctx.rotate(-legSwing * Math.PI / 180);
-        drawRoundedRect(-limbW/2, 0, limbW, limbL, 5, art.pants, '#333');
-        ctx.restore();
-
-        ctx.restore(); // Restore character translation and scaling
     },
 
     showOverlay(message, showNextLevelBtn = false) {
@@ -928,3 +1061,5 @@ window.onload = () => {
     };
 };
 </script>
+</body>
+</html>
