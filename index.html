@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Comic+Neue:wght@400;700&display=swap">
   <style>
     :root {
-      --bg-color: #eaf5ff;
+      --bg-color: #f0f7ff; /* Slightly lighter background */
       --panel-bg: #ffffff;
       --primary-text: #3d5a80;
       --accent-green: #2a9d8f;
@@ -131,7 +131,7 @@
         .card-back { font-size: 2.2rem; }
     }
 
-    /* --- Platformer Game (NEW STYLE) --- */
+    /* --- Platformer Game --- */
     #platformer-game-screen { text-align: center; }
     .platformer-header {
       display: flex;
@@ -142,25 +142,39 @@
       font-size: 1.2rem;
     }
     .platformer-stat .hearts {
-      font-size: 1.8rem;
-      letter-spacing: 2px;
-      /* Align hearts vertically with text */
       display: flex;
       align-items: center;
+      gap: 5px; /* Space between hearts */
     }
-    #platformer-level-name {
-      text-align: center;
+    /* NEW CSS Heart Style */
+    .heart-icon {
+        width: 20px;
+        height: 20px;
+        position: relative;
+        transform: rotate(45deg);
+        background-color: #ff4757;
     }
-    #platformer-staff-status {
-      text-align: right;
+    .heart-icon::before,
+    .heart-icon::after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        border-radius: 50%;
+        background-color: #ff4757;
     }
+    .heart-icon::before { top: -10px; left: 0; }
+    .heart-icon::after { top: 0; left: -10px; }
+    
+    #platformer-level-name { text-align: center; }
+    #platformer-staff-status { text-align: right; }
     #platformer-canvas-container { 
         position: relative; 
         width: 100%;
         max-width: 800px;
         margin: auto;
         aspect-ratio: 16 / 9;
-        background-color: #add8e6; /* Light blue color from image */
+        background-color: #c1dff0;
         border-radius: 15px; 
         overflow: hidden; 
         box-shadow: var(--shadow); 
@@ -220,7 +234,7 @@
   <div id="platformer-game-screen" class="screen">
     <div class="panel">
       <div class="platformer-header">
-        <div class="platformer-stat"><span class="hearts" id="platformer-lives">❤️❤️❤️</span></div>
+        <div class="platformer-stat"><div class="hearts" id="platformer-lives"></div></div>
         <div id="platformer-level-name" class="platformer-stat">Plague: N/A</div>
         <div id="platformer-staff-status" class="platformer-stat">Staff: READY</div>
       </div>
@@ -238,264 +252,40 @@
 </div>
 
 <script>
-// --- GLOBAL & MENU LOGIC ---
+// --- GLOBAL & MENU LOGIC (Unchanged) ---
 const initialGameState = { character: 'boy' };
 let game = { ...initialGameState };
-
-function switchScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    
-    if (platformerGame.active) platformerGame.endGame(false, true);
-    if (memoryGame.timerId) clearInterval(memoryGame.timerId);
-    if (sortingGame.active) sortingGame.endGame();
-}
-
-function resetAndGoHome() {
-    game = { ...initialGameState };
-    document.getElementById(`char-${game.character}`).checked = true;
-    switchScreen('main-menu-screen');
-}
-
+function switchScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); if (platformerGame.active) platformerGame.endGame(false, true); if (memoryGame.timerId) clearInterval(memoryGame.timerId); if (sortingGame.active) sortingGame.endGame(); }
+function resetAndGoHome() { game = { ...initialGameState }; document.getElementById(`char-${game.character}`).checked = true; switchScreen('main-menu-screen'); }
 document.getElementById('home-reset-btn').onclick = resetAndGoHome;
 
-// --- 1. SORTING GAME ---
-const sortingGame = {
-    active: false,
-    level: 1,
-    cardCount: 0,
-    placedCount: 0,
-    levels: [
-        {
-            title: "General Actions",
-            happy: [ { emoji: '🙏', text: "Praying" }, { emoji: '🧹', text: "Chores" }, { emoji: '📖', text: "Bible Reading" }, { emoji: '🤗', text: "Sharing" } ],
-            distraction: [ { emoji: '🎮', text: "Too many games" }, { emoji: '😠', text: "Arguing" }, { emoji: '😫', text: "Complaining" }, { emoji: '📱', text: "Ignoring parents"} ]
-        },
-        {
-            title: "At the Kingdom Hall",
-            happy: [ { emoji: '🙋', text: "Commenting" }, { emoji: '🎶', text: "Singing" }, { emoji: '🤝', text: "Greeting friends" }, { emoji: '🤫', text: "Listening quietly" } ],
-            distraction: [ { emoji: '😴', text: "Sleeping" }, { emoji: '🏃', text: "Running around" }, { emoji: '💬', text: "Talking loudly" }, { emoji: '🖍️', text: "Drawing on songbook"} ]
-        },
-        {
-            title: "Using Technology",
-            happy: [ { emoji: '💻', text: "JW.ORG research" }, { emoji: '📱', text: "Texting a nice message" }, { emoji: '🎧', text: "Listening to Kingdom songs" }, { emoji: '🤔', text: "Asking parents first" } ],
-            distraction: [ { emoji: '👻', text: "Watching scary videos" }, { emoji: '⏰', text: "Staying up too late" }, { emoji: 'SECRET', text: "Secret accounts" }, { emoji: '😠', text: "Online arguments"} ]
-        },
-        {
-            title: "Choosing Friends",
-            happy: [ { emoji: '😊', text: "Is kind" }, { emoji: '🙏', text: "Loves Jehovah" }, { emoji: '🤝', text: "Is helpful" }, { emoji: '👍', text: "Is honest" } ],
-            distraction: [ { emoji: '🤬', text: "Uses bad language" }, { emoji: '😏', text: "Makes fun of others" }, { emoji: '🤫', text: "Tells you to keep secrets" }, { emoji: '😠', text: "Is often angry"} ]
-        }
-    ],
-    
-    start(level = 1) {
-        this.active = true;
-        this.level = level;
-        this.placedCount = 0;
-
-        const currentLevel = this.levels[this.level - 1];
-        if(!currentLevel) {
-            alert("Amazing! You've completed all the sorting challenges!");
-            resetAndGoHome();
-            return;
-        }
-
-        document.getElementById('sorting-level').textContent = this.level;
-        document.getElementById('sorting-level-title').textContent = currentLevel.title;
-
-        this.loadCards();
-    },
-
-    loadCards() {
-        const cardContainer = document.getElementById('cards-container');
-        cardContainer.innerHTML = '';
-        document.getElementById('makes-happy').innerHTML = '<h3>👍 Good Choice</h3>';
-        document.getElementById('distraction').innerHTML = '<h3>🤔 Needs Caution</h3>';
-        
-        const currentLevel = this.levels[this.level - 1];
-        const activities = [...currentLevel.happy, ...currentLevel.distraction];
-        activities.sort(() => 0.5 - Math.random());
-        this.cardCount = activities.length;
-
-        activities.forEach((activity, idx) => {
-            const card = document.createElement("div");
-            card.className = "card";
-            card.id = `card${idx}`;
-            card.draggable = true;
-            card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`;
-            
-            const isHappy = currentLevel.happy.some(c => c.text === activity.text);
-            card.dataset.correctZone = isHappy ? 'makes-happy' : 'distraction';
-            
-            card.addEventListener('dragstart', (e) => e.dataTransfer.setData("text", e.target.id));
-            cardContainer.appendChild(card);
-        });
-        
-        document.querySelectorAll('.dropzone').forEach(zone => {
-            zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('over'); };
-            zone.ondragleave = (e) => zone.classList.remove('over');
-            zone.ondrop = (e) => this.onDrop(e);
-        });
-    },
-
-    onDrop(e) {
-        e.preventDefault();
-        let dropzone = e.target;
-        while (!dropzone.classList.contains('dropzone')) dropzone = dropzone.parentElement;
-        dropzone.classList.remove('over');
-        
-        const cardId = e.dataTransfer.getData("text");
-        const card = document.getElementById(cardId);
-        
-        if (card.dataset.correctZone === dropzone.id) {
-            dropzone.appendChild(card);
-            card.draggable = false;
-            card.style.borderColor = 'var(--accent-green)';
-            this.placedCount++;
-            if (this.placedCount === this.cardCount) {
-                setTimeout(() => {
-                    this.start(this.level + 1); // Go to next level
-                }, 1000);
-            }
-        } else {
-            card.style.borderColor = 'var(--accent-red)';
-            setTimeout(() => card.style.borderColor = '#ccc', 500);
-        }
-    },
-    endGame() { this.active = false; }
-};
+// --- 1. SORTING GAME (Unchanged) ---
+const sortingGame = { active: false, level: 1, cardCount: 0, placedCount: 0, levels: [ { title: "General Actions", happy: [ { emoji: '🙏', text: "Praying" }, { emoji: '🧹', text: "Chores" }, { emoji: '📖', text: "Bible Reading" }, { emoji: '🤗', text: "Sharing" } ], distraction: [ { emoji: '🎮', text: "Too many games" }, { emoji: '😠', text: "Arguing" }, { emoji: '😫', text: "Complaining" }, { emoji: '📱', text: "Ignoring parents"} ] }, { title: "At the Kingdom Hall", happy: [ { emoji: '🙋', text: "Commenting" }, { emoji: '🎶', text: "Singing" }, { emoji: '🤝', text: "Greeting friends" }, { emoji: '🤫', text: "Listening quietly" } ], distraction: [ { emoji: '😴', text: "Sleeping" }, { emoji: '🏃', text: "Running around" }, { emoji: '💬', text: "Talking loudly" }, { emoji: '🖍️', text: "Drawing on songbook"} ] }, { title: "Using Technology", happy: [ { emoji: '💻', text: "JW.ORG research" }, { emoji: '📱', text: "Texting a nice message" }, { emoji: '🎧', text: "Listening to Kingdom songs" }, { emoji: '🤔', text: "Asking parents first" } ], distraction: [ { emoji: '👻', text: "Watching scary videos" }, { emoji: '⏰', text: "Staying up too late" }, { emoji: 'SECRET', text: "Secret accounts" }, { emoji: '😠', text: "Online arguments"} ] }, { title: "Choosing Friends", happy: [ { emoji: '😊', text: "Is kind" }, { emoji: '🙏', text: "Loves Jehovah" }, { emoji: '🤝', text: "Is helpful" }, { emoji: '👍', text: "Is honest" } ], distraction: [ { emoji: '🤬', text: "Uses bad language" }, { emoji: '😏', text: "Makes fun of others" }, { emoji: '🤫', text: "Tells you to keep secrets" }, { emoji: '😠', text: "Is often angry"} ] } ], start(level = 1) { this.active = true; this.level = level; this.placedCount = 0; const currentLevel = this.levels[this.level - 1]; if(!currentLevel) { alert("Amazing! You've completed all the sorting challenges!"); resetAndGoHome(); return; } document.getElementById('sorting-level').textContent = this.level; document.getElementById('sorting-level-title').textContent = currentLevel.title; this.loadCards(); }, loadCards() { const cardContainer = document.getElementById('cards-container'); cardContainer.innerHTML = ''; document.getElementById('makes-happy').innerHTML = '<h3>👍 Good Choice</h3>'; document.getElementById('distraction').innerHTML = '<h3>🤔 Needs Caution</h3>'; const currentLevel = this.levels[this.level - 1]; const activities = [...currentLevel.happy, ...currentLevel.distraction]; activities.sort(() => 0.5 - Math.random()); this.cardCount = activities.length; activities.forEach((activity, idx) => { const card = document.createElement("div"); card.className = "card"; card.id = `card${idx}`; card.draggable = true; card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`; const isHappy = currentLevel.happy.some(c => c.text === activity.text); card.dataset.correctZone = isHappy ? 'makes-happy' : 'distraction'; card.addEventListener('dragstart', (e) => e.dataTransfer.setData("text", e.target.id)); cardContainer.appendChild(card); }); document.querySelectorAll('.dropzone').forEach(zone => { zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('over'); }; zone.ondragleave = (e) => zone.classList.remove('over'); zone.ondrop = (e) => this.onDrop(e); }); }, onDrop(e) { e.preventDefault(); let dropzone = e.target; while (!dropzone.classList.contains('dropzone')) dropzone = dropzone.parentElement; dropzone.classList.remove('over'); const cardId = e.dataTransfer.getData("text"); const card = document.getElementById(cardId); if (card.dataset.correctZone === dropzone.id) { dropzone.appendChild(card); card.draggable = false; card.style.borderColor = 'var(--accent-green)'; this.placedCount++; if (this.placedCount === this.cardCount) { setTimeout(() => { this.start(this.level + 1); }, 1000); } } else { card.style.borderColor = 'var(--accent-red)'; setTimeout(() => card.style.borderColor = '#ccc', 500); } }, endGame() { this.active = false; } };
 
 // --- 2. MEMORY GAME (Unchanged) ---
-const memoryGame = {
-    level: 1, timerId: null, matches: 0, goal: 0,
-    isChecking: false, flippedCards: [],
-    levelData: [
-        { pairs: 4, grid: '2x4' }, { pairs: 6, grid: '3x4' }, { pairs: 8, grid: '4x4' },
-        { pairs: 10, grid: '4x5' }, { pairs: 12, grid: '4x6' }
-    ],
-    start() {
-        this.resetState();
-        const currentLevel = this.levelData[this.level - 1];
-        if (!currentLevel) {
-            alert("Wow! You've completed all memory levels!");
-            resetAndGoHome();
-            return;
-        }
-        this.goal = currentLevel.pairs;
-        this.updateUI();
-        this.createGrid(currentLevel.pairs, currentLevel.grid);
-    },
-    createGrid(pairCount, gridLayout) {
-        const grid = document.getElementById('memory-game-grid');
-        grid.innerHTML = '';
-        const [rows, cols] = gridLayout.split('x');
-        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        const cardEmojis = ['🙏','📖','🤝','😊','🧹','🎶','🤗','❤️','🌟','🐑','🦁','🕊️'];
-        let cardPool = cardEmojis.slice(0, pairCount);
-        cardPool = [...cardPool, ...cardPool];
-        cardPool.sort(() => 0.5 - Math.random());
-        cardPool.forEach(emoji => {
-            const cardEl = document.createElement('div');
-            cardEl.classList.add('memory-card');
-            cardEl.dataset.id = emoji;
-            cardEl.innerHTML = `<div class="card-face card-back">?</div><div class="card-face card-front">${emoji}</div>`;
-            cardEl.onclick = () => this.flipCard(cardEl);
-            grid.appendChild(cardEl);
-        });
-    },
-    flipCard(cardEl) {
-        if (this.isChecking || cardEl.classList.contains('is-flipped') || this.flippedCards.length >= 2) return;
-        cardEl.classList.add('is-flipped');
-        this.flippedCards.push(cardEl);
-        if (this.flippedCards.length === 2) this.checkForMatch();
-    },
-    checkForMatch() {
-        this.isChecking = true;
-        const [card1, card2] = this.flippedCards;
-        if (card1.dataset.id === card2.dataset.id) {
-            this.matches++;
-            this.updateUI();
-            setTimeout(() => {
-                card1.classList.add('is-matched');
-                card2.classList.add('is-matched');
-                this.flippedCards = [];
-                this.isChecking = false;
-                if (this.matches === this.goal) this.levelComplete();
-            }, 500);
-        } else {
-            setTimeout(() => {
-                card1.classList.remove('is-flipped');
-                card2.classList.remove('is-flipped');
-                this.flippedCards = [];
-                this.isChecking = false;
-            }, 1000);
-        }
-    },
-    levelComplete() {
-        alert(`Level ${this.level} Complete!`);
-        this.level++;
-        this.start();
-    },
-    updateUI() {
-        document.getElementById('memory-level').textContent = this.level;
-        document.getElementById('memory-matches').textContent = `${this.matches} / ${this.goal}`;
-    },
-    resetState() {
-        this.matches = 0;
-        this.isChecking = false;
-        this.flippedCards = [];
-        if (this.timerId) clearInterval(this.timerId);
-        this.timerId = null;
-    }
-};
+const memoryGame = { level: 1, timerId: null, matches: 0, goal: 0, isChecking: false, flippedCards: [], levelData: [ { pairs: 4, grid: '2x4' }, { pairs: 6, grid: '3x4' }, { pairs: 8, grid: '4x4' }, { pairs: 10, grid: '4x5' }, { pairs: 12, grid: '4x6' } ], start() { this.resetState(); const currentLevel = this.levelData[this.level - 1]; if (!currentLevel) { alert("Wow! You've completed all memory levels!"); resetAndGoHome(); return; } this.goal = currentLevel.pairs; this.updateUI(); this.createGrid(currentLevel.pairs, currentLevel.grid); }, createGrid(pairCount, gridLayout) { const grid = document.getElementById('memory-game-grid'); grid.innerHTML = ''; const [rows, cols] = gridLayout.split('x'); grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`; const cardEmojis = ['🙏','📖','🤝','😊','🧹','🎶','🤗','❤️','🌟','🐑','🦁','🕊️']; let cardPool = cardEmojis.slice(0, pairCount); cardPool = [...cardPool, ...cardPool]; cardPool.sort(() => 0.5 - Math.random()); cardPool.forEach(emoji => { const cardEl = document.createElement('div'); cardEl.classList.add('memory-card'); cardEl.dataset.id = emoji; cardEl.innerHTML = `<div class="card-face card-back">?</div><div class="card-face card-front">${emoji}</div>`; cardEl.onclick = () => this.flipCard(cardEl); grid.appendChild(cardEl); }); }, flipCard(cardEl) { if (this.isChecking || cardEl.classList.contains('is-flipped') || this.flippedCards.length >= 2) return; cardEl.classList.add('is-flipped'); this.flippedCards.push(cardEl); if (this.flippedCards.length === 2) this.checkForMatch(); }, checkForMatch() { this.isChecking = true; const [card1, card2] = this.flippedCards; if (card1.dataset.id === card2.dataset.id) { this.matches++; this.updateUI(); setTimeout(() => { card1.classList.add('is-matched'); card2.classList.add('is-matched'); this.flippedCards = []; this.isChecking = false; if (this.matches === this.goal) this.levelComplete(); }, 500); } else { setTimeout(() => { card1.classList.remove('is-flipped'); card2.classList.remove('is-flipped'); this.flippedCards = []; this.isChecking = false; }, 1000); } }, levelComplete() { alert(`Level ${this.level} Complete!`); this.level++; this.start(); }, updateUI() { document.getElementById('memory-level').textContent = this.level; document.getElementById('memory-matches').textContent = `${this.matches} / ${this.goal}`; }, resetState() { this.matches = 0; this.isChecking = false; this.flippedCards = []; if (this.timerId) clearInterval(this.timerId); this.timerId = null; } };
 
-
-// --- 3. PLATFORMER GAME (JavaScript is Unchanged) ---
+// --- 3. PLATFORMER GAME (JavaScript is Updated) ---
 const platformerGame = {
     canvas: document.getElementById('platformer-canvas'),
     ctx: null, active: false, gameInterval: null, frame: 0,
     level: 1, lives: 3,
-    
-    player: {
-        x: 100, y: 300, w: 40, h: 60, vx: 0, vy: 0, speed: 4, walkSpeed: 2.5, runSpeed: 5, jumpPower: 17,
-        grounded: false, doubleJumpUsed: false, isSlowed: false,
-        animState: 'idle', animFrame: 0, facing: 'right', squash: 0,
-        staff: { active: false, duration: 0, cooldown: 0, maxCooldown: 180 }
-    },
+    player: { x: 100, y: 300, w: 40, h: 60, vx: 0, vy: 0, speed: 4, walkSpeed: 2.5, runSpeed: 5, jumpPower: 17, grounded: false, doubleJumpUsed: false, isSlowed: false, animState: 'idle', animFrame: 0, facing: 'right', squash: 0, staff: { active: false, duration: 0, cooldown: 0, maxCooldown: 180 } },
     platforms: [], levelData: [], goal: null,
     gravity: 0.7, camera: { x: 0 },
-
-    levelDesigns: [
-        {}, // Level 0 placeholder
-        { name: "Nile to Blood", bgColor: ['#a02a2a', '#6b1c1c'], platformType: 'stone',
-          layout: [ { x: 0, y: 400, w: 400 }, { x: 500, y: 320, w: 200 }, { x: 800, y: 250, w: 150 }, { x: 1100, y: 350, w: 250 }, { x: 1500, y: 280, w: 180 }, { x: 1800, y: 400, w: 300, goal: true} ]
-        },
-        { name: "Frogs", bgColor: ['#298c7a', '#1f6758'], platformType: 'lilypad',
-          layout: [ { x: 0, y: 400, w: 200 }, { x: 350, y: 350, w: 150 }, { x: 600, y: 400, w: 150 }, { x: 900, y: 320, w: 180 }, { x: 1250, y: 250, w: 120 }, { x: 1500, y: 380, w: 200}, { x: 1850, y: 300, w: 250, goal: true} ]
-        },
-        { name: "Gnats", bgColor: ['#d3b897', '#a98a65'], platformType: 'stone', hasGnats: true,
-          layout: [ { x: 0, y: 400, w: 300 }, { x: 450, y: 300, w: 200 }, { x: 750, y: 350, w: 150 }, { x: 1000, y: 280, w: 250 }, { x: 1400, y: 400, w: 400, goal: true} ]
-        },
-        { name: "Gadflies", bgColor: ['#87CEEB', '#bde0fe'], platformType: 'stone', hasGadflies: true,
-          layout: [ { x: 0, y: 400, w: 250 }, { x: 400, y: 300, w: 300 }, { x: 850, y: 400, w: 200 }, { x: 1200, y: 300, w: 200 }, { x: 1550, y: 400, w: 350, goal: true} ]
-        },
-        {}, // Placeholder for Livestock
-        {}, // Placeholder for Boils
-        { name: "Hail", bgColor: ['#607D8B', '#455A64'], platformType: 'stone', hasHail: true,
-          layout: [ { x: 0, y: 400, w: 350 }, { x: 500, y: 320, w: 100 }, { x: 750, y: 320, w: 100 }, { x: 1000, y: 400, w: 200 }, { x: 1350, y: 300, w: 150 }, { x: 1650, y: 400, w: 300, goal: true} ]
-        },
-        {}, // Placeholder for Locusts
-        { name: "Darkness", bgColor: ['#111', '#000'], platformType: 'stone', isDark: true,
-          layout: [ { x: 0, y: 400, w: 150 }, { x: 300, y: 350, w: 150 }, { x: 600, y: 300, w: 150 }, { x: 900, y: 250, w: 150 }, { x: 1200, y: 350, w: 150 }, { x: 1500, y: 400, w: 200, goal: true} ]
-        },
-        // ... Add layouts for remaining plagues here
-    ],
+    levelDesigns: [ {}, { name: "Nile to Blood", bgColor: ['#a02a2a', '#6b1c1c'], platformType: 'stone', layout: [ { x: 0, y: 400, w: 400 }, { x: 500, y: 320, w: 200 }, { x: 800, y: 250, w: 150 }, { x: 1100, y: 350, w: 250 }, { x: 1500, y: 280, w: 180 }, { x: 1800, y: 400, w: 300, goal: true} ] }, { name: "Frogs", bgColor: ['#298c7a', '#1f6758'], platformType: 'lilypad', layout: [ { x: 0, y: 400, w: 200 }, { x: 350, y: 350, w: 150 }, { x: 600, y: 400, w: 150 }, { x: 900, y: 320, w: 180 }, { x: 1250, y: 250, w: 120 }, { x: 1500, y: 380, w: 200}, { x: 1850, y: 300, w: 250, goal: true} ] }, { name: "Gnats", bgColor: ['#d3b897', '#a98a65'], platformType: 'stone', hasGnats: true, layout: [ { x: 0, y: 400, w: 300 }, { x: 450, y: 300, w: 200 }, { x: 750, y: 350, w: 150 }, { x: 1000, y: 280, w: 250 }, { x: 1400, y: 400, w: 400, goal: true} ] }, { name: "Gadflies", bgColor: ['#87CEEB', '#bde0fe'], platformType: 'stone', hasGadflies: true, layout: [ { x: 0, y: 400, w: 250 }, { x: 400, y: 300, w: 300 }, { x: 850, y: 400, w: 200 }, { x: 1200, y: 300, w: 200 }, { x: 1550, y: 400, w: 350, goal: true} ] }, {}, {}, { name: "Hail", bgColor: ['#607D8B', '#455A64'], platformType: 'stone', hasHail: true, layout: [ { x: 0, y: 400, w: 350 }, { x: 500, y: 320, w: 100 }, { x: 750, y: 320, w: 100 }, { x: 1000, y: 400, w: 200 }, { x: 1350, y: 300, w: 150 }, { x: 1650, y: 400, w: 300, goal: true} ] }, {}, { name: "Darkness", bgColor: ['#111', '#000'], platformType: 'stone', isDark: true, layout: [ { x: 0, y: 400, w: 150 }, { x: 300, y: 350, w: 150 }, { x: 600, y: 300, w: 150 }, { x: 900, y: 250, w: 150 }, { x: 1200, y: 350, w: 150 }, { x: 1500, y: 400, w: 200, goal: true} ] }, ],
     
+    // UPDATED init function
     init() {
         this.ctx = this.canvas.getContext('2d');
         this.setCanvasSize();
         window.addEventListener('resize', () => this.setCanvasSize());
         
+        // Draw initial state
+        this.ctx.fillStyle = '#c1dff0';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.updateUI();
+
         document.getElementById('platformer-start-btn').onclick = () => this.start(1);
         document.getElementById('platformer-next-level-btn').onclick = () => { this.start(this.level + 1); };
         document.getElementById('platformer-restart-btn').onclick = () => { this.start(this.level); };
@@ -503,291 +293,47 @@ const platformerGame = {
         this.showOverlay("Plagues Adventure");
     },
     
-    setCanvasSize() {
-        this.canvas.width = 800; this.canvas.height = 450;
-    },
-
+    setCanvasSize() { this.canvas.width = 800; this.canvas.height = 450; },
     start(level) {
         let design = this.levelDesigns[level];
-        // Skip empty levels
-        while(!design || Object.keys(design).length === 0) {
-            level++;
-            design = this.levelDesigns[level];
-            if(level > this.levelDesigns.length) {
-                this.endGame(true); // Win condition
-                return;
-            }
-        }
-
-        this.hideOverlay();
-        this.active = true;
-        this.frame = 0;
-        this.level = level;
+        while(!design || Object.keys(design).length === 0) { level++; design = this.levelDesigns[level]; if(level > this.levelDesigns.length) { this.endGame(true); return; } }
+        this.hideOverlay(); this.active = true; this.frame = 0; this.level = level;
         if(level === 1) { this.lives = 3; }
-        
-        this.player.x = 100; this.player.y = 300; this.player.vx = 0; this.player.vy = 0;
-        this.player.staff.cooldown = 0;
-        this.camera.x = 0;
-        this.levelData = [];
-
+        this.player.x = 100; this.player.y = 300; this.player.vx = 0; this.player.vy = 0; this.player.staff.cooldown = 0;
+        this.camera.x = 0; this.levelData = [];
         this.generateLevel();
         if (this.gameInterval) clearInterval(this.gameInterval);
         this.gameInterval = setInterval(() => this.loop(), 1000 / 60);
         this.addKeyListeners();
     },
-
     keys: {},
-    addKeyListeners() {
-        this.keys = {};
-        const keydownHandler = e => {
-            this.keys[e.code] = true;
-            if(e.code === 'Space' || e.code === 'ArrowUp') e.preventDefault();
-        };
-        const keyupHandler = e => this.keys[e.code] = false;
-        window.addEventListener('keydown', keydownHandler);
-        window.addEventListener('keyup', keyupHandler);
-        this.removeListeners = () => {
-             window.removeEventListener('keydown', keydownHandler);
-             window.removeEventListener('keyup', keyupHandler);
-        };
-    },
+    addKeyListeners() { this.keys = {}; const keydownHandler = e => { this.keys[e.code] = true; if(e.code === 'Space' || e.code === 'ArrowUp') e.preventDefault(); }; const keyupHandler = e => this.keys[e.code] = false; window.addEventListener('keydown', keydownHandler); window.addEventListener('keyup', keyupHandler); this.removeListeners = () => { window.removeEventListener('keydown', keydownHandler); window.removeEventListener('keyup', keyupHandler); }; },
+    generateLevel() { const design = this.levelDesigns[this.level]; this.platforms = design.layout.map(p => ({...p, h: (design.platformType === 'lilypad' ? 20 : 40) })); const goalPlatform = this.platforms.find(p => p.goal); this.goal = {x: goalPlatform.x + goalPlatform.w / 2 - 25, y: goalPlatform.y - 50, w: 50, h: 50}; if (design.hasGnats) { for(let i=0; i < 15; i++) { const plat = this.platforms[Math.floor(Math.random() * this.platforms.length)]; this.levelData.push({ type: 'gnatSwarm', x: plat.x + Math.random() * plat.w, y: plat.y - 60 - Math.random() * 50, w: 50, h: 40, active: true }); } } if (design.hasGadflies) { for(let i=0; i < 5; i++) { const plat = this.platforms[i % this.platforms.length]; this.levelData.push({ type: 'gadfly', x: plat.x, y: plat.y - 60, w: 25, h: 25, speed: 1.5 + Math.random(), originX: plat.x, range: plat.w }); } } if (design.hasHail) { for (let i=0; i < 50; i++) { this.levelData.push({ type: 'hail', x: Math.random() * goalPlatform.x + 200, y: -Math.random() * 3000, w: 10, h: 20, speed: 5 + Math.random() * 5 }); } } },
+    loop() { if(!this.active) return; this.updatePlayerState(); this.updateWorld(); this.draw(); this.updateUI(); this.frame++; },
+    updatePlayerState() { const p = this.player; if (p.squash > 0) p.squash = Math.max(0, p.squash - 0.1); if (p.staff.cooldown > 0) p.staff.cooldown--; if (p.staff.duration > 0) p.staff.duration--; else p.staff.active = false; if (this.keys.KeyE && p.staff.cooldown <= 0) { p.staff.active = true; p.staff.duration = 20; p.staff.cooldown = p.staff.maxCooldown; } const moving = this.keys.KeyA || this.keys.ArrowLeft || this.keys.KeyD || this.keys.ArrowRight; let effectiveSpeed = this.keys.ShiftLeft ? p.runSpeed : p.walkSpeed; if (p.isSlowed) effectiveSpeed *= 0.5; if (this.keys.KeyA || this.keys.ArrowLeft) { p.vx = -effectiveSpeed; p.facing = 'left'; } else if (this.keys.KeyD || this.keys.ArrowRight) { p.vx = effectiveSpeed; p.facing = 'right'; } else { p.vx = 0; } if ((this.keys.KeyW || this.keys.ArrowUp || this.keys.Space)) { if (p.grounded) { p.vy = -p.jumpPower; p.grounded = false; p.squash = 1; this.spawnParticles(p.x + p.w / 2, p.y + p.h, 10, '#ffffff'); } else if (!p.doubleJumpUsed) { p.vy = -p.jumpPower * 0.8; p.doubleJumpUsed = true; this.spawnParticles(p.x + p.w / 2, p.y + p.h/2, 15, 'rgba(255,255,255,0.7)'); } this.keys.KeyW = this.keys.ArrowUp = this.keys.Space = false; } p.vy += this.gravity; p.x += p.vx; if (p.y + p.h + p.vy > this.canvas.height) { p.y = this.canvas.height - p.h; p.vy = 0; this.land(); } else { p.y += p.vy; } let onPlatform = false; this.platforms.forEach(plat => { if (this.checkCollision(p, {x: plat.x, y: plat.y, w: plat.w, h: 10}) && p.vy >= 0) { onPlatform = true; p.y = plat.y - p.h; p.vy = 0; this.land(); } }); if(!onPlatform) p.grounded = false; if (!p.grounded) p.animState = p.vy < 0 ? 'jump' : 'fall'; else if (moving) p.animState = this.keys.ShiftLeft ? 'run' : 'walk'; else p.animState = 'idle'; },
+    land() { if (!this.player.grounded) { this.player.squash = 1; this.spawnParticles(this.player.x + this.player.w / 2, this.player.y + this.player.h, 15, '#d3b897'); } this.player.grounded = true; this.player.doubleJumpUsed = false; },
+    updateWorld() { this.camera.x += (this.player.x - this.canvas.width / 3 - this.camera.x) * 0.1; this.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if (p.life <= 0) this.particles.splice(i, 1); }); this.player.isSlowed = false; this.levelData.forEach(item => { if (item.type === 'gnatSwarm' && item.active) { if (this.checkCollision(this.player, item)) this.player.isSlowed = true; if (this.player.staff.active && this.checkCollision({x: this.player.x-40, y:this.player.y-40, w:120, h:140}, item)) item.active = false; } if (item.type === 'gadfly') { item.x += item.speed; if (item.x < item.originX || item.x > item.originX + item.range - item.w) item.speed *= -1; if (this.checkCollision(this.player, item)) this.loseLife(); } if (item.type === 'hail') { item.y += item.speed; if (item.y > this.canvas.height) item.y = -Math.random() * 1000; if (this.checkCollision(this.player, item)) this.loseLife(); } }); if (this.goal && this.checkCollision(this.player, this.goal)) { this.showOverlay(`Plague ${this.level} Cleared!`, true, false); this.endGame(true, true); } if (this.player.y > this.canvas.height + 50) this.loseLife(); },
+    loseLife() { this.lives--; if (this.lives <= 0) { this.endGame(false); this.showOverlay("Game Over", false, true); } else { this.start(this.level); } },
+    checkCollision(rect1, rect2) { return rect1.x < rect2.x + rect2.w && rect1.x + rect1.w > rect2.x && rect1.y < rect2.y + rect2.h && rect1.y + rect1.h > rect2.y; },
+    draw() { const design = this.levelDesigns[this.level]; if (!design) return; this.drawBackground(); this.ctx.save(); this.ctx.translate(-this.camera.x, 0); this.drawPlatforms(); this.drawLevelEntities(); this.drawGoal(); this.drawPlayer(); this.ctx.restore(); if (design.isDark) this.drawDarkness(); },
+    drawLevelEntities() { this.levelData.forEach(item => { if (item.type === 'gnatSwarm' && item.active) { this.ctx.fillStyle = 'rgba(50,50,50,0.5)'; this.ctx.beginPath(); this.ctx.ellipse(item.x + item.w/2, item.y + item.h/2 + Math.sin(this.frame*0.2)*5, item.w/2, item.h/2, 0, 0, Math.PI*2); this.ctx.fill(); } if (item.type === 'gadfly') { this.ctx.fillStyle = 'black'; this.ctx.beginPath(); this.ctx.arc(item.x + item.w/2, item.y + item.h/2, item.w/2, 0, Math.PI*2); this.ctx.fill(); this.ctx.fillStyle = 'white'; this.ctx.beginPath(); this.ctx.arc(item.x + item.w/2, item.y + item.h/2, item.w * 0.2, 0, Math.PI*2); this.ctx.fill(); } if (item.type === 'hail') { this.ctx.fillStyle = 'white'; this.ctx.fillRect(item.x, item.y, item.w, item.h); } }); },
+    drawDarkness() { this.ctx.save(); this.ctx.fillStyle = '#000'; this.ctx.fillRect(0,0, this.canvas.width, this.canvas.height); const p_center_x = this.player.x + this.player.w/2 - this.camera.x; const p_center_y = this.player.y + this.player.h/2; const lightRadius = 100; this.ctx.globalCompositeOperation = 'destination-out'; this.ctx.beginPath(); this.ctx.arc(p_center_x, p_center_y, lightRadius, 0, Math.PI*2); this.ctx.fill(); this.ctx.restore(); },
+    drawPlayer() { const p = this.player; const art = game.character === 'boy' ? { tunic: '#4a90e2', skin: '#f2a66e', hair: '#3a2d27' } : { tunic: '#e91e63', skin: '#ffbe87', hair: '#8b572a' }; if (p.staff.active) { this.ctx.strokeStyle = 'rgba(255, 255, 100, 0.8)'; this.ctx.lineWidth = 5; this.ctx.beginPath(); const radius = 20 + (20 - p.staff.duration) * 3; this.ctx.arc(p.x + p.w/2, p.y + p.h/2, radius, 0, Math.PI * 2); this.ctx.stroke(); } let squashY = 1 - Math.sin(p.squash * Math.PI) * 0.3; let stretchX = 1 + Math.sin(p.squash * Math.PI) * 0.3; this.ctx.save(); this.ctx.translate(p.x + p.w / 2, p.y + p.h); if (p.facing === 'left') this.ctx.scale(-1, 1); this.ctx.scale(stretchX, squashY); this.ctx.translate(-(p.x + p.w / 2), -(p.y + p.h)); const bob = (p.animState === 'walk' || p.animState === 'run') ? Math.sin(this.frame * (p.speed / 20)) * 3 : 0; this.ctx.fillStyle = art.skin; this.ctx.fillRect(p.x + 8, p.y + 40, 10, 20); this.ctx.fillRect(p.x + 22, p.y + 40, 10, 20); this.ctx.fillStyle = art.tunic; this.ctx.fillRect(p.x + 5, p.y + 15 + bob, 30, 30); this.ctx.fillStyle = art.skin; this.ctx.beginPath(); this.ctx.arc(p.x + p.w/2, p.y + 12 + bob, 12, 0, Math.PI*2); this.ctx.fill(); this.ctx.fillStyle = art.hair; this.ctx.beginPath(); this.ctx.arc(p.x + p.w/2, p.y + 8 + bob, 12, 0, Math.PI*2); this.ctx.fill(); this.ctx.fillStyle = 'white'; this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w/2 + 5, p.y + 12 + bob, 4, 5, 0, 0, Math.PI * 2); this.ctx.fill(); this.ctx.fillStyle = 'black'; this.ctx.beginPath(); this.ctx.arc(p.x + p.w/2 + 6, p.y + 13 + bob, 2, 0, Math.PI * 2); this.ctx.fill(); this.ctx.restore(); },
+    endGame(isWin = false, isSoftEnd = false) { this.active = false; clearInterval(this.gameInterval); if (this.removeListeners) this.removeListeners(); if (isSoftEnd) return; if (isWin) this.showOverlay("You cleared all the plagues!", false, true); else this.showOverlay("Game Over", false, true); },
     
-    generateLevel() {
-        const design = this.levelDesigns[this.level];
-        this.platforms = design.layout.map(p => ({...p, h: (design.platformType === 'lilypad' ? 20 : 40) }));
-        const goalPlatform = this.platforms.find(p => p.goal);
-        this.goal = {x: goalPlatform.x + goalPlatform.w / 2 - 25, y: goalPlatform.y - 50, w: 50, h: 50};
-        
-        if (design.hasGnats) {
-            for(let i=0; i < 15; i++) {
-                const plat = this.platforms[Math.floor(Math.random() * this.platforms.length)];
-                this.levelData.push({ type: 'gnatSwarm', x: plat.x + Math.random() * plat.w, y: plat.y - 60 - Math.random() * 50, w: 50, h: 40, active: true });
-            }
-        }
-        if (design.hasGadflies) {
-            for(let i=0; i < 5; i++) {
-                const plat = this.platforms[i % this.platforms.length];
-                this.levelData.push({ type: 'gadfly', x: plat.x, y: plat.y - 60, w: 25, h: 25, speed: 1.5 + Math.random(), originX: plat.x, range: plat.w });
-            }
-        }
-        if (design.hasHail) {
-            for (let i=0; i < 50; i++) { // Pre-generate hail to fall at intervals
-                this.levelData.push({ type: 'hail', x: Math.random() * goalPlatform.x + 200, y: -Math.random() * 3000, w: 10, h: 20, speed: 5 + Math.random() * 5 });
-            }
-        }
-    },
-
-    loop() {
-        if(!this.active) return;
-        this.updatePlayerState();
-        this.updateWorld();
-        this.draw();
-        this.updateUI();
-        this.frame++;
-    },
-
-    updatePlayerState() {
-        const p = this.player;
-        if (p.squash > 0) p.squash = Math.max(0, p.squash - 0.1);
-
-        // Staff Logic
-        if (p.staff.cooldown > 0) p.staff.cooldown--;
-        if (p.staff.duration > 0) p.staff.duration--; else p.staff.active = false;
-        if (this.keys.KeyE && p.staff.cooldown <= 0) {
-            p.staff.active = true;
-            p.staff.duration = 20; // active for 1/3 second
-            p.staff.cooldown = p.staff.maxCooldown;
-        }
-
-        const moving = this.keys.KeyA || this.keys.ArrowLeft || this.keys.KeyD || this.keys.ArrowRight;
-        let effectiveSpeed = this.keys.ShiftLeft ? p.runSpeed : p.walkSpeed;
-        if (p.isSlowed) effectiveSpeed *= 0.5;
-
-        if (this.keys.KeyA || this.keys.ArrowLeft) { p.vx = -effectiveSpeed; p.facing = 'left'; }
-        else if (this.keys.KeyD || this.keys.ArrowRight) { p.vx = effectiveSpeed; p.facing = 'right'; }
-        else { p.vx = 0; }
-        
-        if ((this.keys.KeyW || this.keys.ArrowUp || this.keys.Space)) {
-            if (p.grounded) {
-                p.vy = -p.jumpPower; p.grounded = false; p.squash = 1;
-                this.spawnParticles(p.x + p.w / 2, p.y + p.h, 10, '#ffffff');
-            } else if (!p.doubleJumpUsed) {
-                p.vy = -p.jumpPower * 0.8; p.doubleJumpUsed = true;
-                this.spawnParticles(p.x + p.w / 2, p.y + p.h/2, 15, 'rgba(255,255,255,0.7)');
-            }
-            this.keys.KeyW = this.keys.ArrowUp = this.keys.Space = false;
-        }
-
-        p.vy += this.gravity;
-        p.x += p.vx;
-        
-        if (p.y + p.h + p.vy > this.canvas.height) {
-            p.y = this.canvas.height - p.h; p.vy = 0; this.land();
-        } else {
-             p.y += p.vy;
-        }
-
-        let onPlatform = false;
-        this.platforms.forEach(plat => {
-            if (this.checkCollision(p, {x: plat.x, y: plat.y, w: plat.w, h: 10}) && p.vy >= 0) {
-                onPlatform = true; p.y = plat.y - p.h; p.vy = 0; this.land();
-            }
-        });
-        if(!onPlatform) p.grounded = false;
-        
-        if (!p.grounded) p.animState = p.vy < 0 ? 'jump' : 'fall';
-        else if (moving) p.animState = this.keys.ShiftLeft ? 'run' : 'walk';
-        else p.animState = 'idle';
-    },
-    
-    land() {
-        if (!this.player.grounded) {
-            this.player.squash = 1;
-            this.spawnParticles(this.player.x + this.player.w / 2, this.player.y + this.player.h, 15, '#d3b897');
-        }
-        this.player.grounded = true; this.player.doubleJumpUsed = false;
-    },
-    
-    updateWorld() {
-        this.camera.x += (this.player.x - this.canvas.width / 3 - this.camera.x) * 0.1;
-        
-        this.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.life--; if (p.life <= 0) this.particles.splice(i, 1); });
-        
-        this.player.isSlowed = false;
-        this.levelData.forEach(item => {
-            if (item.type === 'gnatSwarm' && item.active) {
-                if (this.checkCollision(this.player, item)) this.player.isSlowed = true;
-                if (this.player.staff.active && this.checkCollision({x: this.player.x-40, y:this.player.y-40, w:120, h:140}, item)) item.active = false;
-            }
-            if (item.type === 'gadfly') {
-                item.x += item.speed;
-                if (item.x < item.originX || item.x > item.originX + item.range - item.w) item.speed *= -1;
-                if (this.checkCollision(this.player, item)) this.loseLife();
-            }
-            if (item.type === 'hail') {
-                item.y += item.speed;
-                if (item.y > this.canvas.height) item.y = -Math.random() * 1000;
-                if (this.checkCollision(this.player, item)) this.loseLife();
-            }
-        });
-
-        if (this.goal && this.checkCollision(this.player, this.goal)) {
-            this.showOverlay(`Plague ${this.level} Cleared!`, true, false);
-            this.endGame(true, true);
-        }
-        if (this.player.y > this.canvas.height + 50) this.loseLife();
-    },
-    
-    loseLife() {
-        this.lives--;
-        if (this.lives <= 0) {
-            this.endGame(false);
-            this.showOverlay("Game Over", false, true);
-        } else {
-            this.start(this.level);
-        }
-    },
-
-    checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + rect2.w && rect1.x + rect1.w > rect2.x && rect1.y < rect2.y + rect2.h && rect1.y + rect1.h > rect2.y;
-    },
-
-    draw() {
-        const design = this.levelDesigns[this.level];
-        if (!design) return;
-        this.drawBackground();
-        this.ctx.save();
-        this.ctx.translate(-this.camera.x, 0);
-
-        this.drawPlatforms();
-        this.drawLevelEntities();
-        this.drawGoal();
-        this.drawPlayer();
-        
-        this.ctx.restore();
-
-        if (design.isDark) this.drawDarkness();
-    },
-    
-    drawLevelEntities() {
-        this.levelData.forEach(item => {
-            if (item.type === 'gnatSwarm' && item.active) {
-                this.ctx.fillStyle = 'rgba(50,50,50,0.5)';
-                this.ctx.beginPath();
-                this.ctx.ellipse(item.x + item.w/2, item.y + item.h/2 + Math.sin(this.frame*0.2)*5, item.w/2, item.h/2, 0, 0, Math.PI*2);
-                this.ctx.fill();
-            }
-            if (item.type === 'gadfly') {
-                this.ctx.fillStyle = 'black'; this.ctx.beginPath(); this.ctx.arc(item.x + item.w/2, item.y + item.h/2, item.w/2, 0, Math.PI*2); this.ctx.fill();
-                this.ctx.fillStyle = 'white'; this.ctx.beginPath(); this.ctx.arc(item.x + item.w/2, item.y + item.h/2, item.w * 0.2, 0, Math.PI*2); this.ctx.fill();
-            }
-            if (item.type === 'hail') {
-                this.ctx.fillStyle = 'white'; this.ctx.fillRect(item.x, item.y, item.w, item.h);
-            }
-        });
-    },
-
-    drawDarkness() {
-        this.ctx.save();
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(0,0, this.canvas.width, this.canvas.height);
-        
-        const p_center_x = this.player.x + this.player.w/2 - this.camera.x;
-        const p_center_y = this.player.y + this.player.h/2;
-        
-        const lightRadius = 100;
-        this.ctx.globalCompositeOperation = 'destination-out';
-        this.ctx.beginPath();
-        this.ctx.arc(p_center_x, p_center_y, lightRadius, 0, Math.PI*2);
-        this.ctx.fill();
-        
-        this.ctx.restore();
-    },
-
-    drawPlayer() {
-        const p = this.player;
-        const art = game.character === 'boy' ? { tunic: '#4a90e2', skin: '#f2a66e', hair: '#3a2d27' } : { tunic: '#e91e63', skin: '#ffbe87', hair: '#8b572a' };
-        
-        if (p.staff.active) {
-            this.ctx.strokeStyle = 'rgba(255, 255, 100, 0.8)';
-            this.ctx.lineWidth = 5;
-            this.ctx.beginPath();
-            const radius = 20 + (20 - p.staff.duration) * 3;
-            this.ctx.arc(p.x + p.w/2, p.y + p.h/2, radius, 0, Math.PI * 2);
-            this.ctx.stroke();
-        }
-
-        let squashY = 1 - Math.sin(p.squash * Math.PI) * 0.3; let stretchX = 1 + Math.sin(p.squash * Math.PI) * 0.3;
-        this.ctx.save();
-        this.ctx.translate(p.x + p.w / 2, p.y + p.h);
-        if (p.facing === 'left') this.ctx.scale(-1, 1);
-        this.ctx.scale(stretchX, squashY);
-        this.ctx.translate(-(p.x + p.w / 2), -(p.y + p.h));
-        
-        const bob = (p.animState === 'walk' || p.animState === 'run') ? Math.sin(this.frame * (p.speed / 20)) * 3 : 0;
-        this.ctx.fillStyle = art.skin; this.ctx.fillRect(p.x + 8, p.y + 40, 10, 20); this.ctx.fillRect(p.x + 22, p.y + 40, 10, 20);
-        this.ctx.fillStyle = art.tunic; this.ctx.fillRect(p.x + 5, p.y + 15 + bob, 30, 30);
-        this.ctx.fillStyle = art.skin; this.ctx.beginPath(); this.ctx.arc(p.x + p.w/2, p.y + 12 + bob, 12, 0, Math.PI*2); this.ctx.fill();
-        this.ctx.fillStyle = art.hair; this.ctx.beginPath(); this.ctx.arc(p.x + p.w/2, p.y + 8 + bob, 12, 0, Math.PI*2); this.ctx.fill();
-        this.ctx.fillStyle = 'white'; this.ctx.beginPath(); this.ctx.ellipse(p.x + p.w/2 + 5, p.y + 12 + bob, 4, 5, 0, 0, Math.PI * 2); this.ctx.fill();
-        this.ctx.fillStyle = 'black'; this.ctx.beginPath(); this.ctx.arc(p.x + p.w/2 + 6, p.y + 13 + bob, 2, 0, Math.PI * 2); this.ctx.fill();
-
-        this.ctx.restore();
-    },
-    
-    endGame(isWin = false, isSoftEnd = false) {
-        this.active = false;
-        clearInterval(this.gameInterval);
-        if (this.removeListeners) this.removeListeners();
-        if (isSoftEnd) return;
-        if (isWin) this.showOverlay("You cleared all the plagues!", false, true);
-        else this.showOverlay("Game Over", false, true);
-    },
-    
+    // UPDATED updateUI function
     updateUI() {
         const design = this.levelDesigns[this.level] || {};
-        document.getElementById('platformer-level-name').textContent = `Plague: ${this.level}. ${design.name || 'Finished!'}`;
-        document.getElementById('platformer-lives').textContent = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
+        document.getElementById('platformer-level-name').textContent = `Plague: ${this.level || 'N/A'}. ${design.name || ''}`;
+        
+        // Use new heart icons
+        const livesContainer = document.getElementById('platformer-lives');
+        livesContainer.innerHTML = '';
+        for(let i=0; i<this.lives; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart-icon';
+            livesContainer.appendChild(heart);
+        }
 
         const staffCooldown = this.player.staff.cooldown;
         const staffStatusEl = document.getElementById('platformer-staff-status');
@@ -807,25 +353,12 @@ const platformerGame = {
     hideOverlay() { document.getElementById('platformer-overlay').style.display = 'none'; }
 };
 
-
 // --- INITIALIZATION & EVENT LISTENERS ---
 window.onload = () => {
-    document.getElementById('start-sorting-btn').onclick = () => {
-        switchScreen('sorting-game-screen');
-        sortingGame.start();
-    };
-    document.getElementById('start-memory-btn').onclick = () => {
-        switchScreen('memory-game-screen');
-        memoryGame.level = 1;
-        memoryGame.start();
-    };
-    document.getElementById('start-platformer-btn').onclick = () => {
-        switchScreen('platformer-game-screen');
-        platformerGame.init();
-    };
-    document.getElementById('character-selector').onchange = (e) => {
-        game.character = e.target.value;
-    };
+    document.getElementById('start-sorting-btn').onclick = () => { switchScreen('sorting-game-screen'); sortingGame.start(); };
+    document.getElementById('start-memory-btn').onclick = () => { switchScreen('memory-game-screen'); memoryGame.level = 1; memoryGame.start(); };
+    document.getElementById('start-platformer-btn').onclick = () => { switchScreen('platformer-game-screen'); platformerGame.init(); };
+    document.getElementById('character-selector').onchange = (e) => { game.character = e.target.value; };
 };
 </script>
 </body>
