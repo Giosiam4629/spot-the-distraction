@@ -216,7 +216,6 @@ document.getElementById('home-reset-btn').onclick = resetAndGoHome;
 
 // --- 1. PLATFORM ADVENTURE MINIGAME ---
 
-// Simple sound generator using Web Audio API (no audio files needed)
 const sound = {
     audioCtx: null,
     init() {
@@ -244,7 +243,6 @@ const sound = {
     levelComplete: function() { this.play(1000, 0.5, 'sine'); }
 };
 
-// Data for all game levels
 const levelDesigns = [
     {}, // Level 0 placeholder
     { // Level 1
@@ -291,7 +289,7 @@ const platformFighter = {
     ctx: null, active: false, gameInterval: null, frame: 0,
     level: 1, lives: 3, tokens: 0,
     
-    player: {}, // Player object will be reset on start
+    player: {}, 
     platforms: [], enemies: [], tokens: [], movingPlatforms: [], checkpoints: [], powerups: [], goal: {},
     particles: [], gravity: 0.8, camera: { x: 0 },
 
@@ -338,7 +336,7 @@ const platformFighter = {
     loadLevel() {
         const levelData = levelDesigns[this.level];
         if (!levelData) {
-            this.endGame(true); // No more levels, game won
+            this.endGame(true);
             this.showOverlay("You Win! 🎉");
             return;
         }
@@ -356,7 +354,7 @@ const platformFighter = {
     addKeyListeners() {
         this.keys = {};
         window.onkeydown = e => {
-            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
                 e.preventDefault();
                 if (this.player.jumps > 0) {
                     this.player.vy = -this.player.jumpPower;
@@ -368,10 +366,10 @@ const platformFighter = {
             this.keys[e.code] = true;
         };
         window.onkeyup = e => {
-             if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            if (['Space', 'ArrowUp', 'KeyW'].includes(e.code)) {
                 e.preventDefault();
-             }
-            this.keys[e.code] = false
+            }
+            this.keys[e.code] = false;
         };
     },
     
@@ -393,9 +391,8 @@ const platformFighter = {
         else p.isInvincible = false;
         
         if (p.powerupTimer > 0) p.powerupTimer--;
-        else p.maxJumps = 1; // Reset powerup
+        else p.maxJumps = 1;
 
-        // Horizontal Movement
         if (this.keys.KeyA || this.keys.ArrowLeft) { p.vx = -p.speed; p.facing = 'left'; }
         else if (this.keys.KeyD || this.keys.ArrowRight) { p.vx = p.speed; p.facing = 'right'; }
         else { p.vx = 0; }
@@ -403,19 +400,15 @@ const platformFighter = {
         p.x += p.vx;
         this.handleCollisions('x');
 
-        // Vertical Movement
         p.vy += this.gravity;
         p.y += p.vy;
         p.grounded = false;
         this.handleCollisions('y');
 
-        // Other Collisions
         this.handleObjectCollisions();
         
-        // Fall off map
         if (p.y > this.canvas.height + 100) this.takeDamage();
 
-        // Animation
         p.animFrame++;
         if (!p.grounded) p.animState = p.vy < 0 ? 'jump' : 'fall';
         else if (p.vx !== 0) p.animState = 'run';
@@ -429,55 +422,46 @@ const platformFighter = {
         allPlatforms.forEach(plat => {
             if (this.checkCollision(p, plat)) {
                 if (axis === 'y') {
-                    if (p.vy > 0) { // Moving down
-                        if (p.y + p.h - p.vy <= plat.y + 1) { // Was above platform last frame
-                            p.y = plat.y - p.h;
-                            p.vy = 0;
-                            if (!p.grounded) {
-                                p.squash = 1;
-                                this.spawnParticles(p.x + p.w / 2, p.y + p.h, 15, '#f4a261');
-                            }
-                            p.grounded = true;
-                            p.jumps = p.maxJumps;
+                    if (p.vy > 0 && p.y + p.h - p.vy <= plat.y + 1) {
+                        p.y = plat.y - p.h;
+                        p.vy = 0;
+                        if (!p.grounded) {
+                            p.squash = 1;
+                            this.spawnParticles(p.x + p.w / 2, p.y + p.h, 15, '#f4a261');
                         }
-                    } else if (p.vy < 0) { // Moving up
-                         if (p.y - p.vy >= plat.y + plat.h) {
-                            p.y = plat.y + plat.h;
-                            p.vy = 0;
-                         }
+                        p.grounded = true;
+                        p.jumps = p.maxJumps;
+                    } else if (p.vy < 0 && p.y - p.vy >= plat.y + plat.h) {
+                        p.y = plat.y + plat.h;
+                        p.vy = 0;
                     }
                 }
                 if (axis === 'x') {
-                    if (p.vx > 0) { // Moving right
-                        if (p.x + p.w - p.vx <= plat.x) {
-                           p.x = plat.x - p.w;
-                        }
-                    } else if (p.vx < 0) { // Moving left
-                        if (p.x - p.vx >= plat.x + plat.w) {
-                           p.x = plat.x + plat.w;
-                        }
+                    if (p.vx > 0 && p.x + p.w - p.vx <= plat.x) {
+                       p.x = plat.x - p.w;
+                    } else if (p.vx < 0 && p.x - p.vx >= plat.x + plat.w) {
+                       p.x = plat.x + plat.w;
                     }
                 }
             }
         });
         
-        // Add moving platform velocity to player
         if (p.grounded) {
+            let onMovingPlatform = false;
             this.movingPlatforms.forEach(plat => {
-                let tempPlayer = { ...p, y: p.y + 1, h: 1 }; // Check slightly below player
+                let tempPlayer = { ...p, y: p.y + 1 };
                 if (this.checkCollision(tempPlayer, plat)) {
                     p.x += plat.vx || 0;
+                    onMovingPlatform = true;
                 }
             });
         }
     },
     
     handleObjectCollisions() {
-        // Enemies
         this.enemies.forEach(e => {
             if (!this.player.isInvincible && this.checkCollision(this.player, e)) this.takeDamage();
         });
-        // Tokens
         this.tokens.forEach(t => {
             if (!t.collected && this.checkCollision(this.player, t)) {
                 t.collected = true;
@@ -486,7 +470,6 @@ const platformFighter = {
                 this.spawnParticles(t.x + t.w/2, t.y + t.h/2, 20, 'gold');
             }
         });
-        // Checkpoints
         this.checkpoints.forEach(c => {
             if (!c.activated && this.checkCollision(this.player, c)) {
                 c.activated = true;
@@ -494,19 +477,17 @@ const platformFighter = {
                 sound.powerup();
             }
         });
-        // Powerups
         this.powerups.forEach((p, i) => {
             if(this.checkCollision(this.player, p)) {
                 if(p.type === 'doubleJump') {
                     this.player.maxJumps = 2;
-                    this.player.jumps = 2; // give them the jumps immediately
-                    this.player.powerupTimer = 600; // 10 seconds
+                    this.player.jumps = 2;
+                    this.player.powerupTimer = 600;
                 }
                 this.powerups.splice(i, 1);
                 sound.powerup();
             }
         });
-        // Goal
         if (this.tokens >= this.tokenGoal && this.checkCollision(this.player, this.goal)) {
             sound.levelComplete();
             if (this.level < levelDesigns.length - 1) {
@@ -528,7 +509,7 @@ const platformFighter = {
             this.showOverlay("Game Over");
         } else {
             this.player.isInvincible = true;
-            this.player.invincibleTimer = 120; // 2 seconds
+            this.player.invincibleTimer = 120;
             this.player.x = this.player.respawnPos.x;
             this.player.y = this.player.respawnPos.y;
             this.player.vy = 0;
@@ -602,10 +583,8 @@ const platformFighter = {
     
     drawBackground() {
         const ctx = this.ctx;
-        ctx.fillStyle = '#f0f8ff'; // Light sky blue
+        ctx.fillStyle = '#f0f8ff';
         ctx.fillRect(this.camera.x, 0, this.canvas.width, this.canvas.height);
-
-        // Simple cartoony clouds
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 2;
@@ -614,7 +593,6 @@ const platformFighter = {
         ctx.ellipse(250 - this.camera.x * 0.2, 80, 80, 25, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
-        
         ctx.beginPath();
         ctx.ellipse(600 - this.camera.x * 0.2, 150, 120, 35, 0, 0, Math.PI * 2);
         ctx.ellipse(680 - this.camera.x * 0.2, 130, 90, 30, 0, 0, Math.PI * 2);
@@ -623,18 +601,14 @@ const platformFighter = {
     },
     drawPlatform(p) {
         const ctx = this.ctx;
-        ctx.fillStyle = '#6D4C41'; // Brown base
+        ctx.fillStyle = '#6D4C41';
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 4;
         ctx.fillRect(p.x, p.y, p.w, p.h);
         ctx.strokeRect(p.x, p.y, p.w, p.h);
-
-        // Grass top
         ctx.fillStyle = '#8BC34A';
-        ctx.fillRect(p.x, p.y, p.w, 15); // Thicker grass
+        ctx.fillRect(p.x, p.y, p.w, 15);
         ctx.strokeRect(p.x, p.y, p.w, 15);
-
-        // Add some small grass tufts
         ctx.fillStyle = '#558B2F';
         for (let i = 0; i < p.w / 20; i++) {
             const gx = p.x + 10 + Math.random() * (p.w - 20);
@@ -648,14 +622,11 @@ const platformFighter = {
     drawGoal() {
         const ctx = this.ctx;
         ctx.lineWidth = 4;
-        
-        ctx.fillStyle = this.tokens >= this.tokenGoal ? 'gold' : '#ccc'; // Brighter gold
+        ctx.fillStyle = this.tokens >= this.tokenGoal ? 'gold' : '#ccc';
         ctx.strokeStyle = '#333';
         ctx.fillRect(this.goal.x, this.goal.y, this.goal.w, this.goal.h);
         ctx.strokeRect(this.goal.x, this.goal.y, this.goal.w, this.goal.h);
-
-        // Draw a bolder flag
-        ctx.fillStyle = '#CC0000'; // Red flag
+        ctx.fillStyle = '#CC0000';
         ctx.beginPath();
         ctx.moveTo(this.goal.x + this.goal.w / 2, this.goal.y);
         ctx.lineTo(this.goal.x + this.goal.w / 2 + 30, this.goal.y + 15);
@@ -663,7 +634,6 @@ const platformFighter = {
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
-
         ctx.fillStyle = 'white';
         ctx.font = 'bold 24px Fredoka One';
         ctx.textAlign = 'center';
@@ -674,15 +644,13 @@ const platformFighter = {
     drawToken(t) {
         const ctx = this.ctx;
         ctx.lineWidth = 3;
-        
         ctx.fillStyle = 'gold';
         ctx.strokeStyle = '#c78d00';
         ctx.beginPath();
         ctx.arc(t.x + t.w/2, t.y + t.h/2, t.w/2, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
-
-        ctx.fillStyle = '#FFFDE7'; // Creamy white for shine
+        ctx.fillStyle = '#FFFDE7';
         ctx.beginPath();
         ctx.arc(t.x + t.w/2 - 3, t.y + t.h/2 - 3, t.w/4, 0, Math.PI * 1.5, true);
         ctx.fill();
@@ -690,24 +658,19 @@ const platformFighter = {
     drawEnemy(e) {
         const ctx = this.ctx;
         ctx.lineWidth = 3;
-
-        // A simple bouncing blob enemy with eyes
         const bounce = Math.sin(this.frame * 0.1 + e.x) * 5;
-        ctx.fillStyle = '#FF6347'; // Tomato red
+        ctx.fillStyle = '#FF6347';
         ctx.strokeStyle = '#333';
         ctx.beginPath();
         ctx.ellipse(e.x + e.w / 2, e.y + e.h / 2 + bounce, e.w / 2, e.h / 2 - bounce/2, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
-
-        // Eyes
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.arc(e.x + e.w * 0.35, e.y + e.h * 0.35 + bounce, e.w * 0.15, 0, Math.PI * 2);
         ctx.arc(e.x + e.w * 0.65, e.y + e.h * 0.35 + bounce, e.w * 0.15, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
-
         ctx.fillStyle = 'black';
         ctx.beginPath();
         ctx.arc(e.x + e.w * 0.35 + 2, e.y + e.h * 0.35 + 2 + bounce, e.w * 0.08, 0, Math.PI * 2);
@@ -722,7 +685,6 @@ const platformFighter = {
             ctx.strokeStyle = '#333';
             ctx.fillRect(c.x, c.y, c.w, c.h);
             ctx.strokeRect(c.x, c.y, c.w, c.h);
-
             ctx.fillStyle = c.activated ? '#4CAF50' : '#888';
             ctx.beginPath();
             ctx.moveTo(c.x + c.w / 2, c.y);
@@ -743,7 +705,6 @@ const platformFighter = {
             ctx.arc(p.x + p.w/2, p.y + p.h/2, p.w/2, 0, Math.PI*2);
             ctx.fill();
             ctx.stroke();
-
             ctx.fillStyle = 'white';
             ctx.font = 'bold 20px Fredoka One';
             ctx.textAlign = 'center';
@@ -785,8 +746,10 @@ const platformFighter = {
             ctx.translate(x, y);
             ctx.rotate(angle * Math.PI / 180);
             ctx.fillStyle = color;
+            ctx.fillRect(-width/2, 0, width, length);
+            ctx.strokeRect(-width/2, 0, width, length);
             ctx.beginPath();
-            ctx.roundRect(-width/2, 0, width, length, width/2);
+            ctx.arc(0, length, width/2, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
             ctx.restore();
@@ -795,29 +758,22 @@ const platformFighter = {
         const headY = -p.h * 0.7 + bob;
         const bodyY = -p.h * 0.4;
         
-        // Limbs (behind body)
         drawLimb(p.w*0.2, bodyY, -legSwing, p.h*0.4, 12, art.pants); // Back Leg
         drawLimb(-p.w*0.15, bodyY, -armSwing, p.h*0.35, 10, art.skin); // Back Arm
 
-        // Body
         ctx.fillStyle = art.shirt;
-        ctx.beginPath();
-        ctx.roundRect(-p.w*0.4, -p.h*0.6, p.w*0.8, p.h*0.5, 10);
-        ctx.fill();
-        ctx.stroke();
+        ctx.fillRect(-p.w*0.4, -p.h*0.6, p.w*0.8, p.h*0.5);
+        ctx.strokeRect(-p.w*0.4, -p.h*0.6, p.w*0.8, p.h*0.5);
         
-        // Limbs (front of body)
         drawLimb(-p.w*0.2, bodyY, legSwing, p.h*0.4, 12, art.pants); // Front Leg
         drawLimb(p.w*0.15, bodyY, armSwing, p.h*0.35, 10, art.skin); // Front Arm
 
-        // Head
         ctx.fillStyle = art.skin;
         ctx.beginPath();
         ctx.arc(0, headY, p.w*0.45, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
         
-        // Eyes
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.ellipse(-p.w*0.15, headY, 6, 9, 0, 0, Math.PI * 2);
@@ -864,11 +820,11 @@ const platformFighter = {
 const sortingGame = {
     active: false,
     allActivities: {
-      boy: { // Formerly 'cello'
+      boy: {
         closer: [ { emoji: '🙏', text: "Praying" }, { emoji: '🧹', text: "Helping clean" }, { emoji: '📖', text: "Reading Bible story" }, { emoji: '🤗', text: "Sharing toys" } ],
         distraction: [ { emoji: '🎮', text: "Video games all evening" }, { emoji: '📺', text: "Watching TV late" }, { emoji: '😠', text: "Arguing" }, { emoji: '😫', text: "Complaining" } ]
       },
-      girl: { // Formerly 'fina'
+      girl: {
         closer: [ { emoji: '🙏', text: "Personal prayer" }, { emoji: '🤝', text: "Helping a friend" }, { emoji: '📖', text: "Personal Bible reading" }, { emoji: '📝', text: "Meeting prep" } ],
         distraction: [ { emoji: '📱', text: "Hours on social media" }, { emoji: ' gossip', text: "Gossiping" }, { emoji: '👻', text: "Scary movies" }, { emoji: '🤔', text: "Worrying about popularity" } ]
       }
@@ -887,7 +843,7 @@ const sortingGame = {
 
         const mode = game.character === 'boy' ? 'boy' : 'girl';
         const activities = [...this.allActivities[mode].closer, ...this.allActivities[mode].distraction];
-        activities.sort(() => 0.5 - Math.random()); // Shuffle
+        activities.sort(() => 0.5 - Math.random());
 
         activities.forEach((activity, idx) => {
             const card = document.createElement("div");
