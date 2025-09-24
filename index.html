@@ -110,7 +110,7 @@
     .memory-card.is-flipped { transform: rotateY(180deg); }
     .memory-card.is-matched { opacity: 0.5; pointer-events: none; }
     .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; flex-direction: column; border-radius: 10px; }
-    .card-front { background: white; border: 3px solid #ccc; transform: rotateY(180deg); }
+    .card-front { background: white; border: 3px solid #ccc; transform: rotateY(180deg); font-size: 3rem; }
     .card-back { background: linear-gradient(135deg, #6a0dad, #9c27b0); font-size: 3rem; color: white; }
 
     /* --- Minigame --- */
@@ -148,17 +148,35 @@
   </div>
 
   <div id="sorting-game-screen" class="screen">
-     </div>
+    <div class="panel">
+        <h2>Spot the Distraction</h2>
+        <div class="drop-container">
+            <div id="closer" class="dropzone"><h3>👍 Keeps Me Close to Jehovah</h3></div>
+            <div id="distraction" class="dropzone"><h3>🤔 Could Be a Distraction</h3></div>
+        </div>
+        <h3 style="text-align: center;">Drag the Activities</h3>
+        <div id="cards-container"></div>
+    </div>
+  </div>
 
   <div id="memory-game-screen" class="screen">
+      <div class="panel">
+          <h2>Memory Match Challenge</h2>
+          <div class="memory-header">
+              <span>Level: <span id="memory-level">1</span></span>
+              <span>Matches: <span id="memory-matches">0 / 0</span></span>
+              <span>Time: <span id="memory-timer">--</span></span>
+          </div>
+          <div id="memory-game-grid"></div>
       </div>
+  </div>
 
   <div id="minigame-screen" class="screen">
     <div class="panel">
       <h2>Platform Adventure!</h2>
       <div class="minigame-header">
         <div class="minigame-stat">Level: <span id="minigame-level">1</span></div>
-        <div class="minigame-stat">Tokens: <span id="minigame-tokens">0</span> / <span id="minigame-goal">5</span></div>
+        <div class="minigame-stat">Tokens: <span id="minigame-tokens">0 / 5</span></div>
         <div class="minigame-stat"><span class="hearts" id="minigame-lives">❤️❤️❤️</span></div>
       </div>
       <div id="minigame-canvas-container">
@@ -174,20 +192,17 @@
 </div>
 
 <script>
-// --- GLOBAL STATE & SCREEN MANAGEMENT ---
-const initialGameState = {
-    character: 'boy',
-    activeScreen: 'main-menu-screen'
-};
+// --- GLOBAL & MENU LOGIC ---
+const initialGameState = { character: 'boy' };
 let game = { ...initialGameState };
 
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
-    game.activeScreen = screenId;
     
     if (platformFighter.active) platformFighter.endGame(false, true);
-    // Add similar logic for other games if they have active loops
+    if (memoryGame.timerId) clearInterval(memoryGame.timerId);
+    if (sortingGame.active) sortingGame.endGame();
 }
 
 function resetAndGoHome() {
@@ -198,42 +213,35 @@ function resetAndGoHome() {
 
 document.getElementById('home-reset-btn').onclick = resetAndGoHome;
 
-// --- PLATFORM ADVENTURE MINIGAME (NEW!) ---
+
+// --- 1. PLATFORM ADVENTURE MINIGAME ---
 const platformFighter = {
     canvas: document.getElementById('minigame-canvas'),
     ctx: null, active: false, gameInterval: null, frame: 0,
     level: 1, lives: 3, tokens: 0, goal: 5,
     
-    // --- Game Objects & State ---
     player: {
         x: 100, y: 300, w: 40, h: 60, vx: 0, vy: 0, speed: 5, jumpPower: 18,
         grounded: true, isInvincible: false, invincibleTimer: 0,
-        animState: 'idle', animFrame: 0, facing: 'right'
+        animState: 'idle', animFrame: 0, facing: 'right', squash: 0
     },
-    platforms: [],
-    tokens: [],
-    obstacles: [],
-    backgroundLayers: [],
-    gravity: 0.8,
-    camera: { x: 0 },
+    platforms: [], particles: [],
+    gravity: 0.8, camera: { x: 0 },
 
-    // --- Drawing & Animation Data ---
     characterArt: {
-        boy: { skin: '#f2a66e', hair: '#3a2d27', shirt: '#4a90e2', pants: '#333' },
-        girl: { skin: '#ffbe87', hair: '#8b572a', shirt: '#e91e63', pants: '#555' }
+        boy: { skin: '#f2a66e', skin_s: '#d88c57', hair: '#3a2d27', shirt: '#4a90e2', shirt_s: '#3b73b5', pants: '#333', pants_s: '#222' },
+        girl: { skin: '#ffbe87', skin_s: '#e5a36f', hair: '#8b572a', shirt: '#e91e63', shirt_s: '#c2185b', pants: '#555', pants_s: '#444' }
     },
     
-    // --- Core Functions ---
     init() {
         this.ctx = this.canvas.getContext('2d');
         document.getElementById('minigame-start-btn').onclick = () => this.start();
         document.getElementById('minigame-next-level-btn').onclick = () => { this.level++; this.start(); };
         this.showOverlay("Platform Adventure");
-        // Key listeners for movement will be added in start()
     },
 
     start() {
-        this.hideOverlay(); this.active = true; this.frame = 0; this.level = 1; this.lives = 3;
+        this.hideOverlay(); this.active = true; this.frame = 0; this.level = 1; this.lives = 3; this.tokens = 0;
         this.player.x = 100; this.player.y = 300; this.camera.x = 0;
         this.generateLevel();
         if (this.gameInterval) clearInterval(this.gameInterval);
@@ -249,87 +257,116 @@ const platformFighter = {
     },
     
     generateLevel() {
-        this.platforms = [{x: 0, y: 400, w: 1000, h: 50}];
+        this.platforms = [{x: -100, y: 400, w: 1200, h: 50}];
         for (let i = 1; i < 20; i++) {
             this.platforms.push({
-                x: this.platforms[i-1].x + Math.random() * 200 + 200,
-                y: 400 - Math.random() * 150,
-                w: Math.random() * 100 + 100,
+                x: this.platforms[i-1].x + Math.random() * 200 + 250,
+                y: 400 - Math.random() * 180,
+                w: Math.random() * 100 + 120,
                 h: 30
             });
         }
-        // Simplified for example
     },
 
     loop() {
         this.updatePlayerState();
         this.updateCamera();
+        this.updateParticles();
         this.draw();
+        this.updateUI();
     },
 
     updatePlayerState() {
-        // Horizontal Movement
-        if (this.keys.ArrowLeft || this.keys.KeyA) { this.player.vx = -this.player.speed; this.player.facing = 'left'; }
-        else if (this.keys.ArrowRight || this.keys.KeyD) { this.player.vx = this.player.speed; this.player.facing = 'right'; }
-        else { this.player.vx = 0; }
+        const p = this.player;
+        if (p.squash > 0) p.squash -= 0.1;
+
+        if (this.keys.KeyA || this.keys.ArrowLeft) { p.vx = -p.speed; p.facing = 'left'; }
+        else if (this.keys.KeyD || this.keys.ArrowRight) { p.vx = p.speed; p.facing = 'right'; }
+        else { p.vx = 0; }
         
-        // Jumping
-        if ((this.keys.Space || this.keys.ArrowUp || this.keys.KeyW) && this.player.grounded) {
-            this.player.vy = -this.player.jumpPower; this.player.grounded = false;
+        if ((this.keys.KeyW || this.keys.ArrowUp || this.keys.Space) && p.grounded) {
+            p.vy = -p.jumpPower; p.grounded = false;
+            this.spawnParticles(p.x + p.w / 2, p.y + p.h, 10, '#f4a261');
         }
 
-        // Apply physics
-        this.player.vy += this.gravity;
-        this.player.x += this.player.vx;
-        this.player.y += this.player.vy;
-        this.player.grounded = false;
+        p.vy += this.gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        let onPlatform = false;
 
-        // Collision with platforms
-        this.platforms.forEach(p => {
-            if (this.player.y + this.player.h > p.y && this.player.y + this.player.h < p.y + p.h &&
-                this.player.x + this.player.w > p.x && this.player.x < p.x + p.w && this.player.vy > 0) {
-                this.player.grounded = true; this.player.y = p.y - this.player.h; this.player.vy = 0;
+        this.platforms.forEach(plat => {
+            if (p.x + p.w > plat.x && p.x < plat.x + plat.w &&
+                p.y + p.h > plat.y && p.y + p.h < plat.y + 20 && p.vy >= 0) {
+                if (!p.grounded) {
+                    p.squash = 1;
+                    this.spawnParticles(p.x + p.w / 2, p.y + p.h, 15, '#ffffff');
+                }
+                onPlatform = true; p.y = plat.y - p.h; p.vy = 0;
             }
         });
+        p.grounded = onPlatform;
         
-        // Update animation state
-        this.player.animFrame++;
-        if (!this.player.grounded) { this.player.animState = this.player.vy < 0 ? 'jump' : 'fall'; }
-        else if (this.player.vx !== 0) { this.player.animState = 'run'; }
-        else { this.player.animState = 'idle'; }
+        p.animFrame++;
+        if (!p.grounded) p.animState = p.vy < 0 ? 'jump' : 'fall';
+        else if (p.vx !== 0) p.animState = 'run';
+        else p.animState = 'idle';
     },
     
     updateCamera() {
-        // Camera follows player smoothly
         const targetX = this.player.x - this.canvas.width / 3;
         this.camera.x += (targetX - this.camera.x) * 0.1;
     },
     
-    // --- Drawing Functions ---
+    spawnParticles(x, y, count, color) {
+        for (let i = 0; i < count; i++) {
+            this.particles.push({
+                x, y,
+                vx: (Math.random() - 0.5) * 4,
+                vy: (Math.random() - 0.5) * 4 - 2,
+                life: Math.random() * 40 + 20,
+                color
+            });
+        }
+    },
+    updateParticles() {
+        this.particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.life--;
+            if (p.life <= 0) this.particles.splice(i, 1);
+        });
+    },
+
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.save();
         this.ctx.translate(-this.camera.x, 0);
-
         this.drawBackground();
         this.drawPlatforms();
+        this.particles.forEach(p => {
+            this.ctx.fillStyle = p.color;
+            this.ctx.globalAlpha = p.life / 60;
+            this.ctx.fillRect(p.x, p.y, 3, 3);
+            this.ctx.globalAlpha = 1;
+        });
         this.drawCharacter();
-
         this.ctx.restore();
     },
     
     drawBackground() {
-        // Draw soft, multi-layered clouds/hills
-        this.ctx.fillStyle = '#bde0fe'; this.ctx.fillRect(this.camera.x, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = '#a2d2ff';
-        this.ctx.beginPath(); this.ctx.ellipse(this.camera.x + 200, 200, 150, 50, 0, 0, Math.PI * 2); this.ctx.fill();
-        this.ctx.ellipse(this.camera.x + 500, 150, 200, 70, 0, 0, Math.PI * 2); this.ctx.fill();
+        const grad = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
+        grad.addColorStop(0, '#87CEEB'); grad.addColorStop(1, '#bde0fe');
+        this.ctx.fillStyle = grad;
+        this.ctx.fillRect(this.camera.x, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        this.ctx.beginPath();
+        this.ctx.ellipse(200 - this.camera.x * 0.2, 100, 150, 40, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(600 - this.camera.x * 0.2, 150, 200, 60, 0, 0, Math.PI * 2);
+        this.ctx.fill();
     },
 
     drawPlatforms() {
         this.platforms.forEach(p => {
-            this.ctx.fillStyle = '#2a9d8f'; this.ctx.fillRect(p.x, p.y, p.w, p.h);
-            this.ctx.fillStyle = '#264653'; this.ctx.fillRect(p.x, p.y + p.h - 10, p.w, 10);
+            this.ctx.fillStyle = '#6d4c41'; this.ctx.fillRect(p.x, p.y, p.w, p.h);
+            this.ctx.fillStyle = '#8bc34a'; this.ctx.fillRect(p.x, p.y, p.w, 10);
         });
     },
 
@@ -339,57 +376,58 @@ const platformFighter = {
         const frame = p.animFrame;
         const ctx = this.ctx;
 
+        let squashFactor = 1 - Math.sin(p.squash * Math.PI) * 0.2;
+        let stretchFactor = 1 + Math.sin(p.squash * Math.PI) * 0.2;
+
         ctx.save();
         ctx.translate(p.x + p.w / 2, p.y + p.h);
         if (p.facing === 'left') ctx.scale(-1, 1);
+        ctx.translate(0, -p.h); 
+        ctx.scale(stretchFactor, squashFactor);
+        ctx.translate(0, p.h);
 
-        // Animation logic
-        let bob = Math.sin(frame * 0.4) * 3;
-        let armSwing = Math.sin(frame * 0.3) * 25;
-        let legSwing = Math.sin(frame * 0.3) * 35;
+        let bob = Math.sin(frame * 0.2) * 2;
+        let armSwing = Math.sin(frame * 0.4) * 35;
+        let legSwing = Math.sin(frame * 0.4) * 45;
 
         if (p.animState === 'idle') { armSwing /= 4; legSwing = 0; }
         if (p.animState === 'jump' || p.animState === 'fall') {
-            bob = 0; armSwing = -20; legSwing = 20;
-            if (p.animState === 'fall') { armSwing = 20; legSwing = -20; }
+            bob = 0; armSwing = -30; legSwing = 30;
+            if (p.animState === 'fall') { armSwing = 30; legSwing = -30; }
         }
-
-        // Body parts drawing
-        const drawLimb = (angle, length, width, color) => {
+        
+        const drawLimb = (x, y, angle, length, width, color1, color2) => {
+            ctx.save();
+            ctx.translate(x, y);
             ctx.rotate(angle * Math.PI / 180);
-            ctx.fillStyle = color;
+            ctx.fillStyle = color2;
+            ctx.fillRect(-width/2 -1, 0, width+2, -length-1);
+            ctx.fillStyle = color1;
             ctx.fillRect(-width/2, 0, width, -length);
             ctx.beginPath(); ctx.arc(0, -length, width/2, 0, Math.PI * 2); ctx.fill();
-            ctx.rotate(-angle * Math.PI / 180);
+            ctx.restore();
         };
         
-        // Legs
-        ctx.save(); ctx.translate(0, -p.h/2.5); drawLimb(legSwing, 25, 10, art.pants); ctx.restore(); // Back leg
-        ctx.save(); ctx.translate(0, -p.h/2.5); drawLimb(-legSwing, 28, 12, art.pants); ctx.restore(); // Front leg
+        const torsoY = -p.h / 2 + bob, headY = -p.h + 10 + bob * 1.5;
         
-        // Arms
-        ctx.save(); ctx.translate(0, -p.h/1.5); drawLimb(-armSwing, 22, 8, art.skin); ctx.restore(); // Back arm
+        drawLimb(5, torsoY, legSwing, p.h * 0.45, 12, art.pants_s, '#000'); 
+        drawLimb(-5, torsoY, armSwing, p.h * 0.4, 10, art.skin_s, '#000');
         
-        // Torso
-        ctx.fillStyle = art.shirt;
-        ctx.beginPath(); ctx.ellipse(0, -p.h/1.8 + bob, 15, 20, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = art.shirt_s; ctx.fillRect(-16, torsoY-21, 32, 42); 
+        ctx.fillStyle = art.shirt; ctx.fillRect(-15, torsoY-20, 30, 40);
+        
+        drawLimb(-5, torsoY, -legSwing, p.h * 0.45, 12, art.pants, '#000');
+        drawLimb(5, torsoY, -armSwing, p.h * 0.4, 10, art.skin, '#000');
 
-        ctx.save(); ctx.translate(0, -p.h/1.5); drawLimb(armSwing, 25, 10, art.skin); ctx.restore(); // Front arm
-
-        // Head
-        ctx.fillStyle = art.skin;
-        ctx.beginPath(); ctx.arc(0, -p.h/1.2 + bob * 1.2, 15, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = art.hair;
-        ctx.beginPath(); ctx.arc(0, -p.h/1.2 + bob * 1.2, 16, Math.PI, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'white'; // Eye
-        ctx.beginPath(); ctx.arc(8, -p.h/1.15 + bob * 1.2, 4, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'black'; // Pupil
-        ctx.beginPath(); ctx.arc(9, -p.h/1.15 + bob * 1.2, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = art.skin_s; ctx.beginPath(); ctx.arc(0, headY+1, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = art.skin; ctx.beginPath(); ctx.arc(0, headY, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = art.hair; ctx.beginPath(); ctx.arc(0, headY-5, 15, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'white'; ctx.beginPath(); ctx.ellipse(8, headY, 5, 7, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(10, headY, 3, 0, Math.PI * 2); ctx.fill();
 
         ctx.restore();
     },
 
-    // --- Overlay & Game State Functions ---
     showOverlay(message, showNextLevelBtn = false) {
         const overlay = document.getElementById('minigame-overlay');
         document.getElementById('minigame-message').textContent = message;
@@ -405,26 +443,204 @@ const platformFighter = {
         if (isReset) return;
         if (!isComplete) this.showOverlay("Game Over");
     },
-    
-    updateUI() { /* Update UI elements like lives, tokens, etc. */ }
+    updateUI() {
+        document.getElementById('minigame-level').textContent = this.level;
+        document.getElementById('minigame-tokens').textContent = `${this.tokens} / ${this.goal}`;
+        document.getElementById('minigame-lives').textContent = '❤️'.repeat(this.lives) + '🖤'.repeat(3 - this.lives);
+    }
 };
 
 
-// --- MEMORY GAME & SORTING GAME (STUBS FOR BREVITY) ---
-// In the final file, the full JS objects for these games would be here.
-const memoryGame = { start() { alert("Memory Game Started!"); } };
-const sortingGame = { start() { alert("Sorting Game Started!"); } };
+// --- 2. SORTING GAME ---
+const sortingGame = {
+    active: false,
+    allActivities: {
+      boy: { // Formerly 'cello'
+        closer: [ { emoji: '🙏', text: "Praying" }, { emoji: '🧹', text: "Helping clean" }, { emoji: '📖', text: "Reading Bible story" }, { emoji: '🤗', text: "Sharing toys" } ],
+        distraction: [ { emoji: '🎮', text: "Video games all evening" }, { emoji: '📺', text: "Watching TV late" }, { emoji: '😠', text: "Arguing" }, { emoji: '😫', text: "Complaining" } ]
+      },
+      girl: { // Formerly 'fina'
+        closer: [ { emoji: '🙏', text: "Personal prayer" }, { emoji: '🤝', text: "Helping a friend" }, { emoji: '📖', text: "Personal Bible reading" }, { emoji: '📝', text: "Meeting prep" } ],
+        distraction: [ { emoji: '📱', text: "Hours on social media" }, { emoji: ' gossip', text: "Gossiping" }, { emoji: '👻', text: "Scary movies" }, { emoji: '🤔', text: "Worrying about popularity" } ]
+      }
+    },
+    
+    start() {
+        this.active = true;
+        this.loadCards();
+    },
 
+    loadCards() {
+        const cardContainer = document.getElementById('cards-container');
+        cardContainer.innerHTML = '';
+        document.getElementById('closer').innerHTML = '<h3>👍 Keeps Me Close to Jehovah</h3>';
+        document.getElementById('distraction').innerHTML = '<h3>🤔 Could Be a Distraction</h3>';
+
+        const mode = game.character === 'boy' ? 'boy' : 'girl';
+        const activities = [...this.allActivities[mode].closer, ...this.allActivities[mode].distraction];
+        activities.sort(() => 0.5 - Math.random()); // Shuffle
+
+        activities.forEach((activity, idx) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.id = `card${idx}`;
+            card.draggable = true;
+            card.innerHTML = `<span class="emoji">${activity.emoji}</span><span>${activity.text}</span>`;
+            
+            const isCloser = this.allActivities[mode].closer.some(c => c.text === activity.text);
+            card.dataset.correctZone = isCloser ? 'closer' : 'distraction';
+            
+            card.ondragstart = (e) => e.dataTransfer.setData("text", e.target.id);
+            cardContainer.appendChild(card);
+        });
+        
+        document.querySelectorAll('.dropzone').forEach(zone => {
+            zone.ondragover = (e) => e.preventDefault();
+            zone.ondrop = this.onDrop;
+        });
+    },
+
+    onDrop(e) {
+        e.preventDefault();
+        const cardId = e.dataTransfer.getData("text");
+        const card = document.getElementById(cardId);
+        let dropzone = e.target;
+        while (!dropzone.classList.contains('dropzone')) dropzone = dropzone.parentElement;
+        
+        if (card.dataset.correctZone === dropzone.id) {
+            dropzone.appendChild(card);
+            card.draggable = false;
+            card.style.borderColor = 'green';
+        } else {
+            card.style.borderColor = 'red';
+            setTimeout(() => card.style.borderColor = '#ccc', 500);
+        }
+    },
+    endGame() { this.active = false; }
+};
+
+// --- 3. MEMORY GAME ---
+const memoryGame = {
+    level: 1, timer: 0, timerId: null, matches: 0, goal: 0,
+    isChecking: false, flippedCards: [],
+    levelData: [
+        { pairs: 4, time: null }, { pairs: 6, time: 90 }, { pairs: 8, time: 120 }
+    ],
+    
+    start() {
+        this.resetState();
+        const currentLevel = this.levelData[this.level - 1];
+        if (!currentLevel) { alert("You've completed all levels!"); resetAndGoHome(); return; }
+        
+        this.goal = currentLevel.pairs;
+        this.timer = currentLevel.time;
+
+        this.updateUI();
+        this.createGrid(currentLevel.pairs);
+        if (this.timer) this.startTimer();
+    },
+
+    createGrid(pairCount) {
+        const grid = document.getElementById('memory-game-grid');
+        grid.innerHTML = '';
+        const columns = pairCount * 2 > 8 ? 4 : 4;
+        grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+        
+        const activities = [{e:'🙏'}, {e:'📖'}, {e:'🤝'}, {e:'😊'}, {e:'🧹'}, {e:'🎶'}, {e:'🤗'}, {e:'❤️'}];
+        let cardPool = activities.slice(0, pairCount);
+        cardPool = [...cardPool, ...cardPool];
+        cardPool.sort(() => 0.5 - Math.random());
+
+        cardPool.forEach(item => {
+            const cardEl = document.createElement('div');
+            cardEl.classList.add('memory-card');
+            cardEl.dataset.id = item.e;
+            cardEl.innerHTML = `<div class="card-face card-back">?</div><div class="card-face card-front">${item.e}</div>`;
+            cardEl.onclick = () => this.flipCard(cardEl);
+            grid.appendChild(cardEl);
+        });
+    },
+
+    flipCard(cardEl) {
+        if (this.isChecking || cardEl.classList.contains('is-flipped') || this.flippedCards.length >= 2) return;
+        cardEl.classList.add('is-flipped');
+        this.flippedCards.push(cardEl);
+        if (this.flippedCards.length === 2) this.checkForMatch();
+    },
+
+    checkForMatch() {
+        this.isChecking = true;
+        const [card1, card2] = this.flippedCards;
+        if (card1.dataset.id === card2.dataset.id) {
+            this.matches++;
+            this.updateUI();
+            setTimeout(() => {
+                card1.classList.add('is-matched');
+                card2.classList.add('is-matched');
+                this.flippedCards = [];
+                this.isChecking = false;
+                if (this.matches === this.goal) this.levelComplete();
+            }, 500);
+        } else {
+            setTimeout(() => {
+                card1.classList.remove('is-flipped');
+                card2.classList.remove('is-flipped');
+                this.flippedCards = [];
+                this.isChecking = false;
+            }, 1000);
+        }
+    },
+    
+    levelComplete() {
+        clearInterval(this.timerId);
+        alert(`Level ${this.level} Complete!`);
+        if (this.level < this.levelData.length) {
+            this.level++;
+            this.start();
+        } else {
+            alert("You beat the Memory Game!");
+            resetAndGoHome();
+        }
+    },
+    
+    startTimer() {
+        const timerEl = document.getElementById('memory-timer');
+        this.timerId = setInterval(() => {
+            this.timer--;
+            timerEl.textContent = this.timer;
+            if (this.timer <= 0) {
+                clearInterval(this.timerId);
+                alert("Time's up! Try again.");
+                this.start();
+            }
+        }, 1000);
+    },
+    
+    updateUI() {
+        document.getElementById('memory-level').textContent = this.level;
+        document.getElementById('memory-matches').textContent = `${this.matches} / ${this.goal}`;
+        document.getElementById('memory-timer').textContent = this.timer || '--';
+    },
+
+    resetState() {
+        this.matches = 0;
+        this.isChecking = false;
+        this.flippedCards = [];
+        if (this.timerId) clearInterval(this.timerId);
+        this.timerId = null;
+    }
+};
 
 // --- INITIALIZATION & EVENT LISTENERS ---
 window.onload = () => {
     document.getElementById('start-sorting-btn').onclick = () => {
         switchScreen('sorting-game-screen');
-        // sortingGame.start(); // This would be the full function call
+        sortingGame.start();
     };
     document.getElementById('start-memory-btn').onclick = () => {
         switchScreen('memory-game-screen');
-        // memoryGame.start(); // This would be the full function call
+        memoryGame.level = 1;
+        memoryGame.start();
     };
     document.getElementById('start-minigame-btn').onclick = () => {
         switchScreen('minigame-screen');
